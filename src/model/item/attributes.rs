@@ -67,7 +67,20 @@ pub struct Experience {
 }
 
 impl Experience {
+    /// Create an `Experience` object which represents a 0/total state.
+    #[inline]
+    pub fn zero_out_of(total: u64) -> Self {
+        Experience { current: 0, total }
+    }
 
+    /// Create an `Experience` object which represents
+    /// a filled experience bar with given total.
+    ///
+    /// Such state correspond to a skill gem that is deliberately kept at a lower level.
+    #[inline]
+    pub fn full(total: u64) -> Self {
+        Experience { current: total, total }
+    }
 }
 
 impl Experience {

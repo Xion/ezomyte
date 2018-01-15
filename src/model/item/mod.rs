@@ -43,6 +43,11 @@ pub struct Item {
     pub rarity: Rarity,
     /// Item quality.
     pub quality: Quality,
+    /// Item properties.
+    ///
+    /// Properties are characteristics inherent to a particular item type,
+    /// like armor/evasion/energy shield values and weapon damage range.
+    pub properties: HashMap<String, String>,  // TODO: parse "X-Y" ranges
     /// Item details.
     ///
     /// These are specific to the particular kind of item.
@@ -88,7 +93,8 @@ impl Item {
     }
 }
 
-/// A particular kind of requirement that a character must satisfy to use an item.
+/// A particular kind of requirement that a character must satisfy
+/// in order to use an item.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Requirement {
     /// Level requirement.

@@ -6,9 +6,4 @@ mod stash;
 
 pub use self::currency::Currency;
 pub use self::item::*;
-
-
-#[derive(Debug)]
-pub struct Item {
-
-}
+pub use self::stash::*;
