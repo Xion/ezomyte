@@ -32,14 +32,22 @@ pub enum ItemDetails {
     /// This includes most items, such as those in gear slots,
     /// jewels, maps, and so on.
     Mods {
-        /// Implicit mods an item has (those above a horizontal line in the UI).
+        /// Implicit mods an item has
+        /// (those displayed in navy color above a horizontal line in the UI).
         ///
         /// Currently, PoE only supports a single implicit mod,
         /// but this may change in the future.
         implicit: Vec<Mod>,
-        // TODO: there are enchantMods in the API, should we merge them here?
 
-        /// Explicit mods of an item.
+        /// Enchantments an item has
+        /// (i.e. mods displayed in light blue color above a horizontal line in the UI).
+        ///
+        /// Currently, PoE only supports a single enchantment,
+        /// but this may change in the future.
+        enchants: Vec<Mod>,
+
+        /// Explicit mods of an item
+        /// (those displayed in navy color in the main item pane).
         ///
         /// Note that these the mods which are visible in the UI,
         /// as opposed to *affixes* (prefixes & suffixes) which cannot be reliably
@@ -48,6 +56,9 @@ pub enum ItemDetails {
         /// which would seemingly contradict the "3 prefixes + 3 suffixes" rule
         /// (due to the so-called hybrid affixes that result in multiple mods).
         explicit: Vec<Mod>,
-        // TODO: there are craftedMods in the API, should we merge them here?
+
+        /// Crafted mods on an item
+        /// (those displayed in light blue color in the main item pane, below explicit mods).
+        crafted: Vec<Mod>,
     },
 }

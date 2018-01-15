@@ -7,6 +7,7 @@
              extern crate hyper_tls;
 #[macro_use] extern crate macro_attr;
 #[macro_use] extern crate newtype_derive;
+             extern crate separator;
              extern crate serde;
 #[macro_use] extern crate serde_derive;
              extern crate serde_json;

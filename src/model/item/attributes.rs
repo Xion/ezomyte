@@ -3,9 +3,12 @@
 
 use std::fmt;
 
+use separator::Separatable;
+
 
 /// Rarity of an item.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
+#[serde(rename_all = "lowercase")]
 pub enum Rarity {
     /// Normal ("white") item.
     ///
@@ -50,6 +53,12 @@ macro_attr! {
     pub struct Quality(u8);
 }
 
+impl Default for Quality {
+    fn default() -> Self {
+        Quality(0)
+    }
+}
+
 impl fmt::Display for Quality {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         write!(fmt, "+{}%", self.0)
@@ -57,7 +66,7 @@ impl fmt::Display for Quality {
 }
 
 /// Experience gained by a gem.
-#[derive(Debug)]
+#[derive(Clone, Copy)]
 pub struct Experience {
     /// Experience for current level earned so far.
     /// This is always lower than total but greater than 1.
@@ -88,5 +97,20 @@ impl Experience {
     #[inline]
     pub fn is_full(&self) -> bool {
         self.current == self.total
+    }
+}
+
+impl fmt::Display for Experience {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        write!(fmt, "{}/{}", self.current.separated_string(), self.total.separated_string())
+    }
+}
+
+impl fmt::Debug for Experience {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_tuple("Experience")
+            .field(&self.current)
+            .field(&self.total)
+            .finish()
     }
 }
