@@ -300,8 +300,8 @@ impl ItemSockets {
     ///
     /// If an item is said to be N-linked (e.g. 5-linked), this will be N.
     #[inline]
-    pub fn max_links(&self) -> u64 {
-        unimplemented!()
+    pub fn max_links(&self) -> usize {
+        self.regular_groups.iter().map(|g| g.size()).max().unwrap_or(0)
     }
 }
 
@@ -316,6 +316,20 @@ pub struct SocketGroup {
     colors: Vec<Color>,
 }
 
+impl SocketGroup {
+    /// Size of the socket group (number of sockets therein).
+    #[inline]
+    pub fn size(&self) -> usize {
+        self.colors.len()
+    }
+
+    /// How many sockets of a particular color are there in the group.
+    #[inline]
+    pub fn count_of(&self, color: Color) -> usize {
+        self.colors.iter().filter(|&&c| c == color).count()
+    }
+}
+
 /// A color of an item or socket.
 ///
 /// In PoE, this is associated with a particular main stat.
@@ -323,14 +337,18 @@ pub struct SocketGroup {
 /// *Note*: Although it does appear as such in the API,
 /// "abyss" is not a color so it's not included here.
 /// See `ItemSockets::abyss_count` for the number of abyss sockets an item has.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
 pub enum Color {
     /// Red gem or socket, associated with Strength.
+    #[serde(rename = "R")]
     Red,
     /// Green gem or socket, associated with Dexterity.
+    #[serde(rename = "G")]
     Green,
     /// Blue gem or socket, associated with Intelligence.
+    #[serde(rename = "B")]
     Blue,
     /// White gem or socket (not associated with any stat)
+    #[serde(rename = "W")]
     White,
 }
