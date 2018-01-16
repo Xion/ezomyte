@@ -1,5 +1,7 @@
 //! Item details which are specific to a particular kind of an item.
 
+use std::iter;
+
 use super::attributes::{Experience, Mod};
 
 
@@ -61,4 +63,32 @@ pub enum ItemDetails {
         /// (those displayed in light blue color in the main item pane, below explicit mods).
         crafted: Vec<Mod>,
     },
+}
+
+impl ItemDetails {
+    /// Whether the item has been identified.
+    #[inline]
+    pub fn is_identified(&self) -> bool {
+        match *self {
+            ItemDetails::Unidentified => false,
+            _ => true,
+        }
+    }
+
+    /// All mods that the item has, if any,
+    /// in the top-down order with respect to the in-game UI.
+    pub fn mods<'m>(&'m self) -> Box<Iterator<Item=&'m Mod> + 'm> {
+        match *self {
+            ItemDetails::Flask{ ref mods } => Box::new(mods.iter()),
+            ItemDetails::Mods{
+                ref implicit, ref enchants, ref explicit, ref crafted,
+            } => Box::new(
+                implicit.iter()
+                    .chain(enchants.iter())
+                    .chain(explicit.iter())
+                    .chain(crafted.iter())
+            ),
+            _ => Box::new(iter::empty()),
+        }
+    }
 }

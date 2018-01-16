@@ -3,7 +3,6 @@
 use std::ops::Deref;
 
 use super::basics::{Label, League, Price};
-use super::currency::Currency;
 use super::item::Item;
 
 

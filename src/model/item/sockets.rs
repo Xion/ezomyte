@@ -35,10 +35,30 @@ pub struct ItemSockets {
 }
 
 impl ItemSockets {
+    /// Number of regular sockets this item has.
+    pub fn regular_count(&self) -> u64 {
+        self.regular_groups.iter().map(|g| g.size() as u64).sum()
+    }
+
     /// Number of abyss sockets this item has.
     #[inline]
     pub fn abyss_count(&self) -> u64 {
         self.abyss_count
+    }
+
+    /// Colors of all regular sockets (in an unspecified order).
+    #[inline]
+    pub fn colors<'s>(&'s self) -> Box<Iterator<Item=Color> + 's> {
+        Box::new(self.regular_groups.iter().flat_map(|g| g.colors.iter().cloned()))
+    }
+
+    /// Linked groups of regular sockets.
+    pub fn links<'s>(&'s self) -> Box<Iterator<Item=Box<Iterator<Item=Color> + 's>> + 's> {
+        Box::new(
+            self.regular_groups.iter().map(|g| {
+                Box::new(g.colors.iter().cloned()) as Box<Iterator<Item=Color>>
+            })
+        )
     }
 
     /// Maximum number of linked sockets on the item.

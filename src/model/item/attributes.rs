@@ -2,6 +2,7 @@
 //! (mods, quality, elder/shaper base, gem experience, etc.).
 
 use std::fmt;
+use std::ops::{Add, AddAssign};
 
 use separator::Separatable;
 
@@ -44,6 +45,14 @@ macro_attr! {
     pub struct Mod(String);
 }
 
+impl Mod {
+    /// Mod text as string.
+    #[inline]
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+}
+
 
 macro_attr! {
     /// Quality of an item.
@@ -69,7 +78,7 @@ impl fmt::Display for Quality {
 #[derive(Clone, Copy)]
 pub struct Experience {
     /// Experience for current level earned so far.
-    /// This is always lower than total but greater than 1.
+    /// This is always lower than total.
     current: u64,
     /// Total experience before the next level.
     total: u64,
@@ -79,6 +88,7 @@ impl Experience {
     /// Create an `Experience` object which represents a 0/total state.
     #[inline]
     pub fn zero_out_of(total: u64) -> Self {
+        assert!(total > 0, "Total experience cannot be zero");
         Experience { current: 0, total }
     }
 
@@ -88,15 +98,58 @@ impl Experience {
     /// Such state correspond to a skill gem that is deliberately kept at a lower level.
     #[inline]
     pub fn full(total: u64) -> Self {
+        assert!(total > 0, "Total experience cannot be zero");
         Experience { current: total, total }
     }
 }
 
 impl Experience {
+    /// Experience for current level earned so far.
+    /// This is always lower than total.
+    #[inline]
+    pub fn current(&self) -> u64 {
+        self.current
+    }
+
+    /// Total experience before the next level.
+    #[inline]
+    pub fn total(&self) -> u64 {
+        self.total
+    }
+
+    /// Whether the experience "bar" is completely empty.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.current == 0
+    }
+
     /// Whether the experience "bar" is fully filled.
     #[inline]
     pub fn is_full(&self) -> bool {
         self.current == self.total
+    }
+
+    /// Experience as a 0..=1 fraction.
+    pub fn fraction(&self) -> f64 {
+        self.current as f64 / self.total as f64
+    }
+
+    /// Experience as a percentage value.
+    pub fn percentage(&self) -> f64 {
+        self.fraction() * 100.0
+    }
+}
+
+impl Add<u64> for Experience {
+    type Output = Experience;
+    fn add(mut self, rhs: u64) -> Self {
+        self += rhs; self
+    }
+}
+impl AddAssign<u64> for Experience {
+    fn add_assign(&mut self, rhs: u64) {
+        let new = self.total.min(self.current + rhs);
+        self.current = new;
     }
 }
 
