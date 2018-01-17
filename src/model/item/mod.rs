@@ -1,9 +1,9 @@
 //! Items that can be traded.
 
 mod attributes;
+mod category;
 mod details;
 mod sockets;
-mod types;
 
 
 use std::collections::HashMap;
@@ -11,9 +11,9 @@ use std::collections::HashMap;
 use serde_json::Value as Json;
 
 use self::attributes::*;
+use self::category::ItemCategory;
 use self::details::ItemDetails;
 use self::sockets::ItemSockets;
-use self::types::ItemCategory;
 
 
 
@@ -21,7 +21,7 @@ use self::types::ItemCategory;
 ///
 /// This includes all classes of wearable and usable items
 /// with the notable exception of `Currency` items.
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Item {
     /// Unique ID this game has associated with the item.
     pub id: Option<String>,

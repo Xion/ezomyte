@@ -1,4 +1,4 @@
-//! Item types & categories.
+//! Item categories.
 
 
 /// Category of an item.
@@ -8,7 +8,16 @@ pub enum ItemCategory {
     Accessory(AccessoryType),
     Armour(ArmourType),
     Weapon(WeaponType),
-    Jewel,
+    Jewel(JewelType),
+    Flask,
+    Map,
+    Gem,
+    DivinationCard,
+    Currency,
+    // TODO: try to eliminate this catch-all variant
+    // (it may be good to have it though, for forward-compatibility with future leagues
+    //  so that clients have at least limited support for possible new item categories)
+    Other(String),
 }
 
 /// Type of an accessory item.
@@ -70,3 +79,14 @@ pub enum WeaponType {
 }
 // TODO: consider introducing weapon "kind" (mace/staff/sword/axe) that lumps 1H & 2H together;
 // bear in mind that "handedness" is ambiguous for bows, though
+
+/// Type of a jewel.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum JewelType {
+    /// Regular jewel
+    /// Those jewels  can only be placed in a passive tree slot.
+    Regular,
+    /// Abyss jewel.
+    /// These can be placed both in passive tree slots and abyss sockets in gear.
+    Abyss
+}

@@ -5,6 +5,9 @@ pub mod currency;
 mod item;
 mod stash;
 
+mod de;
+
+
 pub use self::basics::*;
 pub use self::currency::Currency;
 pub use self::item::*;

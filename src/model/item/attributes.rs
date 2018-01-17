@@ -7,32 +7,43 @@ use std::ops::{Add, AddAssign};
 use separator::Separatable;
 
 
-/// Rarity of an item.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
-#[serde(rename_all = "lowercase")]
-pub enum Rarity {
-    /// Normal ("white") item.
-    ///
-    /// This also includes items which aren't gear, like gems or divination cards.
-    Normal,
-    /// Magic ("blue") item.
-    Magic,
-    /// Rare ("yellow") item.
-    Rare,
-    /// Unique item.
-    Unique,
+macro_attr! {
+    /// Rarity of an item.
+    #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq,
+             IterVariants!(Rarities))]
+    pub enum Rarity {
+        /// Normal ("white") item.
+        ///
+        /// This also includes items which aren't gear, like gems or divination cards.
+        Normal,
+        /// Magic ("blue") item.
+        Magic,
+        /// Rare ("yellow") item.
+        Rare,
+        /// Unique item.
+        Unique,
+    }
+}
+
+impl Default for Rarity {
+    fn default() -> Self {
+        Rarity::Normal
+    }
 }
 
 
-/// Influence of the Atlas on the item.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub enum Influence {
-    /// The item base has been influenced by the Elder.
-    /// This is colloquially referred to as an "elder item".
-    Elder,
-    /// This item base has been influenced by the Shaper.
-    /// This is colloquially referred to as a "shaped item".
-    Shaper,
+macro_attr! {
+    /// Influence of the Atlas on the item.
+    #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq,
+             IterVariants!(Influences))]
+    pub enum Influence {
+        /// The item base has been influenced by the Elder.
+        /// This is colloquially referred to as an "elder item".
+        Elder,
+        /// This item base has been influenced by the Shaper.
+        /// This is colloquially referred to as a "shaped item".
+        Shaper,
+    }
 }
 
 

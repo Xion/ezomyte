@@ -34,6 +34,16 @@ pub struct ItemSockets {
     regular_groups: Vec<SocketGroup>,
 }
 
+impl Default for ItemSockets {
+    fn default() -> Self {
+        // Default is no sockets at all, for items that don't have them at all.
+        ItemSockets {
+            abyss_count: 0,
+            regular_groups: vec![],
+        }
+    }
+}
+
 impl ItemSockets {
     /// Number of regular sockets this item has.
     pub fn regular_count(&self) -> u64 {
