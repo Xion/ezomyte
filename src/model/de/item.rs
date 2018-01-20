@@ -6,7 +6,7 @@ use std::fmt;
 use serde::de::{self, Deserilize, IntoDeserializer, Visitor, Unexpected};
 use serde_json::Value as Json;
 
-use super::super::{Item, Rarity};
+use super::super::{Experience, Influence, Item, ItemDetails, Rarity};
 
 
 const EXPECTING_MSG: &str = "map with item data";
@@ -41,29 +41,36 @@ impl<'de> Visitor<'de> for ItemVisitor {
         let mut rarity = None;
         let mut quality = None;
         let mut properties = None;
-        let mut details = None;
+        let mut identified = None;
+        let (mut gem_level, mut gem_curr_exp, mut gem_total_exp) = (None, None, None);
+        let mut flask_mods = None;
+        let (mut implicit_mods,
+             mut enchant_mods,
+             mut explicit_mods,
+             mut crafted_mods) = (None, None, None, None);
         let mut sockets = None;
-        let mut extra = HashMap::new();
         let mut requirements = None;
         let mut corrupted = None;
         let mut influence = None;
         let mut duplicated = None;
         let mut flavour_text = None;
+        let mut extra = HashMap::new();
 
         while let Some(key) = map.next_key::<String>()? {
             let key = key.trim();
             match key {
+                // Basic item attributes.
                 "id" => {
                     if id.is_some() {
                         return Err(de::Error::duplicate_field("id"));
                     }
-                    id = Some(self.deserialize_nonempty_string(&mut map)?);
+                    id = Some(Self::deserialize_nonempty_string(&mut map)?);
                 }
                 "name" => {
                     if name.is_some() {
                         return Err(de::Error::duplicate_field("name"));
                     }
-                    name = Some(self.deserialize_name(&mut map)?);
+                    name = Some(Self::deserialize_name(&mut map)?);
                 }
                 // TODO: `base` will be a full name for magic items
                 // so it has to be fixed using rarity later on
@@ -71,7 +78,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     if name.is_some() {
                         return Err(de::Error::duplicate_field("typeLine"));
                     }
-                    base = Some(self.deserialize_nonempty_string(&mut map)?);
+                    base = Some(Self::deserialize_nonempty_string(&mut map)?);
                 }
                 "ilvl" => {
                     if level.is_some() {
@@ -79,6 +86,11 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     }
                     level = Some(map.next_value()?);
                 }
+                "requirements" => {
+                    // TODO
+                }
+
+                // Item category / type.
                 "category" => {
                     // TODO
                 }
@@ -86,31 +98,119 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     if rarity.is_some() {
                         return Err(de::Error::duplicate_field("frameType"));
                     }
-                    // TODO: this will swallow errors such as frameType being
-                    // a number rather than simply being out of 0-3 range
-                    // (which is fine); fix that, probably by deserializing
-                    // in two stages: as a number and then as Rarity enum
-                    let value: Rarity = map.next_value().unwrap_or_default();
-                    rarity = Some(value);
+                    let value: u64 = map.next_value()?
+                    rarity = Some(deserialize(value)?);
+                }
+
+                // Item details.
+                "identified" => {
+                    if identified.is_some() {
+                        return Err(de::Error::duplicate_field("identified"));
+                    }
+                    identified = Some(map.next_value()?);
+                }
+                "utilityMods" => {
+                    if flask_mods.is_some() {
+                        return Err(de::Error::duplicate_field("utilityMods"));
+                    }
+                    flask_mods = Some(map.next_value()?);
+                }
+                "implicitMods" => {
+                    if implicit_mods.is_some() {
+                        return Err(de::Error::duplicate_field("implicitMods"));
+                    }
+                    implicit_mods = Some(map.next_value()?);
+                }
+                "enchantMods" => {
+                    if enchant_mods.is_some() {
+                        return Err(de::Error::duplicate_field("enchantMods"));
+                    }
+                    enchant_mods = Some(map.next_value()?);
+                }
+                "explicitMods" => {
+                    if explicit_mods.is_some() {
+                        return Err(de::Error::duplicate_field("explicitMods"));
+                    }
+                    explicit_mods = Some(map.next_value()?);
+                }
+                "craftedMods" => {
+                    if crafted_mods.is_some() {
+                        return Err(de::Error::duplicate_field("craftedMods"));
+                    }
+                    crafted_mods = Some(map.next_value()?);
+                }
+
+                // Sockets.
+                "sockets" => {
+                    // TODO
+                }
+                "socketedItems" => {
+                    // These are unsupported and ignored for now.
+                    let socketed: Vec<Json> = map.next_value()?;
+                    if !socketed.is_empty() {
+                        warn!("Ignoring non-empty `socketedItems` in {}",
+                            name.as_ref().unwrap_or("<unknown item>"));
+                    }
+                }
+
+                // Overall item modifiers.
+                "corrupted" => {
+                    if corrupted.is_some() {
+                        return Err(de::Error::duplicate_field("corrupted"));
+                    }
+                    corrupted = Some(map.next_value()?);
+                }
+                "duplicated" => {
+                    if duplicated.is_some() {
+                        return Err(de::Error::duplicate_field("duplicated"));
+                    }
+                    duplicated = Some(map.next_value()?);
+                }
+                "elder" => {
+                    if influence.is_some() {
+                        return Err(de::Error::duplicate_field("elder/shaper"));
+                    }
+                    let is_elder = map.next_value()?;
+                    if is_elder {
+                        influence = Some(Some(Influence::Elder));
+                    }
+                }
+                "shaper" => {
+                    if influence.is_some() {
+                        return Err(de::Error::duplicate_field("elder/shaper"));
+                    }
+                    let is_shaped = map.next_value()?;
+                    if is_shaped {
+                        influence = Some(Some(Influence::Shaper));
+                    }
+                }
+
+                // Various other properties.
+                "flavour_text" => {
+                    if flavour_text.is_some() {
+                        return Err(de::Error::duplicate_field("flavour_text"));
+                    }
+                    flavour_text = Some(map.next_value()?);
                 }
                 "properties" => {
                     if properties.is_some() {
                         return Err(de::Error::duplicate_field("properties"));
                     }
-                    let props = self.deserialize_item_properties(&mut map)?;
+                    let props = Self::deserialize_item_properties(&mut map)?;
 
                     // Pluck out some of the properties that we are providing
                     // as separate fields on `Item`.
                     if let Some(q) = props.remove("Quality") {
                         quality = Some(deserialize(q)?);
                     }
+                    // TODO: get gem experience & level from here
 
                     properties = Some(props);
                 }
-
-                // TODO: many many others
-                // (sockets, identified, corrupted, requirements, flavour_text,
-                //  elder/shaped, etc.)
+                key => {
+                    trace!("Unrecognized item attribute `{}`, adding to `extra` map", key);
+                    extra.insert(key, map.next_value()?);
+                }
             }
         }
 
@@ -122,7 +222,6 @@ impl<'de> Visitor<'de> for ItemVisitor {
         let rarity = rarity.ok_or_else(|| de::Error::missing_field("frameType"))?;
         let quality = quality.unwrap_or_default();
         let properties = properties.unwrap_or_default();
-        let details = details.ok_or_else(|| de::Error::custom("insufficient item information"))?;
         let sockets = sockets.unwrap_or_default();
         let requirements = requirements.unwrap_or_default();
         let corrupted = corrupted.unwrap_or(false);
@@ -133,17 +232,51 @@ impl<'de> Visitor<'de> for ItemVisitor {
         // TODO: fix `base` using `rarity` when it's a magic item
         // (remove prefix & suffix)
 
-        Item {
+        // Round up item mods' information into an ItemDetails data type.
+        let details = {
+            // TODO: verify that we didn't get an invalid combination of fields
+            // (like flask_mods + crafted_mods)
+            let identified = identified.unwrap_or(true);
+            if !identified {
+                ItemDetails::Unidentified
+            } else if let (Some(level),
+                           Some(current),
+                           Some(total)) = (gem_level, gem_curr_exp, gem_total_exp) {
+                ItemDetails::Gem{
+                    level,
+                    experience: Experience::new(current, total),
+                }
+            } else if let Some(fm) = flask_mods {
+                ItemDetails::Flask{mods: fm}
+            } else if let (Some(imp), Some(enc),
+                           Some(ex), Some(c)) = (implicit_mods, enchant_mods,
+                                                 explicit_mods, crafted_mods) {
+                ItemDetails::Mods{
+                    implicit: imp,
+                    enchants: enc,
+                    explicit: ex,
+                    crafted: c,
+                }
+            } else {
+                // A total lack of mods would indicate a white/common item.
+                // TODO: verify this is indeed the case; perhaps the API would return
+                // empty mod lists instead so white junk would be captured by the branch above
+                ItemDetails::default()
+            }
+        };
+
+        Ok(Item {
             id, name, base, level, catregory, rarity, quality, properties, details,
             sockets, requirements, corrupted, influence, duplicated, flavour_text,
-        }
+            extra,
+        })
     }
 }
 impl ItemVisitor {
     /// Deserialize item name into an optional string
     /// by turning an empty one into None.
     /// (Items such as gems do not have a separate name).
-    fn deserialize_name<V>(&self, map: &mut V) -> Result<Option<String>, V::Error>
+    fn deserialize_name<V>(map: &mut V) -> Result<Option<String>, V::Error>
         where V: de::MapAccess<'de>
     {
         let name: String = map.next_value()?;
@@ -155,7 +288,7 @@ impl ItemVisitor {
     /// Result will include keys such as "Quality" which should be later plucked
     /// into separate fields in `Item`.
     fn deserialize_item_properties<V: de::MapAccess<'de>>(
-        &self, map: &mut V
+        map: &mut V
     ) -> Result<HashMap<String, Option<String>>, V::Error> {
         let mut result = HashMap::new();
 
@@ -191,7 +324,7 @@ impl ItemVisitor {
     }
 }
 impl ItemVisitor {
-    fn deserialize_nonempty_string<V>(&self, map: &mut V) -> Result<String, V::Error>
+    fn deserialize_nonempty_string<V>(map: &mut V) -> Result<String, V::Error>
         where V: de::MapAccess<'de>
     {
         map.next_value().and_then(|value: String| {
@@ -209,7 +342,7 @@ impl ItemVisitor {
 // Utility functions
 
 /// Deserialize a typed value out of an "intermediate" representation
-// (usually a string or number) that has been deserialized previously.
+/// (usually a string or number) that has been deserialized previously.
 ///
 /// This can be used to refine the final type of output after more information
 /// is available in more complicated deserialization scenarios.

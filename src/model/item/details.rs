@@ -65,6 +65,19 @@ pub enum ItemDetails {
     },
 }
 
+impl Default for ItemDetails {
+    fn default() -> Self {
+        // Default is an "empty" item (identified but without any mods).
+        // This corresponds to white / common items.
+        ItemDetails::Mods{
+            implicit: vec![],
+            enchants: vec![],
+            explicit: vec![],
+            crafted: vec![],
+        }
+    }
+}
+
 impl ItemDetails {
     /// Whether the item has been identified.
     #[inline]

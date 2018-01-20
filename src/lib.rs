@@ -7,6 +7,7 @@
              extern crate hyper;
              extern crate hyper_tls;
 #[macro_use] extern crate lazy_static;
+#[macro_use] extern crate log;
 #[macro_use] extern crate macro_attr;
 #[macro_use] extern crate newtype_derive;
              extern crate regex;

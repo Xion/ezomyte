@@ -96,6 +96,14 @@ pub struct Experience {
 }
 
 impl Experience {
+    /// Create an `Experience` object with given current & total values.
+    #[inline]
+    pub fn new(current: u64, total: u64) -> Self {
+        assert!(total > 0, "Total experience cannot be zero");
+        assert!(current <= total, "Current experience must not be greater than total");
+        Experience { current, total }
+    }
+
     /// Create an `Experience` object which represents a 0/total state.
     #[inline]
     pub fn zero_out_of(total: u64) -> Self {
