@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use serde::de::{self, Deserilize, IntoDeserializer, Visitor, Unexpected};
+use serde::de::{self, Deserialize, IntoDeserializer, Visitor, Unexpected};
 use serde_json::Value as Json;
 
 use super::super::{Experience, Influence, Item, ItemDetails, Rarity};
@@ -92,13 +92,16 @@ impl<'de> Visitor<'de> for ItemVisitor {
 
                 // Item category / type.
                 "category" => {
-                    // TODO
+                    if category.is_some() {
+                        return Err(de::Error::duplicate_field("category"));
+                    }
+                    category = Some(map.next_value()?);
                 }
                 "frameType" => {
                     if rarity.is_some() {
                         return Err(de::Error::duplicate_field("frameType"));
                     }
-                    let value: u64 = map.next_value()?
+                    let value: u64 = map.next_value()?;
                     rarity = Some(deserialize(value)?);
                 }
 
@@ -149,7 +152,8 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     let socketed: Vec<Json> = map.next_value()?;
                     if !socketed.is_empty() {
                         warn!("Ignoring non-empty `socketedItems` in {}",
-                            name.as_ref().unwrap_or("<unknown item>"));
+                            name.as_ref().and_then(|n| n.as_ref().map(|n| n.as_str()))
+                            .unwrap_or("<unknown item>"));
                     }
                 }
 
@@ -196,11 +200,12 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     if properties.is_some() {
                         return Err(de::Error::duplicate_field("properties"));
                     }
-                    let props = Self::deserialize_item_properties(&mut map)?;
+                    let mut props = Self::deserialize_item_properties(&mut map)?;
 
                     // Pluck out some of the properties that we are providing
                     // as separate fields on `Item`.
                     if let Some(q) = props.remove("Quality") {
+                        let q = q.expect("item quality percentage");
                         quality = Some(deserialize(q)?);
                     }
                     // TODO: get gem experience & level from here
@@ -209,7 +214,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 }
                 key => {
                     trace!("Unrecognized item attribute `{}`, adding to `extra` map", key);
-                    extra.insert(key, map.next_value()?);
+                    extra.insert(key.to_owned(), map.next_value()?);
                 }
             }
         }
@@ -265,8 +270,13 @@ impl<'de> Visitor<'de> for ItemVisitor {
             }
         };
 
+        // Retain the properties that have values.
+        // TODO: figure out what the others are (w/o values), and possibly put them
+        // in a separate field on `Item`
+        let properties = properties.into_iter().flat_map(|(k, v)| v.map(|v| (k, v))).collect();
+
         Ok(Item {
-            id, name, base, level, catregory, rarity, quality, properties, details,
+            id, name, base, level, category, rarity, quality, properties, details,
             sockets, requirements, corrupted, influence, duplicated, flavour_text,
             extra,
         })
@@ -276,18 +286,19 @@ impl ItemVisitor {
     /// Deserialize item name into an optional string
     /// by turning an empty one into None.
     /// (Items such as gems do not have a separate name).
-    fn deserialize_name<V>(map: &mut V) -> Result<Option<String>, V::Error>
+    fn deserialize_name<'de, V>(map: &mut V) -> Result<Option<String>, V::Error>
         where V: de::MapAccess<'de>
     {
-        let name: String = map.next_value()?;
-        if name.is_empty() { None } else { Some(name) }
+        map.next_value().map(|name: String| {
+            if name.is_empty() { None } else { Some(name) }
+        })
     }
 
     /// Deserialize the wonky structure of the "properties" key in the API
     /// into a more straightforward hashmap.
     /// Result will include keys such as "Quality" which should be later plucked
     /// into separate fields in `Item`.
-    fn deserialize_item_properties<V: de::MapAccess<'de>>(
+    fn deserialize_item_properties<'de ,V: de::MapAccess<'de>>(
         map: &mut V
     ) -> Result<HashMap<String, Option<String>>, V::Error> {
         let mut result = HashMap::new();
@@ -312,11 +323,13 @@ impl ItemVisitor {
             // (physical, fire, etc.) or whether the value has been modified
             // by an affix on them item
 
-            let name = prop.get("name").ok_or_else(|| de::Error::missing_field("name"))?;
+            let name = prop.get("name")
+                .and_then(|n| n.as_str().map(|s| s.to_owned()))
+                .ok_or_else(|| de::Error::missing_field("name"))?;
             let values = prop.get("values").ok_or_else(|| de::Error::missing_field("values"))?;
             let value = values.as_array()
                 .and_then(|v| v.get(0)).and_then(|v| v.as_array())
-                .and_then(|v| v.get(0));
+                .and_then(|v| v.get(0)).and_then(|v| v.as_str().map(|s| s.to_owned()));
             result.insert(name, value);
         }
 
@@ -324,7 +337,7 @@ impl ItemVisitor {
     }
 }
 impl ItemVisitor {
-    fn deserialize_nonempty_string<V>(map: &mut V) -> Result<String, V::Error>
+    fn deserialize_nonempty_string<'de, V>(map: &mut V) -> Result<String, V::Error>
         where V: de::MapAccess<'de>
     {
         map.next_value().and_then(|value: String| {
@@ -347,7 +360,7 @@ impl ItemVisitor {
 /// This can be used to refine the final type of output after more information
 /// is available in more complicated deserialization scenarios.
 fn deserialize<'de, T, S, E>(from: S) -> Result<T, E>
-    where T: Deserialize<'de, Error=E>,
+    where T: Deserialize<'de>,
           S: IntoDeserializer<'de, E>,
           E: de::Error
 {

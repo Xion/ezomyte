@@ -10,10 +10,10 @@ use std::collections::HashMap;
 
 use serde_json::Value as Json;
 
-use self::attributes::*;
-use self::category::ItemCategory;
-use self::details::ItemDetails;
-use self::sockets::ItemSockets;
+pub use self::attributes::*;
+pub use self::category::*;
+pub use self::details::ItemDetails;
+pub use self::sockets::ItemSockets;
 
 
 
@@ -21,10 +21,10 @@ use self::sockets::ItemSockets;
 ///
 /// This includes all classes of wearable and usable items
 /// with the notable exception of `Currency` items.
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 pub struct Item {
     /// Unique ID this game has associated with the item.
-    pub id: Option<String>,
+    pub id: String,
     /// Name of the item.
     ///
     /// It may be missing for white items, or generic items like gems.

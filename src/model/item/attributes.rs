@@ -9,7 +9,7 @@ use separator::Separatable;
 
 macro_attr! {
     /// Rarity of an item.
-    #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq,
+    #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq,
              IterVariants!(Rarities))]
     pub enum Rarity {
         /// Normal ("white") item.
@@ -33,7 +33,7 @@ impl Default for Rarity {
 
 
 macro_attr! {
-    /// Influence of the Atlas on the item.
+    /// War for the Atlas influence on the item.
     #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq,
              IterVariants!(Influences))]
     pub enum Influence {
@@ -50,7 +50,7 @@ macro_attr! {
 macro_attr! {
     /// Item mod.
     /// For now this is just verbatim text of the mod.
-    #[derive(Clone, Debug,
+    #[derive(Clone, Debug, Deserialize,
              NewtypeFrom!, NewtypeDeref!, NewtypeDerefMut!,
              NewtypeDisplay!)]
     pub struct Mod(String);

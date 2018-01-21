@@ -6,6 +6,7 @@
 #[macro_use] extern crate enum_derive;
              extern crate hyper;
              extern crate hyper_tls;
+             extern crate itertools;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate log;
 #[macro_use] extern crate macro_attr;

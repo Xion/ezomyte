@@ -1,6 +1,8 @@
 //! Deserializers for item attributes.
 
-use serde::de::{self, Deserilize, Visitor, Unexpected};
+use std::fmt;
+
+use serde::de::{self, Deserialize, Visitor, Unexpected};
 use regex::Regex;
 
 use super::super::{Quality, Rarity};
@@ -28,7 +30,7 @@ impl<'de> Visitor<'de> for RarityVisitor {
         write!(fmt, "{}", EXPECTING_RARITY_MSG)
     }
 
-    fn visit_u64<E: de::Error>(&self, v: u64) -> Result<Self::Value, E> {
+    fn visit_u64<E: de::Error>(self, v: u64) -> Result<Self::Value, E> {
         Rarity::iter_variants().skip(v as usize).next().ok_or_else(|| {
             de::Error::invalid_value(Unexpected::Unsigned(v), &EXPECTING_RARITY_MSG)
         })
@@ -56,14 +58,15 @@ impl<'de> Visitor<'de> for QualityVisitor {
         write!(fmt, "{}", EXPECTING_QUALITY_MSG)
     }
 
-    fn visit_str<E: de::Error>(self, v: &str) -> Result<Self::Value, D::Error> {
+    fn visit_str<E: de::Error>(self, v: &str) -> Result<Self::Value, E> {
         // TODO: consider providing FromStr implementation for Quality
         lazy_static! {
             static ref QUALITY_RE: Regex = Regex::new(r#"+(\d+)%"#).unwrap();
         }
         let caps = QUALITY_RE.captures(v).ok_or_else(|| de::Error::invalid_value(
             Unexpected::Str(v), &EXPECTING_QUALITY_MSG))?;
-        let percentage: u8 = caps[0].parse();
+        let percentage: u8 = caps[0].parse()
+            .map_err(|e| de::Error::custom(format!("invalid percentage number: {}", e)))?;
         Ok(Quality::from(percentage))
     }
 }
