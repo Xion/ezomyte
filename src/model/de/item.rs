@@ -3,6 +3,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
+use itertools::Itertools;
 use serde::de::{self, Deserialize, IntoDeserializer, Visitor, Unexpected};
 use serde_json::Value as Json;
 
@@ -42,7 +43,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
         let mut quality = None;
         let mut properties = None;
         let mut identified = None;
-        let (mut gem_level, mut gem_curr_exp, mut gem_total_exp) = (None, None, None);
+        let (mut gem_level, mut gem_xp) = (None, None);
         let mut flask_mods = None;
         let (mut implicit_mods,
              mut enchant_mods,
@@ -72,12 +73,12 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     }
                     name = Some(Self::deserialize_name(&mut map)?);
                 }
-                // TODO: `base` will be a full name for magic items
-                // so it has to be fixed using rarity later on
                 "typeLine" => {
                     if name.is_some() {
                         return Err(de::Error::duplicate_field("typeLine"));
                     }
+                    // Note that `base` will be a full name for magic items
+                    // (with prefix and suffix), so it has to be fixed using rarity later on.
                     base = Some(Self::deserialize_nonempty_string(&mut map)?);
                 }
                 "ilvl" => {
@@ -105,7 +106,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     rarity = Some(deserialize(value)?);
                 }
 
-                // Item details.
+                // Item mods.
                 "identified" => {
                     if identified.is_some() {
                         return Err(de::Error::duplicate_field("identified"));
@@ -200,17 +201,43 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     if properties.is_some() {
                         return Err(de::Error::duplicate_field("properties"));
                     }
-                    let mut props = Self::deserialize_item_properties(&mut map)?;
+                    let mut props = Self::deserialize_value_map(&mut map)?;
 
                     // Pluck out some of the properties that we are providing
                     // as separate fields on `Item`.
                     if let Some(q) = props.remove("Quality") {
                         let q = q.expect("item quality percentage");
+                        if quality.is_some() {
+                            return Err(de::Error::duplicate_field("Quality"));
+                        }
                         quality = Some(deserialize(q)?);
                     }
-                    // TODO: get gem experience & level from here
+                    if let Some(lvl) = props.remove("Level") {
+                        let lvl = lvl.expect("gem level");
+                        if gem_level.is_some() {
+                            return Err(de::Error::duplicate_field("Level"));
+                        }
+                        gem_level = Some(deserialize(lvl)?);
+                    }
 
                     properties = Some(props);
+                }
+                "additionalProperties" => {
+                    let mut props = Self::deserialize_value_map(&mut map)?;
+
+                    // Currently, only the gem experience
+                    // seems to be stored as additionalProperties.
+                    if let Some(exp) = props.remove("Experience") {
+                        let exp = exp.expect("gem experience");
+                        if gem_xp.is_some() {
+                            return Err(de::Error::duplicate_field("Experience"));
+                        }
+                        gem_xp = Some(deserialize(exp)?);
+                    }
+
+                    if !props.is_empty() {
+                        warn!("Unexpected additionalProperties: {}", props.keys().format(", "));
+                    }
                 }
                 key => {
                     trace!("Unrecognized item attribute `{}`, adding to `extra` map", key);
@@ -235,7 +262,10 @@ impl<'de> Visitor<'de> for ItemVisitor {
         let flavour_text = flavour_text.unwrap_or(None);
 
         // TODO: fix `base` using `rarity` when it's a magic item
-        // (remove prefix & suffix)
+        // (remove prefix & suffix).
+        // TODO: remove junk like <<set:S>>, e.g.:
+        // "<<set:MS>><<set:M>><<set:S>>Cautious Divine Life Flask of Warding"
+        // from both `name` and `base`
 
         // Round up item mods' information into an ItemDetails data type.
         let details = {
@@ -244,12 +274,10 @@ impl<'de> Visitor<'de> for ItemVisitor {
             let identified = identified.unwrap_or(true);
             if !identified {
                 ItemDetails::Unidentified
-            } else if let (Some(level),
-                           Some(current),
-                           Some(total)) = (gem_level, gem_curr_exp, gem_total_exp) {
+            } else if let (Some(level), Some(xp)) = (gem_level, gem_xp) {
                 ItemDetails::Gem{
                     level,
-                    experience: Experience::new(current, total),
+                    experience: xp,
                 }
             } else if let Some(fm) = flask_mods {
                 ItemDetails::Flask{mods: fm}
@@ -266,6 +294,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 // A total lack of mods would indicate a white/common item.
                 // TODO: verify this is indeed the case; perhaps the API would return
                 // empty mod lists instead so white junk would be captured by the branch above
+                // and this branch should be an error instead
                 ItemDetails::default()
             }
         };
@@ -273,7 +302,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
         // Retain the properties that have values.
         // TODO: figure out what the others are (w/o values), and possibly put them
         // in a separate field on `Item`
-        let properties = properties.into_iter().flat_map(|(k, v)| v.map(|v| (k, v))).collect();
+        let properties = properties.into_iter().filter_map(|(k, v)| v.map(|v| (k, v))).collect();
 
         Ok(Item {
             id, name, base, level, category, rarity, quality, properties, details,
@@ -294,23 +323,26 @@ impl ItemVisitor {
         })
     }
 
-    /// Deserialize the wonky structure of the "properties" key in the API
+    /// Deserialize the wonky "value map" structure that some JSON keys use
     /// into a more straightforward hashmap.
+    /// The format is used at least by "properties", "additionalProperties",
+    /// and "requirements" keys in the item JSON.
+    ///
     /// Result will include keys such as "Quality" which should be later plucked
     /// into separate fields in `Item`.
-    fn deserialize_item_properties<'de ,V: de::MapAccess<'de>>(
+    fn deserialize_value_map<'de ,V: de::MapAccess<'de>>(
         map: &mut V
     ) -> Result<HashMap<String, Option<String>>, V::Error> {
         let mut result = HashMap::new();
 
-        // The "properties" array is polymorphic so we'll just deserialize it
+        // The value map array is polymorphic so we'll just deserialize it
         // to a typed JSON object. Seems hacky, but note that this is still
         // technically format-independent and allows to deserialize
         // items from something else than JSON. We're only using JSON DOM
         // as an intermediate representation.
         let array: Vec<HashMap<String, Json>> = map.next_value()?;
         for prop in array {
-            // Example "properties" entry:
+            // Example value map (from "properties"):
             // {
             //   "name": "Quality",
             //   "values": [["+17%", 1]],

@@ -51,7 +51,7 @@ pub struct Item {
     /// Item details.
     ///
     /// These are specific to the particular kind of item.
-    /// In most cases, the details specify the mods of an item.
+    /// In most cases, details specify the mods of an item.
     pub details: ItemDetails,
     /// Sockets an item has, if any.
     pub sockets: ItemSockets,  // TODO: socketedItems
