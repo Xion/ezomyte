@@ -3,7 +3,7 @@
 
 /// Category of an item.
 /// This roughly describes the item's purpose, such as the slot it can be worn on.
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ItemCategory {
     Accessory(AccessoryType),
     Armour(ArmourType),
