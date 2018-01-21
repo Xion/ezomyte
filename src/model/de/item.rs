@@ -4,10 +4,11 @@ use std::collections::HashMap;
 use std::fmt;
 
 use itertools::Itertools;
-use serde::de::{self, Deserialize, IntoDeserializer, Visitor, Unexpected};
+use serde::de::{self, Deserialize, Visitor, Unexpected};
 use serde_json::Value as Json;
 
-use super::super::{Experience, Influence, Item, ItemDetails, Rarity};
+use super::super::{Influence, Item, ItemDetails};
+use super::util::deserialize;
 
 
 const EXPECTING_MSG: &str = "map with item data";
@@ -62,29 +63,21 @@ impl<'de> Visitor<'de> for ItemVisitor {
             match key {
                 // Basic item attributes.
                 "id" => {
-                    if id.is_some() {
-                        return Err(de::Error::duplicate_field("id"));
-                    }
+                    check_duplicate!(id);
                     id = Some(Self::deserialize_nonempty_string(&mut map)?);
                 }
                 "name" => {
-                    if name.is_some() {
-                        return Err(de::Error::duplicate_field("name"));
-                    }
+                    check_duplicate!(name);
                     name = Some(Self::deserialize_name(&mut map)?);
                 }
                 "typeLine" => {
-                    if name.is_some() {
-                        return Err(de::Error::duplicate_field("typeLine"));
-                    }
+                    check_duplicate!("typeLine" => base);
+                    base = Some(Self::deserialize_nonempty_string(&mut map)?);
                     // Note that `base` will be a full name for magic items
                     // (with prefix and suffix), so it has to be fixed using rarity later on.
-                    base = Some(Self::deserialize_nonempty_string(&mut map)?);
                 }
                 "ilvl" => {
-                    if level.is_some() {
-                        return Err(de::Error::duplicate_field("ilvl"));
-                    }
+                    check_duplicate!("ilvl" => level);
                     level = Some(map.next_value()?);
                 }
                 "requirements" => {
@@ -93,54 +86,38 @@ impl<'de> Visitor<'de> for ItemVisitor {
 
                 // Item category / type.
                 "category" => {
-                    if category.is_some() {
-                        return Err(de::Error::duplicate_field("category"));
-                    }
+                    check_duplicate!(category);
                     category = Some(map.next_value()?);
                 }
                 "frameType" => {
-                    if rarity.is_some() {
-                        return Err(de::Error::duplicate_field("frameType"));
-                    }
+                    check_duplicate!("frameType" => rarity);
                     let value: u64 = map.next_value()?;
                     rarity = Some(deserialize(value)?);
                 }
 
                 // Item mods.
                 "identified" => {
-                    if identified.is_some() {
-                        return Err(de::Error::duplicate_field("identified"));
-                    }
+                    check_duplicate!(identified);
                     identified = Some(map.next_value()?);
                 }
                 "utilityMods" => {
-                    if flask_mods.is_some() {
-                        return Err(de::Error::duplicate_field("utilityMods"));
-                    }
+                    check_duplicate!("utilityMods" => flask_mods);
                     flask_mods = Some(map.next_value()?);
                 }
                 "implicitMods" => {
-                    if implicit_mods.is_some() {
-                        return Err(de::Error::duplicate_field("implicitMods"));
-                    }
+                    check_duplicate!("implicitMods" => implicit_mods);
                     implicit_mods = Some(map.next_value()?);
                 }
                 "enchantMods" => {
-                    if enchant_mods.is_some() {
-                        return Err(de::Error::duplicate_field("enchantMods"));
-                    }
+                    check_duplicate!("enchantMods" => enchant_mods);
                     enchant_mods = Some(map.next_value()?);
                 }
                 "explicitMods" => {
-                    if explicit_mods.is_some() {
-                        return Err(de::Error::duplicate_field("explicitMods"));
-                    }
+                    check_duplicate!("explicitMods" => explicit_mods);
                     explicit_mods = Some(map.next_value()?);
                 }
                 "craftedMods" => {
-                    if crafted_mods.is_some() {
-                        return Err(de::Error::duplicate_field("craftedMods"));
-                    }
+                    check_duplicate!("craftedMods" => crafted_mods);
                     crafted_mods = Some(map.next_value()?);
                 }
 
@@ -160,30 +137,22 @@ impl<'de> Visitor<'de> for ItemVisitor {
 
                 // Overall item modifiers.
                 "corrupted" => {
-                    if corrupted.is_some() {
-                        return Err(de::Error::duplicate_field("corrupted"));
-                    }
+                    check_duplicate!(corrupted);
                     corrupted = Some(map.next_value()?);
                 }
                 "duplicated" => {
-                    if duplicated.is_some() {
-                        return Err(de::Error::duplicate_field("duplicated"));
-                    }
+                    check_duplicate!(duplicated);  // yo dawg
                     duplicated = Some(map.next_value()?);
                 }
                 "elder" => {
-                    if influence.is_some() {
-                        return Err(de::Error::duplicate_field("elder/shaper"));
-                    }
+                    check_duplicate!("elder/shaper" => influence);
                     let is_elder = map.next_value()?;
                     if is_elder {
                         influence = Some(Some(Influence::Elder));
                     }
                 }
                 "shaper" => {
-                    if influence.is_some() {
-                        return Err(de::Error::duplicate_field("elder/shaper"));
-                    }
+                    check_duplicate!("elder/shaper" => influence);
                     let is_shaped = map.next_value()?;
                     if is_shaped {
                         influence = Some(Some(Influence::Shaper));
@@ -192,15 +161,11 @@ impl<'de> Visitor<'de> for ItemVisitor {
 
                 // Various other properties.
                 "flavour_text" => {
-                    if flavour_text.is_some() {
-                        return Err(de::Error::duplicate_field("flavour_text"));
-                    }
+                    check_duplicate!(flavour_text);
                     flavour_text = Some(map.next_value()?);
                 }
                 "properties" => {
-                    if properties.is_some() {
-                        return Err(de::Error::duplicate_field("properties"));
-                    }
+                    check_duplicate!(properties);
                     let mut props = Self::deserialize_value_map(&mut map)?;
 
                     // Pluck out some of the properties that we are providing
@@ -223,6 +188,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     properties = Some(props);
                 }
                 "additionalProperties" => {
+                    // TODO: signal duplicate "additionalProperties"
                     let mut props = Self::deserialize_value_map(&mut map)?;
 
                     // Currently, only the gem experience
@@ -381,21 +347,4 @@ impl ItemVisitor {
             }
         })
     }
-}
-
-
-// Utility functions
-
-/// Deserialize a typed value out of an "intermediate" representation
-/// (usually a string or number) that has been deserialized previously.
-///
-/// This can be used to refine the final type of output after more information
-/// is available in more complicated deserialization scenarios.
-fn deserialize<'de, T, S, E>(from: S) -> Result<T, E>
-    where T: Deserialize<'de>,
-          S: IntoDeserializer<'de, E>,
-          E: de::Error
-{
-    let deserializer = IntoDeserializer::into_deserializer(from);
-    T::deserialize(deserializer)
 }

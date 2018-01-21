@@ -3,7 +3,7 @@
 use std::fmt;
 
 use itertools::Itertools;
-use serde::de::{self, Deserialize, IntoDeserializer, Visitor, Unexpected};
+use serde::de::{self, Deserialize, Visitor};
 
 use super::super::{AccessoryType, ArmourType, ItemCategory, JewelType, WeaponType};
 
