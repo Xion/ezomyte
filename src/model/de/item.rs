@@ -1,13 +1,15 @@
 //! Deserializers for item data.
 
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt;
 
 use itertools::Itertools;
+use regex::Regex;
 use serde::de::{self, Deserialize, Visitor, Unexpected};
 use serde_json::Value as Json;
 
-use super::super::{Influence, Item, ItemDetails};
+use super::super::{Influence, Item, ItemDetails, Rarity};
 use super::util::deserialize;
 
 
@@ -227,11 +229,40 @@ impl<'de> Visitor<'de> for ItemVisitor {
         let duplicated = duplicated.unwrap_or(false);
         let flavour_text = flavour_text.unwrap_or(None);
 
-        // TODO: fix `base` using `rarity` when it's a magic item
-        // (remove prefix & suffix).
-        // TODO: remove junk like <<set:S>>, e.g.:
-        // "<<set:MS>><<set:M>><<set:S>>Cautious Divine Life Flask of Warding"
-        // from both `name` and `base`
+        // Fix name & base by removing junk "tags" like <<set:MS>>.
+        let mut name = name.as_ref().map(|n| remove_angle_bracket_tags(n));
+        let mut base = remove_angle_bracket_tags(&base);
+
+        // Also, if a magic item has no name by itself,
+        // then its "typeLine" (i.e. `base`) is what actually contains its full name.
+        // We need to treat it as such, and also manually strip the prefix and/or suffix.
+        if rarity == Rarity::Magic && name.is_none() && !base.is_empty() {
+            name = Some(base.to_owned());
+
+            // Use our knowledge of explicit mods to determine
+            // if the magic item has a suffix, a prefix, or both.
+            lazy_static! {
+                // This matches a suffix text such as "of Warding" or "of the Leopard".
+                static ref SUFFIX_RE: Regex = Regex::new(r#"of\s+(the\s+)?\w+"#).unwrap();
+            }
+            let mods_count = explicit_mods.as_ref().map(|m: &Vec<_>| m.len()).unwrap_or(0);
+            let has_suffix = SUFFIX_RE.is_match(&*base);
+            let has_prefix = match mods_count {
+                1 => !has_suffix,  // the sole mod is a suffix
+                2 => true,
+                _ => return Err(de::Error::custom(format!(
+                    "magic items can only have 1 or 2 explicit mods, but found {}", mods_count))),
+            };
+
+            // Strip them all from the item name to obtain the base name.
+            if has_prefix {
+                base = base.split_whitespace().into_iter().skip(1).collect();
+            }
+            if has_suffix {
+                let offset = SUFFIX_RE.find_iter(&*base).last().unwrap().start();
+                base = base[..offset].trim_right().to_owned().into();
+            }
+        }
 
         // Round up item mods' information into an ItemDetails data type.
         let details = {
@@ -271,7 +302,10 @@ impl<'de> Visitor<'de> for ItemVisitor {
         let properties = properties.into_iter().filter_map(|(k, v)| v.map(|v| (k, v))).collect();
 
         Ok(Item {
-            id, name, base, level, category, rarity, quality, properties, details,
+            id,
+            name: name.map(|n| n.to_string()),
+            base: base.to_string(),
+            level, category, rarity, quality, properties, details,
             sockets, requirements, corrupted, influence, duplicated, flavour_text,
             extra,
         })
@@ -317,16 +351,17 @@ impl ItemVisitor {
             // }
             // Notice especially the nested array in "values".
 
-            // TODO interpret values[0][1], which has to do with damage types
-            // (physical, fire, etc.) or whether the value has been modified
-            // by an affix on them item
-
             let name = prop.get("name")
                 .and_then(|n| n.as_str().map(|s| s.to_owned()))
                 .ok_or_else(|| de::Error::missing_field("name"))?;
             let values = prop.get("values").ok_or_else(|| de::Error::missing_field("values"))?;
             let value = values.as_array()
+                // TODO: support multiple values
+                // (which are probably used for multiple kinds of elemental damage)
                 .and_then(|v| v.get(0)).and_then(|v| v.as_array())
+                // TODO interpret values[i][1], which has to do with damage types
+                // (physical, fire, etc.) or whether the value has been modified
+                // by an affix on them item
                 .and_then(|v| v.get(0)).and_then(|v| v.as_str().map(|s| s.to_owned()));
             result.insert(name, value);
         }
@@ -347,4 +382,16 @@ impl ItemVisitor {
             }
         })
     }
+}
+
+
+// Utility functions
+
+/// Remove the "tags" like <<set:MS>> that can sometimes be found
+/// in the item "name" or "typeLine".
+fn remove_angle_bracket_tags(s: &str) -> Cow<str> {
+    lazy_static! {
+        static ref ANGLE_TAG_RE: Regex = Regex::new(r#"<<\w+:\w+>>"#).unwrap();
+    }
+    ANGLE_TAG_RE.replace(s, "")
 }
