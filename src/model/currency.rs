@@ -25,6 +25,8 @@ pub enum Currency {
     JewellersOrb,
     #[serde(rename = "chance")]
     OrbOfChance,
+    #[serde(rename = "chaos")]
+    ChaosOrb,
     #[serde(rename = "chisel")]
     CartographersChisel,
     #[serde(rename = "scour")]
@@ -53,6 +55,7 @@ pub const EXALT: Currency = Currency::ExaltedOrb;
 pub const CHROME: Currency = Currency::ChromaticOrb;
 pub const JEW: Currency = Currency::JewellersOrb;
 pub const CHANCE: Currency = Currency::OrbOfChance;
+pub const CHAOS: Currency = Currency::ChaosOrb;
 pub const CHISEL: Currency = Currency::CartographersChisel;
 pub const SCOUR: Currency = Currency::OrbOfScouring;
 pub const BLESS: Currency = Currency::BlessedOrb;

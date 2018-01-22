@@ -9,7 +9,7 @@ use super::currency::Currency;
 ///
 /// Those labels can have special meaning in PoE
 /// and indicate e.g. prices applicable to all items in the tab.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Label {
     /// Cosmetic name, without any other meaning.
     Cosmetic(String),
@@ -23,6 +23,20 @@ pub enum Label {
 /// Price of an item in a particular `Currency`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct Price(usize, Currency);
+
+impl Price {
+    /// Create a new `Price` object.
+    #[inline]
+    pub fn new(amount: usize, currency: Currency) -> Self {
+        Price(amount, currency)
+    }
+
+    /// Create a new `Price` of a single unit of given currency.
+    #[inline]
+    pub fn one(currency: Currency) -> Self {
+        Price(1, currency)
+    }
+}
 
 impl Price {
     /// Price amount.
