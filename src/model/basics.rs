@@ -9,7 +9,7 @@ use super::currency::Currency;
 ///
 /// Those labels can have special meaning in PoE
 /// and indicate e.g. prices applicable to all items in the tab.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Label {
     /// Cosmetic name, without any other meaning.
     Cosmetic(String),
