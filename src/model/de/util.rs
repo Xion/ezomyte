@@ -1,6 +1,8 @@
 //! Deserialization utilities.
 
-use serde::de::{self, Deserialize, IntoDeserializer};
+use std::marker::PhantomData;
+
+use serde::de::{self, Deserialize, Deserializer, IntoDeserializer};
 
 
 /// Macro for checking duplicate fields when deserializing from a map or struct.
@@ -30,4 +32,37 @@ pub fn deserialize<'de, T, S, E>(from: S) -> Result<T, E>
 {
     let deserializer = IntoDeserializer::into_deserializer(from);
     T::deserialize(deserializer)
+}
+
+
+/// Newtype wrapper for types implementing `Deserializer` trait
+/// which automatically provides them with a no-op `IntoDeserializer` impl.
+///
+/// This is needed for the serde_json::Value type which implements `Deserializer`
+/// but NOT `IntoDeserializer`. As a consequence, things like HashMap<String, Value>
+/// cannot be passed to deserialize() function above without this wrapper.
+pub struct NoopIntoDeserializer<'de, D: Deserializer<'de>> {
+    deserializer: D,
+    _marker: PhantomData<&'de ()>,
+}
+// TODO: file an issue against serde_json to have this noop IntoDeserializer impl
+// available by default w/o a newtype wrapper
+
+impl<'de, D: Deserializer<'de>> NoopIntoDeserializer<'de, D> {
+    #[inline(always)]
+    pub fn new(deserializer: D) -> Self {
+        NoopIntoDeserializer {
+            deserializer,
+            _marker: PhantomData,
+        }
+    }
+}
+
+impl<'de, D> IntoDeserializer<'de, D::Error> for NoopIntoDeserializer<'de, D>
+    where D: Deserializer<'de>
+{
+    type Deserializer = D;
+    fn into_deserializer(self) -> Self::Deserializer {
+        self.deserializer
+    }
 }
