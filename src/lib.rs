@@ -4,6 +4,7 @@
 //!
 
                 #[macro_use] extern crate enum_derive;
+                             extern crate futures;
                              extern crate hyper;
                              extern crate hyper_tls;
                              extern crate itertools;
@@ -20,7 +21,9 @@
 
 
 mod client;
+mod error;
 mod model;
+mod stashes;
 mod util;
 
 

@@ -1,8 +1,19 @@
 //! Module defining the PoE API client object.
 
-use hyper;
-use hyper::client::{Connect, HttpConnector};
+use futures::{Future as StdFuture, Stream as StdStream};
+use hyper::{self, Method};
+use hyper::client::{Connect, HttpConnector, Request};
+use hyper::header::UserAgent;
+use log::Level::*;
+use serde::de::DeserializeOwned;
+use serde_json;
 use tokio_core::reactor::Handle;
+
+use super::error::Error;
+
+
+/// Type of futures produced by the client.
+pub type Future<T> = Box<StdFuture<Item = T, Error = Error>>;
 
 
 /// Default root URL for the Path of Exile API.
@@ -33,7 +44,7 @@ impl Client<HttpConnector> {
 
     /// Create a `Client` which points to given API URL.
     pub fn with_api_root<R, A>(api_root: R, user_agent: A, handle: &Handle) -> Self
-        where R: Into<String>, A: Into<String>
+        where R: AsRef<str>, A: Into<String>
     {
         let http = hyper::Client::configure()
             .keep_alive(true)
@@ -44,12 +55,58 @@ impl Client<HttpConnector> {
 impl<C: Clone + Connect> Client<C> {
     /// Create a `Client` which directly wraps a `hyper::Client`.
     pub fn with_http<R, A>(http: hyper::Client<C>, api_root: R, user_agent: A) -> Self
-        where R: Into<String>, A: Into<String>
+        where R: AsRef<str>, A: Into<String>
     {
         Client {
             http,
-            api_root: api_root.into(),
+            api_root: api_root.as_ref().trim_right_matches("/").to_owned(),
             user_agent: user_agent.into(),
         }
+    }
+}
+
+impl<C: Clone + Connect> Client<C> {
+    /// Make a GET request to given URL and return deserialized response.
+    pub(crate) fn get<U, Out>(&self, url: U) -> Future<Out>
+        where U: AsRef<str>,
+              Out: DeserializeOwned + 'static
+    {
+        self.request(Method::Get, url)
+    }
+
+    /// Make a request to given URL and return deserialized response.
+    fn request<U, Out>(&self, method: Method, url: U) -> Future<Out>
+        where U: AsRef<str>,
+              Out: DeserializeOwned + 'static
+    {
+        let url = format!("{}/{}",
+            self.api_root, url.as_ref().trim_left_matches("/"));
+
+        let mut request = Request::new(method.clone(), url.parse().unwrap());
+        request.headers_mut().set(UserAgent::new(self.user_agent.clone()));
+
+        let this = self.clone();
+        Box::new(
+            this.http.request(request).from_err().and_then(move |resp| {
+                let status = resp.status();
+                resp.body().concat2().from_err().and_then(move |body| {
+                    if status.is_success() {
+                        // Log the beginning of the response, but not the entire one
+                        // since it's likely megabytes.
+                        if log_enabled!(Debug) {
+                            const MAX_LEN: usize = 2048;
+                            let body_text = String::from_utf8_lossy(&body);
+                            debug!("Response payload: {} (and {} more bytes)",
+                                &body_text[..MAX_LEN], body_text.len() - MAX_LEN);
+                        }
+                        serde_json::from_slice::<Out>(&body)
+                            .map_err(|e| Error::from(e))
+                    } else {
+                        // TODO: proper error handling
+                        Err(format!("HTTP status: {}", status).into())
+                    }
+                })
+            })
+        )
     }
 }
