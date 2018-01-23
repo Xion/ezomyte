@@ -59,6 +59,7 @@ pub const CHAOS: Currency = Currency::ChaosOrb;
 pub const CHISEL: Currency = Currency::CartographersChisel;
 pub const SCOUR: Currency = Currency::OrbOfScouring;
 pub const BLESS: Currency = Currency::BlessedOrb;
+pub const REGAL: Currency = Currency::RegalOrb;
 pub const REGRET: Currency = Currency::OrbOfRegret;
 pub const DIVINE: Currency = Currency::DivineOrb;
 pub const VAAL: Currency = Currency::VaalOrb;

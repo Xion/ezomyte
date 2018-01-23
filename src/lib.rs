@@ -19,6 +19,7 @@
                              extern crate tokio_core;
 
 
+mod client;
 mod model;
 mod util;
 
