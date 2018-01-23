@@ -10,6 +10,7 @@ use serde_json;
 use tokio_core::reactor::Handle;
 
 use super::error::Error;
+use super::stashes::Stashes;
 
 
 /// Type of futures produced by the client.
@@ -62,6 +63,14 @@ impl<C: Clone + Connect> Client<C> {
             api_root: api_root.as_ref().trim_right_matches("/").to_owned(),
             user_agent: user_agent.into(),
         }
+    }
+}
+
+impl<C: Clone + Connect> Client<C> {
+    /// Access interface for public stash tabs.
+    #[inline]
+    pub fn stashes(&self) -> Stashes<C> {
+        Stashes::new(self.clone())
     }
 }
 

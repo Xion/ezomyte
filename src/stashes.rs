@@ -51,24 +51,22 @@ impl<C: Clone + Connect> Stashes<C> {
             Next{change_id: String},
             End,
         }
-        fn next_url(change_id: &str) -> String {
-            format!("{}?id={}", STASHES_URL, change_id)
-        }
 
         // Repeatedly query the public stash tabs endpoint
         // and yield `Stash` items as they come using Stream::unfold.
         let this = self.clone();
         Box::new(
             stream::unfold(State::Start{change_id}, move |state| {
-                let url: Cow<str> = match state {
-                    State::Start{change_id} => match change_id {
-                        Some(ref cid) => next_url(cid).into(),
-                        None => STASHES_URL.into(),
-                    },
-                    State::Next{change_id} => next_url(&change_id).into(),
+                let change_id = match state {
+                    State::Start{change_id} => change_id,
+                    State::Next{change_id} => Some(change_id),
                     // We handle stream termination via State::End
                     // so that the last page of results is correctly included.
-                    State::End => { return None; },
+                    State::End => return None,
+                };
+                let url: Cow<str> = match change_id {
+                    Some(cid) => format!("{}?id={}", STASHES_URL, cid).into(),
+                    None => STASHES_URL.into(),
                 };
                 Some(this.client.get(url).and_then(|resp: PublicStashTabsResponse| {
                     let next_state = match resp.next_change_id {
