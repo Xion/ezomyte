@@ -22,6 +22,12 @@ pub enum Label {
     NegotiablePrice(Price),
 }
 
+impl Default for Label {
+    fn default() -> Self {
+        Label::Cosmetic("".into())
+    }
+}
+
 impl fmt::Display for Label {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match *self {

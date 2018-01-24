@@ -1,5 +1,6 @@
 //! Stash tabs.
 
+use std::fmt;
 use std::ops::Deref;
 
 use super::basics::{Label, League, Price};
@@ -7,18 +8,17 @@ use super::item::Item;
 
 
 /// Stash tab returned by the API.
-#[derive(Debug)]
 pub struct Stash {
     /// Unique ID of the stash tab.
     pub id: String,
     /// League which the stash tab is in.
     pub league: League,
-    /// Name of the stash tab.
+    /// Label of the stash tab.
     ///
-    /// Note that some names like "~b/o 1 chaos" are special
+    /// Note that some labels like "~b/o 1 chaos" are special
     /// and indicate the price for every item in the tab.
-    /// Those names are interpreted automatically.
-    pub name: Label,
+    /// Those labels are interpreted automatically.
+    pub label: Label,
     /// Type of the stash tab.
     pub type_: StashType,
     /// Name of the player account with this stash tab,
@@ -27,7 +27,20 @@ pub struct Stash {
     pub last_character: Option<String>,
     /// Items stored in the stash tab.
     pub items: Vec<StashedItem>,
+}
 
+impl fmt::Debug for Stash {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct("Stash")
+            .field("id", &self.id)
+            .field("league", &self.league)
+            .field("label", &self.label)
+            .field("type", &self.type_)
+            .field("account", &self.account)
+            .field("last_character", &self.last_character)
+            .field("items", &self.items)
+            .finish()
+    }
 }
 
 

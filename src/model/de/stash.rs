@@ -6,7 +6,7 @@ use std::fmt;
 use serde::de::{self, Deserialize, Visitor};
 use serde_json::Value as Json;
 
-use super::super::{Label, Stash};
+use super::super::Stash;
 use super::util::{deserialize, NoopIntoDeserializer};
 
 
@@ -35,7 +35,7 @@ impl<'de> Visitor<'de> for StashVisitor {
         // (See the botoom of the function for the rationale behind nested Options).
         let mut id = None;
         let mut league = None;
-        let mut name: Option<Option<_>> = None;
+        let mut label: Option<Option<_>> = None;
         let mut type_ = None;
         let mut account: Option<Option<_>> = None;
         let mut last_character = None;
@@ -49,8 +49,8 @@ impl<'de> Visitor<'de> for StashVisitor {
                     id = Some(map.next_value()?);
                 }
                 "stash" => {
-                    check_duplicate!("stash" => name);
-                    name = Some(map.next_value()?);
+                    check_duplicate!("stash" => label);
+                    label = Some(map.next_value()?);
                 }
                 "stashType" => {
                     check_duplicate!("stashType" => type_);
@@ -110,7 +110,7 @@ impl<'de> Visitor<'de> for StashVisitor {
         }
 
         let id = id.ok_or_else(|| de::Error::missing_field("id"))?;
-        let name = name.ok_or_else(|| de::Error::missing_field("stash"))?;
+        let label = label.ok_or_else(|| de::Error::missing_field("stash"))?;
         let league = league.unwrap_or_default();
         let type_ = type_.ok_or_else(|| de::Error::missing_field("stashType"))?;
         let account = account.ok_or_else(|| de::Error::missing_field("accountName"))?;
@@ -122,7 +122,7 @@ impl<'de> Visitor<'de> for StashVisitor {
             // Historical records seem to include some broken stashes
             // where "stash" and "accountName" keys are null.
             // We'll just convert them to empty strings.
-            name: name.unwrap_or_else(|| Label::Cosmetic("".into())),
+            label: label.unwrap_or_default(),
             account: account.unwrap_or_default(),
         })
     }
