@@ -31,8 +31,9 @@ impl<'de> Visitor<'de> for LabelVisitor {
         const EXACT_PRICE_PREFIX: &str = "~price";
         const NEGOTIABLE_PRICE_PREFIX: &str = "~b/o";
 
+        // TODO: maybe Label::Empty should be another variant?
         if v.is_empty() {
-            return Err(de::Error::invalid_length(0, &"non-empty string"));
+            return Ok(Label::Cosmetic("".into()));
         }
 
         if v.starts_with(EXACT_PRICE_PREFIX) {

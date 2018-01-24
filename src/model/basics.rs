@@ -1,6 +1,9 @@
 //! Basic data type definitions.
 
 use std::cmp::Ordering;
+use std::fmt;
+
+use serde_value::{to_value, Value};
 
 use super::currency::Currency;
 
@@ -17,6 +20,16 @@ pub enum Label {
     ExactPrice(Price),
     /// Negotiable price ("~b/o $N $CURR").
     NegotiablePrice(Price),
+}
+
+impl fmt::Display for Label {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Label::Cosmetic(ref s) => write!(fmt, "{}", s),
+            Label::ExactPrice(p) => write!(fmt, "~price {}", p),
+            Label::NegotiablePrice(p) => write!(fmt, "~b/o {}", p),
+        }
+    }
 }
 
 
@@ -40,10 +53,10 @@ impl Price {
 
 impl Price {
     /// Price amount.
-    #[inline]
+    #[inline(always)]
     pub fn amount(&self) -> usize { self.0 }
     /// Currency used in the price.
-    #[inline]
+    #[inline(always)]
     pub fn currency(&self) -> Currency { self.1 }
 }
 
@@ -57,12 +70,22 @@ impl PartialOrd for Price {
     }
 }
 
+impl fmt::Display for Price {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let currency = match to_value(self.currency()) {
+            Ok(Value::String(s)) => s,
+            _ => unreachable!(),
+        };
+        write!(fmt, "{} {}", self.amount(), currency)
+    }
+}
+
 
 /// League in Path of Exile.
 ///
 /// For our purposes, we're only distinguishing permanent & temporary leagues,
 /// without making note of a particular temporary league name (like "Harbinger" vs "Abyss").
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub struct League {
     /// Whether it's a temporary (seasonal) league as opposed to permanent one.
     pub temporary: bool,
@@ -158,4 +181,36 @@ impl League {
     /// Alias for `temporary_hardcore_ssf`.
     #[inline]
     pub fn temp_hc_ssf() -> Self { Self::temporary_hardcore_ssf() }
+}
+
+impl fmt::Debug for League {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let repr = match (self.temporary, self.hardcore, self.ssf) {
+            (false, false, false) => "standard",
+            (false, true, false) => "hardcore",
+            (true, false, false) => "temporary",
+            (true, true, false) => "temporary_hardcore",
+            (false, false, true) => "ssf",
+            (false, true, true) => "hardcore_ssf",
+            (true, false, true) => "temporary_ssf",
+            (true, true, true) => "temporary_hardcore_ssf",
+        };
+        write!(fmt, "League::{}()", repr)
+    }
+}
+
+impl fmt::Display for League {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let name = match (self.temporary, self.hardcore, self.ssf) {
+            (false, false, false) => "Standard",
+            (false, true, false) => "Hardcore",
+            (true, false, false) => "Temporary",
+            (true, true, false) => "Temporary Hardcore",
+            (false, false, true) => "SSF",
+            (false, true, true) => "Hardcore SSF",
+            (true, false, true) => "Temporary SSF",
+            (true, true, true) => "Temporary Hardcore SSF",
+        };
+        write!(fmt, "{}", name)
+    }
 }

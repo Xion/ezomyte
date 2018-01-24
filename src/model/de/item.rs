@@ -94,8 +94,13 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 }
                 "frameType" => {
                     check_duplicate!("frameType" => rarity);
+                    const MAX_RARITY: u64 = 3;  // corresponds to Rarity::Unique
                     let value: u64 = map.next_value()?;
-                    rarity = Some(deserialize(value)?);
+                    rarity = Some(
+                        // If the frameType doesn't describe rarity but rather item type,
+                        // default to normal rarity.
+                        if value > MAX_RARITY { Rarity::Normal } else { deserialize(value)? }
+                    );
                 }
 
                 // Item mods.
@@ -133,8 +138,8 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     // These are unsupported and ignored for now.
                     let socketed: Vec<Json> = map.next_value()?;
                     if !socketed.is_empty() {
-                        warn!("Ignoring non-empty `socketedItems` in {}",
-                            name.as_ref().and_then(|n| n.as_ref().map(|n| n.as_str()))
+                        warn!("Ignoring non-empty `socketedItems` in {}", name.as_ref()
+                            .and_then(|n| n.as_ref().map(|n| n.as_str()))
                             .unwrap_or("<unknown item>"));
                     }
                 }
@@ -187,7 +192,9 @@ impl<'de> Visitor<'de> for ItemVisitor {
                         if gem_level.is_some() {
                             return Err(de::Error::duplicate_field("Level"));
                         }
-                        gem_level = Some(deserialize(lvl)?);
+                        gem_level = Some(lvl.parse().map_err(|_| {
+                            de::Error::invalid_value(Unexpected::Str(&lvl), &"number as string")
+                        })?);
                     }
 
                     properties = Some(props);
@@ -213,6 +220,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
 
                 // Ignored / unrecognized fields.
                 "verified" => { map.next_value::<bool>()?; }  // ignore
+                "support" => { map.next_value::<bool>()?; }   // ignore
                 "league" => { map.next_value::<String>()?; }  // ignore, handled by `Stash`
                 key => {
                     trace!("Unrecognized item attribute `{}`, adding to `extra` map", key);
@@ -308,8 +316,8 @@ impl<'de> Visitor<'de> for ItemVisitor {
         };
 
         // Retain the properties that have values.
-        // TODO: figure out what the others are (w/o values), and possibly put them
-        // in a separate field on `Item`
+        // TODO: there are some properties w/o values, like gem categories ("Spell, Minion", etc.)
+        // which we should retain as separate `Item` field (tags?)
         let properties = properties.into_iter().filter_map(|(k, v)| v.map(|v| (k, v))).collect();
 
         Ok(Item {

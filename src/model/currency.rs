@@ -7,7 +7,7 @@
 /// league-specific currencies (like Harbinger Orbs),
 /// or extremely common/rare consumable items (like scrolls or mirrors)
 /// because they cannot be used when pricing items in stashes.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub enum Currency {
     #[serde(rename = "alt")]
     OrbOfAlteration,
