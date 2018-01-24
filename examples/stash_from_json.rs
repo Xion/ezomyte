@@ -26,5 +26,5 @@ fn main() {
         error!("Error parsing stash JSON: {}", e);
         exit(1);
     });
-    println!("{:?}", stash);
+    println!("{:#?}", stash);
 }

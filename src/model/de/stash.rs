@@ -62,7 +62,7 @@ impl<'de> Visitor<'de> for StashVisitor {
                 }
                 "lastCharacterName" => {
                     check_duplicate!("lastCharacterName" => last_character);
-                    last_character = Some(Some(map.next_value()?));
+                    last_character = Some(map.next_value()?);
                 }
                 "items" => {
                     let items_json: Vec<HashMap<String, Json>> = map.next_value()?;

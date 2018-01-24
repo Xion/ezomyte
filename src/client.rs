@@ -99,15 +99,20 @@ impl<C: Clone + Connect> Client<C> {
             this.http.request(request).from_err().and_then(move |resp| {
                 let status = resp.status();
                 resp.body().concat2().from_err().and_then(move |body| {
-                    if status.is_success() {
-                        // Log the beginning of the response, but not the entire one
-                        // since it's likely megabytes.
-                        if log_enabled!(Debug) {
-                            const MAX_LEN: usize = 2048;
-                            let body_text = String::from_utf8_lossy(&body);
-                            debug!("Response payload: {} (and {} more bytes)",
-                                &body_text[..MAX_LEN], body_text.len() - MAX_LEN);
+                    // Log the beginning of the response, but not the entire one
+                    // since it's likely megabytes.
+                    if log_enabled!(Debug) {
+                        const MAX_LEN: usize = 2048;
+                        let body_text = String::from_utf8_lossy(&body);
+                        let omitted = body_text.len() - MAX_LEN;
+                        if omitted > 0 {
+                            debug!("Response payload: {}... (and {} more bytes)",
+                                &body_text[..MAX_LEN], omitted);
+                        } else {
+                            debug!("Response payload: {}", body_text);
                         }
+                    }
+                    if status.is_success() {
                         serde_json::from_slice::<Out>(&body)
                             .map_err(|e| Error::from(e))
                     } else {

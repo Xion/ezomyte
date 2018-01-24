@@ -164,10 +164,10 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 }
 
                 // Various other properties.
-                "flavour_text" => {
-                    check_duplicate!(flavour_text);
+                "flavourText" => {
+                    check_duplicate!("flavourText" => flavour_text);
                     let text: Vec<String> = map.next_value()?;
-                    flavour_text = Some(Some(text.join("")));
+                    flavour_text = Some(Some(text.join("").replace('\r', "")));
                 }
                 "properties" => {
                     check_duplicate!(properties);
@@ -404,7 +404,7 @@ fn remove_angle_bracket_tags(s: &str) -> Cow<str> {
     lazy_static! {
         static ref ANGLE_TAG_RE: Regex = Regex::new(r#"<<\w+:\w+>>"#).unwrap();
     }
-    ANGLE_TAG_RE.replace(s, "")
+    ANGLE_TAG_RE.replace_all(s, "")
 }
 
 
