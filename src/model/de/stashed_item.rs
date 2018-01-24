@@ -83,3 +83,30 @@ impl<'de> Visitor<'de> for StashedItemVisitor {
         Ok(StashedItem{item, label, x, y, width, height})
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use serde_json::from_value;
+    use model::StashedItem;
+
+    #[test]
+    fn minimal() {
+        let item_spec = json!({
+            "id": "123abc",
+            "name": "",
+            "typeLine": "Example Amazing Item of Testing",
+            "ilvl": 80,
+            "category": "jewels",
+            "frameType": 0,
+            "x": 12,
+            "y": 10,
+            "w": 1,
+            "h": 1,
+        });
+        let item: StashedItem = from_value(item_spec).unwrap();
+        assert_eq!("123abc", item.id);
+        assert_eq!((12, 10), item.position());
+        assert_eq!((1, 1), item.size());
+    }
+}

@@ -83,7 +83,8 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     level = Some(map.next_value()?);
                 }
                 "requirements" => {
-                    // TODO
+                    // TODO, skip for now
+                    map.next_value::<Json>()?;
                 }
 
                 // Item category / type.
@@ -125,7 +126,8 @@ impl<'de> Visitor<'de> for ItemVisitor {
 
                 // Sockets.
                 "sockets" => {
-                    // TODO
+                    // TODO, skip for now
+                    map.next_value::<Json>()?;
                 }
                 "socketedItems" => {
                     // These are unsupported and ignored for now.
@@ -330,7 +332,7 @@ impl ItemVisitor {
     ///
     /// Result will include keys such as "Quality" which should be later plucked
     /// into separate fields in `Item`.
-    fn deserialize_value_map<'de ,V: de::MapAccess<'de>>(
+    fn deserialize_value_map<'de, V: de::MapAccess<'de>>(
         map: &mut V
     ) -> Result<HashMap<String, Option<String>>, V::Error> {
         let mut result = HashMap::new();
@@ -394,4 +396,45 @@ fn remove_angle_bracket_tags(s: &str) -> Cow<str> {
         static ref ANGLE_TAG_RE: Regex = Regex::new(r#"<<\w+:\w+>>"#).unwrap();
     }
     ANGLE_TAG_RE.replace(s, "")
+}
+
+
+#[cfg(test)]
+mod tests {
+    use serde_json::from_value;
+    use model::Item;
+
+    #[test]
+    fn minimal() {
+        let item_spec = json!({
+            "id": "123abc",
+            "name": "",
+            "typeLine": "Example Amazing Item of Testing",
+            "ilvl": 80,
+            "category": "jewels",
+            "frameType": 0,
+        });
+        from_value::<Item>(item_spec).unwrap();
+    }
+
+    #[test]
+    fn with_quality() {
+        let item_spec = json!({
+            "id": "123abc",
+            "name": "",
+            "typeLine": "Example Amazing Item of Testing",
+            "ilvl": 80,
+            "category": "jewels",
+            "frameType": 0,
+            "properties": [
+                {
+                    "name": "Quality",
+                    "values": [["+13%", 1]],
+                },
+            ],
+        });
+        let item = from_value::<Item>(item_spec).unwrap();
+        let quality: u8 = item.quality.into();
+        assert_eq!(13, quality);
+    }
 }
