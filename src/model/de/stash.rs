@@ -65,7 +65,7 @@ impl<'de> Visitor<'de> for StashVisitor {
                     last_character = Some(Some(map.next_value()?));
                 }
                 "items" => {
-                    let items_json: Vec<HashMap<&str, Json>> = map.next_value()?;
+                    let items_json: Vec<HashMap<String, Json>> = map.next_value()?;
 
                     league = Some({
                         // The API puts "league" as a key on the items, not the stash,
@@ -96,9 +96,15 @@ impl<'de> Visitor<'de> for StashVisitor {
                         de::Error::custom(format!("cannot deserialize stashed items: {}", e))
                     })?);
                 }
-                "public" => {},  // because obviously it's public if we can see it
+
+                // Ignored / unrecognized fields.
+                "public" => {
+                    // Ignoring. Can it even be false if the stash is visible in the API?
+                    map.next_value::<bool>()?;
+                },
                 key => {
                     warn!("Unrecognized key in stash JSON: `{}`", key);
+                    map.next_value::<Json>()?;  // ignore
                 }
             }
         }

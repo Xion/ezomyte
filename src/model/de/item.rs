@@ -166,7 +166,8 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 // Various other properties.
                 "flavour_text" => {
                     check_duplicate!(flavour_text);
-                    flavour_text = Some(map.next_value()?);
+                    let text: Vec<String> = map.next_value()?;
+                    flavour_text = Some(Some(text.join("")));
                 }
                 "properties" => {
                     check_duplicate!(properties);
@@ -209,6 +210,10 @@ impl<'de> Visitor<'de> for ItemVisitor {
                         warn!("Unexpected additionalProperties: {}", props.keys().format(", "));
                     }
                 }
+
+                // Ignored / unrecognized fields.
+                "verified" => { map.next_value::<bool>()?; }  // ignore
+                "league" => { map.next_value::<String>()?; }  // ignore, handled by `Stash`
                 key => {
                     trace!("Unrecognized item attribute `{}`, adding to `extra` map", key);
                     extra.insert(key.to_owned(), map.next_value()?);
@@ -250,19 +255,23 @@ impl<'de> Visitor<'de> for ItemVisitor {
             let mods_count = explicit_mods.as_ref().map(|m: &Vec<_>| m.len()).unwrap_or(0);
             let has_suffix = SUFFIX_RE.is_match(&*base);
             let has_prefix = match mods_count {
-                1 => !has_suffix,  // the sole mod is a suffix
-                2 => true,
+                // XXX: below is basically broken due to hybrid affixes,
+                // meaning e.g. that 2 mods may mean a hybrid affix rather than suffix+prefix
+                // and we have no way of discerning which case it is, short of knowing
+                // the names of affixes :/
+                1 => !has_suffix,  // the sole affix is a suffix
+                2 | 3 | 4 => true,  // >2 mods means at least one of the affixes is hybrid
                 _ => return Err(de::Error::custom(format!(
-                    "magic items can only have 1 or 2 explicit mods, but found {}", mods_count))),
+                    "magic items can only have up to 4 explicit mods, but found {}", mods_count))),
             };
 
             // Strip them all from the item name to obtain the base name.
-            if has_prefix {
-                base = base.split_whitespace().into_iter().skip(1).collect();
-            }
             if has_suffix {
                 let offset = SUFFIX_RE.find_iter(&*base).last().unwrap().start();
                 base = base[..offset].trim_right().to_owned().into();
+            }
+            if has_prefix {
+                base = base.split_whitespace().into_iter().skip(1).collect();
             }
         }
 

@@ -62,6 +62,7 @@ impl<'de> Visitor<'de> for StashedItemVisitor {
                     check_duplicate!("h" => height);
                     height = Some(map.next_value()?);
                 }
+                "inventoryId" => { map.next_value::<String>()?; }  // ignore
                 key => {
                     // Everything else we're passing through to the Item deserializer.
                     let value: Json = map.next_value()?;
