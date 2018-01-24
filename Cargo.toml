@@ -1,8 +1,15 @@
 [package]
 name = "ezomyte"
 version = "0.1.0"
-description = "Path of Exile API client"
+description = "Path of Exile API client library"
 authors = ["Karol Kuczmarski <karol.kuczmarski@gmail.com>"]
+documentation = "https://docs.rs/ezomyte"
+homepage = "https://github.com/Xion/ezomyte"
+repository = "https://github.com/Xion/ezomyte"
+keywords = ["poe", "path of exile", "api", "hyper"]
+# TODO: license
+categories = ["api-bindings", "web-programming:http-client"]
+readme = "README.md"
 
 [dependencies]
 enum_derive = "0.1.7"
