@@ -117,6 +117,7 @@ impl<C: Clone + Connect> Client<C> {
                             .map_err(|e| Error::from(e))
                     } else {
                         // TODO: proper error handling
+                        // TODO: specifically handle 503 from possible maintenance
                         Err(format!("HTTP status: {}", status).into())
                     }
                 })
