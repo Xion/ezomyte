@@ -28,6 +28,26 @@ impl Default for Label {
     }
 }
 
+impl Label {
+    /// Return the exact `Price` specified in this `Label`, if any.
+    #[inline]
+    pub fn as_exact_price(&self) -> Option<Price> {
+        match *self {
+            Label::ExactPrice(p) => Some(p),
+            _ => None,
+        }
+    }
+
+    /// Return the negotiable (buyout) `Price` specified in this `Label`, if any.
+    #[inline]
+    pub fn as_negotiable_price(&self) -> Option<Price> {
+        match *self {
+            Label::NegotiablePrice(p) => Some(p),
+            _ => None,
+        }
+    }
+}
+
 impl fmt::Display for Label {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match *self {

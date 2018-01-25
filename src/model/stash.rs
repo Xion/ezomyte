@@ -121,19 +121,13 @@ impl StashedItem {
     }
 
     /// Optional exact price for the item.
-    pub fn exact_price(&self) -> Option<&Price> {
-        self.label().and_then(|l| match l {
-            &Label::ExactPrice(ref p) => Some(p),
-            _ => None
-        })
+    pub fn exact_price(&self) -> Option<Price> {
+        self.label().and_then(|l| l.as_exact_price())
     }
 
     /// Optional negotiable price for the item.
-    pub fn negotiable_price(&self) -> Option<&Price> {
-        self.label().and_then(|l| match l {
-            &Label::NegotiablePrice(ref p) => Some(p),
-            _ => None
-        })
+    pub fn negotiable_price(&self) -> Option<Price> {
+        self.label().and_then(|l| l.as_negotiable_price())
     }
 
     /// Position of the item in the stash tab.
