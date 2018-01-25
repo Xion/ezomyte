@@ -26,7 +26,7 @@ impl<'de> Visitor<'de> for LabelVisitor {
         write!(fmt, "{}", EXPECTING_MSG)
     }
 
-    fn visit_str<E: de::Error>(self, v: &str) -> Result<Self::Value, E> {
+    fn visit_str<E: de::Error>(self, mut v: &str) -> Result<Self::Value, E> {
         // TODO: consider providing a FromStr implementation for Label
         const EXACT_PRICE_PREFIX: &str = "~price";
         const NEGOTIABLE_PRICE_PREFIX: &str = "~b/o";
@@ -34,6 +34,15 @@ impl<'de> Visitor<'de> for LabelVisitor {
         // TODO: maybe Label::Empty should be another variant?
         if v.is_empty() {
             return Ok(Label::Cosmetic("".into()));
+        }
+
+        // TODO: it would seem you can actually have a price AND a cosmetic text;
+        // here, we're stripping the latter to parse the price correctly,
+        // but we could retain it if we changed the format of Label
+        if v.starts_with("~") {
+            if let Some(offset) = v.find('|') {
+                v = v[..offset].trim_right();
+            }
         }
 
         if v.starts_with(EXACT_PRICE_PREFIX) {

@@ -70,11 +70,13 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 }
                 "name" => {
                     check_duplicate!(name);
-                    name = Some(Self::deserialize_name(&mut map)?);
+                    let opt_name = Self::deserialize_name(&mut map)?;
+                    name = Some(opt_name.map(|n| remove_angle_bracket_tags(&n).into_owned()));
                 }
                 "typeLine" => {
                     check_duplicate!("typeLine" => base);
-                    base = Some(Self::deserialize_nonempty_string(&mut map)?);
+                    let base_ = Self::deserialize_nonempty_string(&mut map)?;
+                    base = Some(remove_angle_bracket_tags(&base_).into_owned());
                     // Note that `base` will be a full name for magic items
                     // (with prefix and suffix), so it has to be fixed using rarity later on.
                 }
@@ -188,10 +190,14 @@ impl<'de> Visitor<'de> for ItemVisitor {
                         quality = Some(deserialize(q)?);
                     }
                     if let Some(lvl) = props.remove("Level") {
-                        let lvl = lvl.expect("gem level");
+                        let mut lvl = lvl.expect("gem level");
                         if gem_level.is_some() {
                             return Err(de::Error::duplicate_field("Level"));
                         }
+                        // For max-level gems, level is given as something like "20 (Max)".
+                        // TODO: add is_max_level flag to ItemDetails::Gem,
+                        // or make a dedicated data type for Level that includes this bit
+                        lvl = lvl.replace("(Max)", "").trim().to_owned();
                         gem_level = Some(lvl.parse().map_err(|_| {
                             de::Error::invalid_value(Unexpected::Str(&lvl), &"number as string")
                         })?);
@@ -230,8 +236,8 @@ impl<'de> Visitor<'de> for ItemVisitor {
         }
 
         let id = id.ok_or_else(|| de::Error::missing_field("id"))?;
-        let name = name.ok_or_else(|| de::Error::missing_field("name"))?;
-        let base = base.ok_or_else(|| de::Error::missing_field("typeLine"))?;
+        let mut name = name.ok_or_else(|| de::Error::missing_field("name"))?;
+        let mut base = base.ok_or_else(|| de::Error::missing_field("typeLine"))?;
         let level = level.ok_or_else(|| de::Error::missing_field("ilvl"))?;
         let category = category.ok_or_else(|| de::Error::missing_field("category"))?;
         let rarity = rarity.ok_or_else(|| de::Error::missing_field("frameType"))?;
@@ -243,10 +249,6 @@ impl<'de> Visitor<'de> for ItemVisitor {
         let influence = influence.unwrap_or(None);
         let duplicated = duplicated.unwrap_or(false);
         let flavour_text = flavour_text.unwrap_or(None);
-
-        // Fix name & base by removing junk "tags" like <<set:MS>>.
-        let mut name = name.as_ref().map(|n| remove_angle_bracket_tags(n));
-        let mut base = remove_angle_bracket_tags(&base);
 
         // Also, if a magic item has no name by itself,
         // then its "typeLine" (i.e. `base`) is what actually contains its full name.
@@ -267,8 +269,9 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 // meaning e.g. that 2 mods may mean a hybrid affix rather than suffix+prefix
                 // and we have no way of discerning which case it is, short of knowing
                 // the names of affixes :/
+                0 => false,
                 1 => !has_suffix,  // the sole affix is a suffix
-                2 | 3 | 4 => true,  // >2 mods means at least one of the affixes is hybrid
+                2...4 => true,  // >2 mods means at least one of the affixes is hybrid
                 _ => return Err(de::Error::custom(format!(
                     "magic items can only have up to 4 explicit mods, but found {}", mods_count))),
             };
