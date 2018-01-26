@@ -1,6 +1,6 @@
 //! Deserializers for item sockets.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 use itertools::Itertools;
@@ -39,6 +39,7 @@ impl<'de> Visitor<'de> for ItemSocketsVisitor {
 
         let mut abyss_count = 0;
         let mut regular_groups = HashMap::new();
+        let mut indices = HashSet::new();
 
         while let Some(socket) = seq.next_element::<HashMap<String, Json>>()? {
             let color = socket.get("sColour").and_then(|c| c.as_str())
@@ -50,11 +51,21 @@ impl<'de> Visitor<'de> for ItemSocketsVisitor {
             let group = socket.get("group").and_then(|g| g.as_u64())
                 .ok_or_else(|| de::Error::custom("socket group number missing"))?;
             let regular_color = deserialize(color)?;
+
             regular_groups.entry(group).or_insert_with(Vec::new)
                 .push(regular_color);
+            indices.insert(group);
         }
 
-        // TODO: check if the regular group indices form a contiguous 0-based range
+        // Check if the group indices form a contiguous 0-based range.
+        let expected_indices = (0u64..indices.len() as u64).collect_vec();
+        let actual_indices = indices.into_iter().sorted();
+        if actual_indices != expected_indices {
+            return Err(de::Error::custom(format!(
+                "socket group indices not in a contiguous range: expected {:?}, got {:?}",
+                expected_indices, actual_indices)));
+        }
+
         let regular_groups = regular_groups.into_iter()
             .sorted_by_key(|&(i, _)| i).into_iter()
             .map(|(i, g)| SocketGroup{id: i as u8, colors: g})
