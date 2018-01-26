@@ -68,14 +68,25 @@ impl<C: Clone + Connect> Stashes<C> {
                     // so that the last page of results is correctly included.
                     State::End => return None,
                 };
-                let url: Cow<str> = match change_id {
+                let url: Cow<str> = match change_id.as_ref() {
                     Some(cid) => format!("{}?id={}", STASHES_URL, cid).into(),
                     None => STASHES_URL.into(),
                 };
-                Some(this.client.get(url).and_then(|resp: PublicStashTabsResponse| {
+                Some(this.client.get(url).and_then(move |resp: PublicStashTabsResponse| {
                     let next_state = match resp.next_change_id {
-                        Some(next_cid) => State::Next{change_id: next_cid},
-                        None => State::End,
+                        Some(next_cid) => {
+                            // If we got the same change_id, we've reached the end.
+                            let same_cid = change_id.as_ref().map(|cid| cid == &next_cid)
+                                .unwrap_or(false);
+                            if same_cid { State::End } else {
+                                State::Next{change_id: next_cid}
+                            }
+                        }
+                        None => {
+                            // According to API docs, this is not supposed to happen.
+                            warn!("No next_change_id found in stash tabs' response");
+                            State::End
+                        }
                     };
                     future::ok((stream::iter_ok(resp.stashes), next_state))
                 }))
