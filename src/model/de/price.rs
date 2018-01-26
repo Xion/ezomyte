@@ -37,6 +37,9 @@ impl<'de> Visitor<'de> for PriceVisitor {
         if parts.len() != 2 {
             return Err(de::Error::invalid_value(Unexpected::Str(v), &EXPECTING_MSG));
         }
+
+        // XXX: there are amounts like "10/19 chaos" encountered in the wild,
+        // so we need more complex parsing than just FromStr -_-
         let amount: f64 = parts[0].parse().map_err(|e| de::Error::custom(
             format!("cannot parse price amount `{}`: {}", parts[0], e)))?;
         let currency = deserialize(parts[1])?;
