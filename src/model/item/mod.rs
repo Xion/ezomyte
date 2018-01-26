@@ -100,9 +100,12 @@ pub enum Requirement {
     /// Level requirement.
     Level,
     /// Strength stat requirement.
+    #[serde(rename = "Str")]
     Strength,
     /// Dexterity stat requirement.
+    #[serde(rename = "Dex")]
     Dexterity,
     /// Intelligence stat requirement.
+    #[serde(rename = "Int")]
     Intelligence,
 }

@@ -85,8 +85,22 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     level = Some(map.next_value()?);
                 }
                 "requirements" => {
-                    // TODO, skip for now
-                    map.next_value::<Json>()?;
+                    check_duplicate!(requirements);
+                    let req_kvps = Self::deserialize_value_map(&mut map)?.into_iter()
+                        .filter_map(|(k, v)| v.map(|v| (k, v)));
+
+                    let mut reqs = HashMap::new();
+                    for (k, v) in req_kvps {
+                        let key = deserialize(k)?;
+                        let value = v.parse().map_err(|e| de::Error::custom(format!(
+                            "failed to parse requirement value `{}`: {}", v, e)))?;
+                        if reqs.contains_key(&key) {
+                            return Err(de::Error::custom(
+                                format!("duplicate requirement: {:?}", key)));
+                        }
+                        reqs.insert(key, value);
+                    }
+                    requirements = Some(reqs);
                 }
 
                 // Item category / type.
