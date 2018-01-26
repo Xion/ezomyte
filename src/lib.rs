@@ -17,7 +17,6 @@
                              extern crate serde;
                 #[macro_use] extern crate serde_derive;
 #[cfg_attr(test, macro_use)] extern crate serde_json;
-                             extern crate serde_value;
                              extern crate tokio_core;
 
 

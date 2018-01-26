@@ -3,7 +3,7 @@
 use std::cmp::Ordering;
 use std::fmt;
 
-use serde_value::{to_value, Value};
+use serde_json::{to_value as to_json, Value as Json};
 
 use super::currency::Currency;
 
@@ -12,7 +12,7 @@ use super::currency::Currency;
 ///
 /// Those labels can have special meaning in PoE
 /// and indicate e.g. prices applicable to all items in the tab.
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Label {
     /// Cosmetic name, without any other meaning.
     Cosmetic(String),
@@ -60,27 +60,28 @@ impl fmt::Display for Label {
 
 
 /// Price of an item in a particular `Currency`.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
-pub struct Price(usize, Currency);
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Price(f64, Currency);
+// TODO: consider using a decimal type for accuracy and the Hash/Eq traits
 
 impl Price {
     /// Create a new `Price` object.
     #[inline]
-    pub fn new(amount: usize, currency: Currency) -> Self {
+    pub fn new(amount: f64, currency: Currency) -> Self {
         Price(amount, currency)
     }
 
     /// Create a new `Price` of a single unit of given currency.
     #[inline]
     pub fn one(currency: Currency) -> Self {
-        Price(1, currency)
+        Price(1.0, currency)
     }
 }
 
 impl Price {
     /// Price amount.
     #[inline(always)]
-    pub fn amount(&self) -> usize { self.0 }
+    pub fn amount(&self) -> f64 { self.0 }
     /// Currency used in the price.
     #[inline(always)]
     pub fn currency(&self) -> Currency { self.1 }
@@ -89,7 +90,7 @@ impl Price {
 impl PartialOrd for Price {
     fn partial_cmp(&self, other: &Price) -> Option<Ordering> {
         if self.currency() == other.currency() {
-            Some(self.amount().cmp(&other.amount()))
+            self.amount().partial_cmp(&other.amount())
         } else {
             None
         }
@@ -98,9 +99,14 @@ impl PartialOrd for Price {
 
 impl fmt::Display for Price {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        let currency = match to_value(self.currency()) {
-            Ok(Value::String(s)) => s,
-            _ => unreachable!(),
+        let currency = match to_json(self.currency()) {
+            Ok(Json::String(s)) => s,
+            Err(e) => {
+                error!("Failed to Display-format currency `{:?}`: {}",
+                    self.currency(), e);
+                return Err(fmt::Error);
+            }
+            v => panic!("Unexpected serialization of Currency for Display: {:?}", v),
         };
         write!(fmt, "{} {}", self.amount(), currency)
     }

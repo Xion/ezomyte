@@ -94,10 +94,16 @@ impl<C: Clone + Connect> Client<C> {
         let mut request = Request::new(method.clone(), url.parse().unwrap());
         request.headers_mut().set(UserAgent::new(self.user_agent.clone()));
 
+        trace!("{} {}", method, url);
         let this = self.clone();
         Box::new(
             this.http.request(request).from_err().and_then(move |resp| {
                 let status = resp.status();
+                debug!("HTTP {}{} for {} {}",
+                    status.as_u16(),
+                    status.canonical_reason()
+                        .map(|r| format!(" ({})", r)).unwrap_or_else(String::new),
+                    method, url);
                 resp.body().concat2().from_err().and_then(move |body| {
                     // Log the beginning of the response, but not the entire one
                     // since it's likely megabytes.

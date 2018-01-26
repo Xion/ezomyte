@@ -14,7 +14,7 @@ const EXPECTING_MSG: &str = "item category as string or 1-element map";
 // The former denotes a regular jewel while the latter should be {"jewels": ["abyss"]}
 // to describe abyss jewels.
 const KEYS: &[&str] = &["accessories", "armour", "jewels", "weapons"];
-const STRINGS: &[&str] = &["jewels", "flasks", "maps", "gems", "currency"];
+const STRINGS: &[&str] = &["jewels", "flasks", "maps", "gems", "cards", "currency"];
 
 
 impl<'de> Deserialize<'de> for ItemCategory {
@@ -96,7 +96,7 @@ impl<'de> Visitor<'de> for ItemCategoryVisitor {
             "flasks" => Ok(ItemCategory::Flask),
             "maps" => Ok(ItemCategory::Map),
             "gems" => Ok(ItemCategory::Gem),
-            // TODO: divination cards
+            "cards" => Ok(ItemCategory::DivinationCard),
             "currency" => Ok(ItemCategory::Currency),
             c => {
                 warn!("Unrecognized item category string `{}`, expected one of: {}",
