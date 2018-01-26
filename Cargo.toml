@@ -7,7 +7,7 @@ documentation = "https://docs.rs/ezomyte"
 homepage = "https://github.com/Xion/ezomyte"
 repository = "https://github.com/Xion/ezomyte"
 keywords = ["poe", "path of exile", "api", "hyper"]
-# TODO: license
+license = "MIT"
 categories = ["api-bindings", "web-programming:http-client"]
 readme = "README.md"
 
@@ -21,6 +21,7 @@ lazy_static = "1.0"
 log = "0.4.1"
 macro-attr = "0.2.0"
 newtype_derive = "0.1.6"
+num = "0.1.41"
 regex = "0.2.5"
 separator = "0.3.1"
 serde = "1.0"

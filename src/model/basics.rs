@@ -3,6 +3,7 @@
 use std::cmp::Ordering;
 use std::fmt;
 
+use num::ToPrimitive;
 use serde_json::{to_value as to_json, Value as Json};
 
 use super::currency::Currency;
@@ -67,7 +68,8 @@ pub struct Price(f64, Currency);
 impl Price {
     /// Create a new `Price` object.
     #[inline]
-    pub fn new(amount: f64, currency: Currency) -> Self {
+    pub fn new<A: ToPrimitive>(amount: A, currency: Currency) -> Self {
+        let amount = amount.to_f64().expect("price amount");
         Price(amount, currency)
     }
 
