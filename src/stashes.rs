@@ -43,6 +43,10 @@ impl<C: Clone + Connect> Stashes<C> {
     {
         self.get_stashes_stream(Some(change_id.into()))
     }
+    // TODO: find a way to relay the final next-change-id to callers
+    // so they can implement polling for new items if they wish
+    // TODO: also, a way to obtain the "current" next-change-id would be nice
+    // (or even a method like newest() to automatically start from there)
 
     fn get_stashes_stream(&self, change_id: Option<String>) -> Stream<Stash> {
         /// Enum for managing the state machine of the resulting Stream.

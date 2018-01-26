@@ -13,6 +13,7 @@ pub enum ItemCategory {
     Map,
     Gem,
     DivinationCard,
+    // TODO: prophecy
     Currency,
     // TODO: try to eliminate this catch-all variant
     // (it may be good to have it though, for forward-compatibility with future leagues
