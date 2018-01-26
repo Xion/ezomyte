@@ -133,8 +133,8 @@ impl<'de> Visitor<'de> for ItemVisitor {
 
                 // Sockets.
                 "sockets" => {
-                    // TODO, skip for now
-                    map.next_value::<Json>()?;
+                    check_duplicate!(sockets);
+                    sockets = Some(map.next_value()?);
                 }
                 "socketedItems" => {
                     // These are unsupported and ignored for now.

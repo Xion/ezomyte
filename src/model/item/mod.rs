@@ -13,7 +13,7 @@ use serde_json::Value as Json;
 pub use self::attributes::*;
 pub use self::category::*;
 pub use self::details::ItemDetails;
-pub use self::sockets::ItemSockets;
+pub use self::sockets::*;
 
 
 

@@ -29,9 +29,9 @@ pub enum Color {
 #[derive(Debug)]
 pub struct ItemSockets {
     /// Number of abyss sockets the item has.
-    abyss_count: u64,
+    pub(crate) abyss_count: u64,
     /// Groups of regular sockets that are linked together.
-    regular_groups: Vec<SocketGroup>,
+    pub(crate) regular_groups: Vec<SocketGroup>,
 }
 
 impl Default for ItemSockets {
@@ -86,9 +86,9 @@ pub struct SocketGroup {
     /// ID of the socket group, assigned by the API.
     ///
     /// This is a small integer index starting from 0.
-    id: u8,
+    pub(crate) id: u8,
     /// Colors of linked sockets.
-    colors: Vec<Color>,
+    pub(crate) colors: Vec<Color>,
 }
 
 impl SocketGroup {
