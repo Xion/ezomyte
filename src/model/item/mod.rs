@@ -95,17 +95,14 @@ impl Item {
 
 /// A particular kind of requirement that a character must satisfy
 /// in order to use an item.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Requirement {
     /// Level requirement.
     Level,
     /// Strength stat requirement.
-    #[serde(rename = "Str")]
     Strength,
     /// Dexterity stat requirement.
-    #[serde(rename = "Dex")]
     Dexterity,
     /// Intelligence stat requirement.
-    #[serde(rename = "Int")]
     Intelligence,
 }
