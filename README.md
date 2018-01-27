@@ -1,5 +1,8 @@
 # ezomyte
 
+[![Build Status](https://travis-ci.org/Xion/ezomyte.svg?branch=master)](https://travis-ci.org/Xion/ezomyte)
+[![License](https://img.shields.io/github/license/Xion/ezomyte.svg)]()
+
 Client library for Path of Exile API
 
 ----
