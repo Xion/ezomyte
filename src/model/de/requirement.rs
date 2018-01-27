@@ -11,6 +11,7 @@ const EXPECTING_MSG: &str = "requirement name";
 const VARIANTS: &[&str] = &["Level", "Str", "Dex", "Int",
                             "Strength", "Dexterity", "Intelligence"];
 
+
 impl<'de> Deserialize<'de> for Requirement {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where D: de::Deserializer<'de>
