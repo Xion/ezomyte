@@ -45,6 +45,11 @@ pub enum Currency {
     DivineOrb,
     #[serde(rename = "vaal")]
     VaalOrb,
+
+    // TODO: we sometimes actually encounter things like "ancient-orb" or "mirror"
+    // in the stash dataset; it's unclear what to with them, because it'd be nice
+    // to have them as enum variants, too, but then the number of variants would grow
+    // without bound, so probably we'll just introduce a catchall Currency::Other(String)
 }
 
 

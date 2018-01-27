@@ -11,6 +11,7 @@ use super::util::deserialize;
 
 const EXPECTING_MSG: &str = "item/stash label string";
 
+
 impl<'de> Deserialize<'de> for Label {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where D: de::Deserializer<'de>
@@ -54,7 +55,7 @@ impl<'de> Visitor<'de> for LabelVisitor {
 
         // XXX: some asshats think it's funny to name their stashes something like
         // "~b/o offer", which of course breaks the price parsing below;
-        // we probably need to introduce something like Label::Invalid to accommodate that
+        // we probably need to introduce something like Label::Malformed to accommodate that
         if v.starts_with(EXACT_PRICE_PREFIX) {
             let price = v.trim_left_matches(EXACT_PRICE_PREFIX).trim_left();
             deserialize(price).map(Label::ExactPrice)

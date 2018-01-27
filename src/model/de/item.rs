@@ -254,6 +254,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 "verified" => { map.next_value::<bool>()?; }  // ignore
                 "support" => { map.next_value::<bool>()?; }   // ignore
                 "league" => { map.next_value::<String>()?; }  // ignore, handled by `Stash`
+                "lockedToCharacter" => { map.next_value::<bool>()?; }  // ignore
                 key => {
                     trace!("Unrecognized item attribute `{}`, adding to `extra` map", key);
                     extra.insert(key.to_owned(), map.next_value()?);
