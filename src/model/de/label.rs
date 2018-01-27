@@ -2,6 +2,7 @@
 
 use std::fmt;
 
+use regex::Regex;
 use serde::de::{self, Deserialize, Visitor};
 
 use super::super::Label;
@@ -43,8 +44,11 @@ impl<'de> Visitor<'de> for LabelVisitor {
         // here, we're stripping the latter to parse the price correctly,
         // but we could retain it if we changed the format of Label
         if v.starts_with("~") {
-            if let Some(offset) = v.find(|c| c == '|' || c == '/') {
-                v = v[..offset].trim_right();
+            lazy_static! {
+                static ref SEP_RE: Regex = Regex::new(r#"\s+[/|]"#).unwrap();
+            }
+            if let Some(m) = SEP_RE.find(v) {
+                v = v[..m.start()].trim_right();
             }
         }
 
