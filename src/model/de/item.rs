@@ -317,7 +317,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
             } else if let (Some(imp), Some(enc),
                            Some(ex), Some(c)) = (implicit_mods, enchant_mods,
                                                  explicit_mods, crafted_mods) {
-                ItemDetails::Mods{
+                ItemDetails::Gear{
                     implicit: imp,
                     enchants: enc,
                     explicit: ex,

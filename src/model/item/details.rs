@@ -37,7 +37,7 @@ pub enum ItemDetails {
     ///
     /// This includes most items, such as those in gear slots,
     /// jewels, maps, and so on.
-    Mods {  // TODO: rename to `Gear`
+    Gear {
         /// Implicit mods an item has
         /// (those displayed in navy color above a horizontal line in the UI).
         ///
@@ -71,14 +71,7 @@ pub enum ItemDetails {
 
 impl Default for ItemDetails {
     fn default() -> Self {
-        // Default is an "empty" item (identified but without any mods).
-        // This corresponds to white / common items.
-        ItemDetails::Mods{
-            implicit: vec![],
-            enchants: vec![],
-            explicit: vec![],
-            crafted: vec![],
-        }
+        ItemDetails::Unidentified
     }
 }
 
@@ -97,7 +90,7 @@ impl ItemDetails {
     pub fn mods<'m>(&'m self) -> Box<Iterator<Item=&'m Mod> + 'm> {
         match *self {
             ItemDetails::Flask{ ref mods } => Box::new(mods.iter()),
-            ItemDetails::Mods{
+            ItemDetails::Gear{
                 ref implicit, ref enchants, ref explicit, ref crafted,
             } => Box::new(
                 implicit.iter()
