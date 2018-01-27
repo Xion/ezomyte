@@ -12,6 +12,7 @@ categories = ["api-bindings", "web-programming:http-client"]
 readme = "README.md"
 
 [dependencies]
+derive-error = "0.0.4"
 enum_derive = "0.1.7"
 futures = "0.1"
 hyper = "0.11"

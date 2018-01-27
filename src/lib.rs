@@ -3,6 +3,7 @@
 //! Path of Exile API client
 //!
 
+                #[macro_use] extern crate derive_error;
                 #[macro_use] extern crate enum_derive;
                              extern crate futures;
                              extern crate hyper;
