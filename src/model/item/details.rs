@@ -10,6 +10,10 @@ use super::attributes::{Experience, Mod};
 pub enum ItemDetails {
     /// An unidentified item. No details available.
     Unidentified,
+
+    // TODO: Map variant with `tier` and `mods`
+    // TODO: Currency variant with `amount`
+
     /// Skill gem.
     Gem {
         /// Current level of the gem.
@@ -33,7 +37,7 @@ pub enum ItemDetails {
     ///
     /// This includes most items, such as those in gear slots,
     /// jewels, maps, and so on.
-    Mods {
+    Mods {  // TODO: rename to `Gear`
         /// Implicit mods an item has
         /// (those displayed in navy color above a horizontal line in the UI).
         ///

@@ -9,12 +9,16 @@
 /// because they cannot be used when pricing items in stashes.
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub enum Currency {
+    // TODO: review the exact position where the SilverCoin should be
+    // (should be the same as it appears in the in-game UI)
     #[serde(rename = "alt")]
     OrbOfAlteration,
     #[serde(rename = "fuse")]
     OrbOfFusing,
     #[serde(rename = "alch")]
     OrbOfAlchemy,
+    #[serde(rename = "silver")]
+    SilverCoin,
     #[serde(rename = "gcp")]
     GemcuttersPrism,
     #[serde(rename = "exa")]
@@ -50,6 +54,7 @@ pub const ALT: Currency = Currency::OrbOfAlteration;
 pub const FUSE: Currency = Currency::OrbOfFusing;
 pub const FUSING: Currency = Currency::OrbOfFusing;
 pub const ALCH: Currency = Currency::OrbOfAlchemy;
+pub const SILVER: Currency = Currency::SilverCoin;
 pub const GCP: Currency = Currency::GemcuttersPrism;
 pub const EXALT: Currency = Currency::ExaltedOrb;
 pub const CHROME: Currency = Currency::ChromaticOrb;
