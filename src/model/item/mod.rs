@@ -52,7 +52,10 @@ pub struct Item {
     ///
     /// These are specific to the particular kind of item.
     /// In most cases, details specify the mods of an item.
-    pub details: ItemDetails,
+    ///
+    /// If the item type doesn't define any details (e.g. it's a currency item),
+    /// this will be `None`.
+    pub details: Option<ItemDetails>,
     /// Sockets an item has, if any.
     pub sockets: ItemSockets,  // TODO: socketedItems
     /// Extra item attributes that do not fit into any other part of the schema.
@@ -90,6 +93,13 @@ impl Item {
     #[inline]
     pub fn is_unique(&self) -> bool {
         self.rarity == Rarity::Unique
+    }
+
+    /// Whether this item has been identified
+    /// (or didn't need identification in the first place).
+    #[inline]
+    pub fn is_identified(&self) -> bool {
+        self.details.as_ref().map(|d| d.is_identified()).unwrap_or(true)
     }
 }
 

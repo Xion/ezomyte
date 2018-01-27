@@ -1,12 +1,13 @@
 //! Example of tailing the latest items from public stashes API.
 //! Uses poe.ninja database to get the most recent change_id.
 
-extern crate env_logger;
-extern crate ezomyte;
-extern crate futures;
-extern crate hyper;
-extern crate serde_json;
-extern crate tokio_core;
+             extern crate env_logger;
+             extern crate ezomyte;
+             extern crate futures;
+             extern crate hyper;
+#[macro_use] extern crate log;
+             extern crate serde_json;
+             extern crate tokio_core;
 
 
 use std::error::Error;
@@ -33,6 +34,7 @@ fn main() {
         http.clone(), ezomyte::DEFAULT_API_ROOT, USER_AGENT);
     core.run(
         get_latest_change_id(&http).and_then(move |change_id| {
+            info!("Starting from change-id: {}", change_id);
             client.stashes().since(change_id).for_each(|stash| {
                 println!("{:#?}", stash);
                 Ok(())

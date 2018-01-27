@@ -37,6 +37,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
     {
         // TODO: preemptively check the size against minimum & maximum number of fields
 
+        // Data shared by all (or almost all) items.
         let mut id = None;
         let mut name = None;
         let mut base = None;
@@ -46,12 +47,6 @@ impl<'de> Visitor<'de> for ItemVisitor {
         let mut quality = None;
         let mut properties = None;
         let mut identified = None;
-        let (mut gem_level, mut gem_xp) = (None, None);
-        let mut flask_mods = None;
-        let (mut implicit_mods,
-             mut enchant_mods,
-             mut explicit_mods,
-             mut crafted_mods) = (None, None, None, None);
         let mut sockets = None;
         let mut requirements = None;
         let mut corrupted = None;
@@ -59,6 +54,14 @@ impl<'de> Visitor<'de> for ItemVisitor {
         let mut duplicated = None;
         let mut flavour_text = None;
         let mut extra = HashMap::new();
+        // Data specific to a particular category of items.
+        let mut map_tier = None;
+        let (mut gem_level, mut gem_xp) = (None, None);
+        let mut flask_mods = None;
+        let (mut implicit_mods,
+             mut enchant_mods,
+             mut explicit_mods,
+             mut crafted_mods) = (None, None, None, None);
 
         while let Some(key) = map.next_key::<String>()? {
             let key = key.trim();
@@ -203,6 +206,15 @@ impl<'de> Visitor<'de> for ItemVisitor {
                         }
                         quality = Some(deserialize(q)?);
                     }
+                    if let Some(tier) = props.remove("Map Tier") {
+                        let tier = tier.expect("map tier");
+                        if map_tier.is_some() {
+                            return Err(de::Error::duplicate_field("Map Tier"));
+                        }
+                        map_tier = Some(tier.parse().map_err(|_| {
+                            de::Error::invalid_value(Unexpected::Str(&tier), &"number as string")
+                        })?);
+                    }
                     if let Some(lvl) = props.remove("Level") {
                         let mut lvl = lvl.expect("gem level");
                         if gem_level.is_some() {
@@ -306,29 +318,32 @@ impl<'de> Visitor<'de> for ItemVisitor {
             // (like flask_mods + crafted_mods)
             let identified = identified.unwrap_or(true);
             if !identified {
-                ItemDetails::Unidentified
+                Some(ItemDetails::Unidentified)
+            } else if let Some(tier) = map_tier {
+                Some(ItemDetails::Map{
+                    tier: tier,
+                    mods: explicit_mods.unwrap_or_default(),
+                })
             } else if let (Some(level), Some(xp)) = (gem_level, gem_xp) {
-                ItemDetails::Gem{
+                Some(ItemDetails::Gem{
                     level,
                     experience: xp,
-                }
+                })
             } else if let Some(fm) = flask_mods {
-                ItemDetails::Flask{mods: fm}
+                Some(ItemDetails::Flask{mods: fm})
             } else if let (Some(imp), Some(enc),
                            Some(ex), Some(c)) = (implicit_mods, enchant_mods,
                                                  explicit_mods, crafted_mods) {
-                ItemDetails::Gear{
+                Some(ItemDetails::Gear{
                     implicit: imp,
                     enchants: enc,
                     explicit: ex,
                     crafted: c,
-                }
+                })
             } else {
-                // A total lack of mods would indicate a white/common item.
-                // TODO: verify this is indeed the case; perhaps the API would return
-                // empty mod lists instead so white junk would be captured by the branch above
-                // and this branch should be an error instead
-                ItemDetails::default()
+                // Some items -- like currencies or Sacrifice at Noon/Dusk/etc. fragments
+                // -- don't have any identifiable details.
+                None
             }
         };
 

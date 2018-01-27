@@ -28,6 +28,9 @@ impl<'de> Visitor<'de> for LabelVisitor {
 
     fn visit_str<E: de::Error>(self, mut v: &str) -> Result<Self::Value, E> {
         // TODO: consider providing a FromStr implementation for Label
+
+        // TODO: those prefixes can also be in other languages,
+        // like ราคา for Thai "price"; we need to support that too
         const EXACT_PRICE_PREFIX: &str = "~price";
         const NEGOTIABLE_PRICE_PREFIX: &str = "~b/o";
 
@@ -40,7 +43,7 @@ impl<'de> Visitor<'de> for LabelVisitor {
         // here, we're stripping the latter to parse the price correctly,
         // but we could retain it if we changed the format of Label
         if v.starts_with("~") {
-            if let Some(offset) = v.find('|') {
+            if let Some(offset) = v.find(|c| c == '|' || c == '/') {
                 v = v[..offset].trim_right();
             }
         }

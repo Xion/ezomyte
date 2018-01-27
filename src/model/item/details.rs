@@ -10,10 +10,18 @@ use super::attributes::{Experience, Mod};
 pub enum ItemDetails {
     /// An unidentified item. No details available.
     Unidentified,
-
-    // TODO: Map variant with `tier` and `mods`
-    // TODO: Currency variant with `amount`
-
+    /// Map item.
+    Map {
+        /// Map tier.
+        tier: u32,
+        /// Mods this map item has.
+        ///
+        /// These are the mods which affect map difficulty
+        /// as well as quantity and rarity of items dropped.
+        mods: Vec<Mod>,
+        // TODO: store "Item Rarity", "Item Quantity" and "Monster Pack Size" properties
+        // as dedicated fields here (0 if not found, meaning no bonus)
+    },
     /// Skill gem.
     Gem {
         /// Current level of the gem.
@@ -69,12 +77,6 @@ pub enum ItemDetails {
     },
 }
 
-impl Default for ItemDetails {
-    fn default() -> Self {
-        ItemDetails::Unidentified
-    }
-}
-
 impl ItemDetails {
     /// Whether the item has been identified.
     #[inline]
@@ -89,6 +91,7 @@ impl ItemDetails {
     /// in the top-down order with respect to the in-game UI.
     pub fn mods<'m>(&'m self) -> Box<Iterator<Item=&'m Mod> + 'm> {
         match *self {
+            ItemDetails::Map{ ref mods, .. } |
             ItemDetails::Flask{ ref mods } => Box::new(mods.iter()),
             ItemDetails::Gear{
                 ref implicit, ref enchants, ref explicit, ref crafted,
