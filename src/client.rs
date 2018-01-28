@@ -9,8 +9,8 @@ use serde::de::DeserializeOwned;
 use serde_json;
 use tokio_core::reactor::Handle;
 
+use super::api::Stashes;
 use super::error::Error;
-use super::stashes::Stashes;
 
 
 /// Type of futures produced by the client.

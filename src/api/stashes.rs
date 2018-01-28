@@ -5,9 +5,7 @@ use std::borrow::Cow;
 use futures::{future, Future as StdFuture, stream, Stream as StdStream};
 use hyper::client::Connect;
 
-use super::client::Client;
-use super::error::Error;
-use super::model::Stash;
+use ::{Client, Error, Stash};
 
 
 /// Stream type returned by methods of the `Stashes` type.

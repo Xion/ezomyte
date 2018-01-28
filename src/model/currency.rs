@@ -50,6 +50,11 @@ pub enum Currency {
     // in the stash dataset; it's unclear what to with them, because it'd be nice
     // to have them as enum variants, too, but then the number of variants would grow
     // without bound, so probably we'll just introduce a catchall Currency::Other(String)
+
+    // TODO: so it seems this endpoint lists A LOT more currencies and their symbols:
+    // https://www.pathofexile.com/api/trade/data/static
+    // we should probably just add them all + the ::Other variant
+    // (or even better, make a build script that generates the enum source code automatically)
 }
 
 

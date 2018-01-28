@@ -22,10 +22,10 @@
                              extern crate tokio_core;
 
 
+mod api;
 mod client;
 mod error;
 mod model;
-mod stashes;
 mod util;
 
 pub use self::client::*;

@@ -14,7 +14,7 @@ use super::currency::Currency;
 ///
 /// Those labels can have special meaning in PoE
 /// and indicate e.g. prices applicable to all items in the tab.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub enum Label {
     /// Empty label.
     Empty,
@@ -70,7 +70,8 @@ impl Label {
         }
     }
 
-    /// Return the tilde-prefixed tag (like "b/o") from the original label.
+    /// Return the tilde-prefixed tag (like "b/o") from the original label
+    /// (without the actual tilde prefix).
     pub fn tag(&self) -> Option<&str> {
         match *self {
             Label::ExactPrice(_) => Some("price"),
