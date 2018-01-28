@@ -114,20 +114,17 @@ impl StashedItem {
 
     /// Optional cosmetic note attached to the item.
     pub fn note(&self) -> Option<&str> {
-        self.label().and_then(|l| match l {
-            &Label::Cosmetic(ref s) => Some(s.as_str()),
-            _ => None,
-        })
+        self.label().and_then(|l| l.note())
     }
 
     /// Optional exact price for the item.
     pub fn exact_price(&self) -> Option<Price> {
-        self.label().and_then(|l| l.as_exact_price())
+        self.label().and_then(|l| l.exact_price())
     }
 
     /// Optional negotiable price for the item.
     pub fn negotiable_price(&self) -> Option<Price> {
-        self.label().and_then(|l| l.as_negotiable_price())
+        self.label().and_then(|l| l.negotiable_price())
     }
 
     /// Position of the item in the stash tab.

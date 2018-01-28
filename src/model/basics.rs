@@ -41,9 +41,20 @@ impl Label {
         match *self { Label::Empty => true, _ => false }
     }
 
+    /// Return a possible price in the label.
+    ///
+    /// This doesn't distinguish between the exact price and negotiable/buyout price.
+    pub fn price(&self) -> Option<Price> {
+        match *self {
+            Label::ExactPrice(p) => Some(p),
+            Label::NegotiablePrice(p) => Some(p),
+            _ => None,
+        }
+    }
+
     /// Return the exact `Price` specified in this `Label`, if any.
     #[inline]
-    pub fn as_exact_price(&self) -> Option<Price> {
+    pub fn exact_price(&self) -> Option<Price> {
         match *self {
             Label::ExactPrice(p) => Some(p),
             _ => None,
@@ -52,7 +63,7 @@ impl Label {
 
     /// Return the negotiable (buyout) `Price` specified in this `Label`, if any.
     #[inline]
-    pub fn as_negotiable_price(&self) -> Option<Price> {
+    pub fn negotiable_price(&self) -> Option<Price> {
         match *self {
             Label::NegotiablePrice(p) => Some(p),
             _ => None,
@@ -76,6 +87,15 @@ impl Label {
             Label::ExactPrice(ref p) |
             Label::NegotiablePrice(ref p) => Some(format!("{}", p).into()),
             Label::Unknown(_, ref v) => Some(v.as_str().into()),
+            _ => None,
+        }
+    }
+
+    /// Return a possible cosmetic note in this `Label`.
+    pub fn note(&self) -> Option<&str> {
+        match *self {
+            Label::Empty => Some(""),
+            Label::Cosmetic(ref s) => Some(s.as_str()),
             _ => None,
         }
     }

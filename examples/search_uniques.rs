@@ -33,10 +33,8 @@ fn main() {
                         continue;
                     }
                 }
-                let price = item.exact_price()
-                    .or_else(|| item.negotiable_price())
-                    .or_else(|| stash.label.as_exact_price())
-                    .or_else(|| stash.label.as_negotiable_price());
+                let price = item.label().and_then(|l| l.price())
+                    .or_else(|| stash.label.price());
                 let price_text = price.map(|p| format!("{}", p))
                     .unwrap_or_else(|| "<no price>".into());
                 println!("{}; {} -- {}",
