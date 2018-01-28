@@ -1,5 +1,11 @@
 //! Example of tailing the latest items from public stashes API.
 //! Uses poe.ninja database to get the most recent change_id.
+//!
+//! Pass --change_id to get just the latest change_id, e.g. for usage like this:
+//!
+//!     $ curl http://www.pathofexile.com/api/public-stash-tabs\?id="$(cargo run --example latest -- --change_id)"
+//!           jq '.' | less
+//!
 
              extern crate env_logger;
              extern crate ezomyte;
@@ -10,9 +16,10 @@
              extern crate tokio_core;
 
 
+use std::env;
 use std::error::Error;
 
-use futures::{Future, Stream};
+use futures::{future, Future, Stream};
 use hyper::Method;
 use hyper::client::{Connect, Request};
 use hyper::header::UserAgent;
@@ -28,17 +35,24 @@ const POE_NINJA_STATS_URL: &str = "http://poe.ninja/api/Data/GetStats";
 fn main() {
     env_logger::init();
 
+    let just_changed_id = env::args().skip(1).next() == Some("--change_id".into());
+
     let mut core = Core::new().unwrap();
     let http = hyper::Client::new(&core.handle());
     let client = ezomyte::Client::with_http(
         http.clone(), ezomyte::DEFAULT_API_ROOT, USER_AGENT);
     core.run(
         get_latest_change_id(&http).and_then(move |change_id| {
-            info!("Starting from change-id: {}", change_id);
-            client.stashes().since(change_id).for_each(|stash| {
-                println!("{:#?}", stash);
-                Ok(())
-            })
+            if just_changed_id {
+                println!("{}", change_id);
+                Box::new(future::ok(())) as Box<Future<Item=_, Error=_>>
+            } else {
+                info!("Starting from change-id: {}", change_id);
+                Box::new(client.stashes().since(change_id).for_each(|stash| {
+                    println!("{:#?}", stash);
+                    Ok(())
+                })) as Box<Future<Item=_, Error=_>>
+            }
         })
     ).unwrap();
 }
