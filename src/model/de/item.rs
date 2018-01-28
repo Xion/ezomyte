@@ -323,12 +323,17 @@ impl<'de> Visitor<'de> for ItemVisitor {
             }
         };
 
-        // Retain the `properties` that have values, turning the rest into Item `tags`.
+        // Retain the `properties` that have values,
+        // turning the rest into Item `tags` (after splitting by commas,
+        // which handles stuff like "Spell, Minion" given as single property for gems).
         let (props_with_values, props_sans_values): (Vec<_>, Vec<_>) =
             properties.into_iter().partition(|&(_, ref v)| v.is_some());
         let properties = props_with_values.into_iter()
             .map(|(k, v)| (k, v.unwrap())).collect();
-        let tags = props_sans_values.into_iter().map(|(k, _)| k).collect();
+        let tags = props_sans_values.into_iter()
+            .map(|(k, _)| k)
+            .flat_map(|t| t.split(',').map(ToOwned::to_owned).collect_vec())
+            .collect();
 
         Ok(Item {
             id,
