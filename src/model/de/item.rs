@@ -279,38 +279,13 @@ impl<'de> Visitor<'de> for ItemVisitor {
 
         // Also, if a magic item has no name by itself,
         // then its "typeLine" (i.e. `base`) is what actually contains its full name.
-        // We need to treat it as such, and also manually strip the prefix and/or suffix.
         if rarity == Rarity::Magic && name.is_none() && !base.is_empty() {
             name = Some(base.to_owned());
-
-            // Use our knowledge of explicit mods to determine
-            // if the magic item has a suffix, a prefix, or both.
-            lazy_static! {
-                // This matches a suffix text such as "of Warding" or "of the Leopard".
-                static ref SUFFIX_RE: Regex = Regex::new(r#"of\s+(the\s+)?\w+"#).unwrap();
-            }
-            let mods_count = explicit_mods.as_ref().map(|m: &Vec<_>| m.len()).unwrap_or(0);
-            let has_suffix = SUFFIX_RE.is_match(&*base);
-            let has_prefix = match mods_count {
-                // XXX: below is basically broken due to hybrid affixes,
-                // meaning e.g. that 2 mods may mean a hybrid affix rather than suffix+prefix
-                // and we have no way of discerning which case it is, short of knowing
-                // the names of affixes :/
-                0 => false,
-                1 => !has_suffix,  // the sole affix is a suffix
-                2...4 => true,  // >2 mods means at least one of the affixes is hybrid
-                _ => return Err(de::Error::custom(format!(
-                    "magic items can only have up to 4 explicit mods, but found {}", mods_count))),
-            };
-
-            // Strip them all from the item name to obtain the base name.
-            if has_suffix {
-                let offset = SUFFIX_RE.find_iter(&*base).last().unwrap().start();
-                base = base[..offset].trim_right().to_owned().into();
-            }
-            if has_prefix {
-                base = base.split_whitespace().into_iter().skip(1).collect();
-            }
+            // TODO: Figure out a way of determining what the prefix and suffix is,
+            // and eliminating them from `name` to get the base name.
+            // Right now, unfortunately, the API doesn't return the affixes, just mods,
+            // which means we cannot tell anything with certainty due to hybrid affixes.
+            base = "".into();
         }
 
         // Round up item mods' information into an ItemDetails data type.
