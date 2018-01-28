@@ -1,5 +1,6 @@
 //! Basic data type definitions.
 
+use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::fmt;
 
@@ -15,21 +16,31 @@ use super::currency::Currency;
 /// and indicate e.g. prices applicable to all items in the tab.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Label {
+    /// Empty label.
+    Empty,
     /// Cosmetic name, without any other meaning.
     Cosmetic(String),
     /// Exact price ("~price $N $CURR").
     ExactPrice(Price),
     /// Negotiable price ("~b/o $N $CURR").
     NegotiablePrice(Price),
+    /// Unrecognized combination of tilde-prefixed tag and value.
+    Unknown(String, String),
 }
 
 impl Default for Label {
     fn default() -> Self {
-        Label::Cosmetic("".into())
+        Label::Empty
     }
 }
 
 impl Label {
+    /// Return whether the label is empty.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        match *self { Label::Empty => true, _ => false }
+    }
+
     /// Return the exact `Price` specified in this `Label`, if any.
     #[inline]
     pub fn as_exact_price(&self) -> Option<Price> {
@@ -47,14 +58,37 @@ impl Label {
             _ => None,
         }
     }
+
+    /// Return the tilde-prefixed tag (like "b/o") from the original label.
+    pub fn tag(&self) -> Option<&str> {
+        match *self {
+            Label::ExactPrice(_) => Some("price"),
+            Label::NegotiablePrice(_) => Some("b/o"),
+            Label::Unknown(ref t, _) => Some(t),
+            _ => None,
+        }
+    }
+
+    /// Return a possible string value (usually the price)
+    /// that's associated with the label's `tag`.
+    pub fn value(&self) -> Option<Cow<str>> {
+        match *self {
+            Label::ExactPrice(ref p) |
+            Label::NegotiablePrice(ref p) => Some(format!("{}", p).into()),
+            Label::Unknown(_, ref v) => Some(v.as_str().into()),
+            _ => None,
+        }
+    }
 }
 
 impl fmt::Display for Label {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match *self {
+            Label::Empty => write!(fmt, ""),
             Label::Cosmetic(ref s) => write!(fmt, "{}", s),
             Label::ExactPrice(p) => write!(fmt, "~price {}", p),
             Label::NegotiablePrice(p) => write!(fmt, "~b/o {}", p),
+            Label::Unknown(ref t, ref v) => write!(fmt, "~{} {}", t, v),
         }
     }
 }
