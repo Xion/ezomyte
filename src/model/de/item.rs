@@ -348,16 +348,18 @@ impl<'de> Visitor<'de> for ItemVisitor {
             }
         };
 
-        // Retain the properties that have values.
-        // TODO: there are some properties w/o values, like gem categories ("Spell, Minion", etc.)
-        // which we should retain as separate `Item` field (tags?)
-        let properties = properties.into_iter().filter_map(|(k, v)| v.map(|v| (k, v))).collect();
+        // Retain the `properties` that have values, turning the rest into Item `tags`.
+        let (props_with_values, props_sans_values): (Vec<_>, Vec<_>) =
+            properties.into_iter().partition(|&(_, ref v)| v.is_some());
+        let properties = props_with_values.into_iter()
+            .map(|(k, v)| (k, v.unwrap())).collect();
+        let tags = props_sans_values.into_iter().map(|(k, _)| k).collect();
 
         Ok(Item {
             id,
             name: name.map(|n| n.to_string()),
             base: base.to_string(),
-            level, category, rarity, quality, properties, details,
+            level, category, rarity, quality, properties, tags, details,
             sockets, requirements, corrupted, influence, duplicated, flavour_text,
             extra,
         })

@@ -6,7 +6,7 @@ mod details;
 mod sockets;
 
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use serde_json::Value as Json;
 
@@ -47,7 +47,17 @@ pub struct Item {
     ///
     /// Properties are characteristics inherent to a particular item type,
     /// like armor/evasion/energy shield values and weapon damage range.
+    /// Each property has a value, which distinguishes them from `tags`.
     pub properties: HashMap<String, String>,  // TODO: parse "X-Y" ranges
+    /// Item tags.
+    ///
+    /// Tags are simple strings that indicate a particular characteristic
+    /// that an item has. For example, this is used by gems to indicate
+    /// their applicability class, like "Spell" or "Totem".
+    pub tags: HashSet<String>,
+    // TODO: consider introducing a Properties data type that simply wraps
+    // a HashMap<String, Option<String>> since this division of properties/tags
+    // may be confusing for users
     /// Item details.
     ///
     /// These are specific to the particular kind of item.
