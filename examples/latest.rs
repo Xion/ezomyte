@@ -48,7 +48,7 @@ fn main() {
                 Box::new(future::ok(())) as Box<Future<Item=_, Error=_>>
             } else {
                 info!("Starting from change-id: {}", change_id);
-                Box::new(client.stashes().since(change_id).for_each(|stash| {
+                Box::new(client.stashes().since(change_id).from_err().for_each(|stash| {
                     println!("{:#?}", stash);
                     Ok(())
                 })) as Box<Future<Item=_, Error=_>>

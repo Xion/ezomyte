@@ -14,7 +14,7 @@ use super::currency::Currency;
 ///
 /// Those labels can have special meaning in PoE
 /// and indicate e.g. prices applicable to all items in the tab.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Label {
     /// Empty label.
     Empty,
