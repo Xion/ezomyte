@@ -1,0 +1,934 @@
+[
+  {
+    "text": "Academy Map",
+    "id": "academy-map"
+  },
+  {
+    "text": "Acid Lakes Map",
+    "id": "acid-lakes-map"
+  },
+  {
+    "text": "Alleyways Map",
+    "id": "alleyways-map"
+  },
+  {
+    "text": "Ancient City Map",
+    "id": "ancient-city-map"
+  },
+  {
+    "text": "Arachnid Nest Map",
+    "id": "arachnid-nest-map"
+  },
+  {
+    "text": "Arachnid Tomb Map",
+    "id": "arachnid-tomb-map"
+  },
+  {
+    "text": "Arcade Map",
+    "id": "arcade-map"
+  },
+  {
+    "text": "Arena Map",
+    "id": "arena-map"
+  },
+  {
+    "text": "Arid Lake Map",
+    "id": "arid-lake-map"
+  },
+  {
+    "text": "Armoury Map",
+    "id": "armoury-map"
+  },
+  {
+    "text": "Arsenal Map",
+    "id": "arsenal-map"
+  },
+  {
+    "text": "Ashen Wood Map",
+    "id": "ashen-wood-map"
+  },
+  {
+    "text": "Atoll Map",
+    "id": "atoll-map"
+  },
+  {
+    "text": "Barrows Map",
+    "id": "barrows-map"
+  },
+  {
+    "text": "Basilica Map",
+    "id": "basilica-map"
+  },
+  {
+    "text": "Bazaar Map",
+    "id": "bazaar-map"
+  },
+  {
+    "text": "Beach Map",
+    "id": "beach-map"
+  },
+  {
+    "text": "Belfry Map",
+    "id": "belfry-map"
+  },
+  {
+    "text": "Bog Map",
+    "id": "bog-map"
+  },
+  {
+    "text": "Bone Crypt Map",
+    "id": "bone-crypt-map"
+  },
+  {
+    "text": "Burial Chambers Map",
+    "id": "burial-chambers-map"
+  },
+  {
+    "text": "Cage Map",
+    "id": "cage-map"
+  },
+  {
+    "text": "Caldera Map",
+    "id": "caldera-map"
+  },
+  {
+    "text": "Canyon Map",
+    "id": "canyon-map"
+  },
+  {
+    "text": "Carcass Map",
+    "id": "carcass-map"
+  },
+  {
+    "text": "Castle Ruins Map",
+    "id": "castle-ruins-map"
+  },
+  {
+    "text": "Cells Map",
+    "id": "cells-map"
+  },
+  {
+    "text": "Cemetery Map",
+    "id": "cemetery-map"
+  },
+  {
+    "text": "Channel Map",
+    "id": "channel-map"
+  },
+  {
+    "text": "Chateau Map",
+    "id": "chateau-map"
+  },
+  {
+    "text": "Pit of the Chimera Map",
+    "id": "pit-of-the-chimera-map"
+  },
+  {
+    "text": "City Square Map",
+    "id": "city-square-map"
+  },
+  {
+    "text": "Colonnade Map",
+    "id": "colonnade-map"
+  },
+  {
+    "text": "Colosseum Map",
+    "id": "colosseum-map"
+  },
+  {
+    "text": "Conservatory Map",
+    "id": "conservatory-map"
+  },
+  {
+    "text": "Coral Ruins Map",
+    "id": "coral-ruins-map"
+  },
+  {
+    "text": "Core Map",
+    "id": "core-map"
+  },
+  {
+    "text": "Courthouse Map",
+    "id": "courthouse-map"
+  },
+  {
+    "text": "Courtyard Map",
+    "id": "courtyard-map"
+  },
+  {
+    "text": "Coves Map",
+    "id": "coves-map"
+  },
+  {
+    "text": "Crimson Temple Map",
+    "id": "crimson-temple-map"
+  },
+  {
+    "text": "Crystal Ore Map",
+    "id": "crystal-ore-map"
+  },
+  {
+    "text": "Cursed Crypt Map",
+    "id": "cursed-crypt-map"
+  },
+  {
+    "text": "Dark Forest Map",
+    "id": "dark-forest-map"
+  },
+  {
+    "text": "Defiled Cathedral Map",
+    "id": "defiled-cathedral-map"
+  },
+  {
+    "text": "Desert Map",
+    "id": "desert-map"
+  },
+  {
+    "text": "Desert Spring Map",
+    "id": "desert-spring-map"
+  },
+  {
+    "text": "Dig Map",
+    "id": "dig-map"
+  },
+  {
+    "text": "Dunes Map",
+    "id": "dunes-map"
+  },
+  {
+    "text": "Dungeon Map",
+    "id": "dungeon-map"
+  },
+  {
+    "text": "Estuary Map",
+    "id": "estuary-map"
+  },
+  {
+    "text": "Excavation Map",
+    "id": "excavation-map"
+  },
+  {
+    "text": "Factory Map",
+    "id": "factory-map"
+  },
+  {
+    "text": "Fields Map",
+    "id": "fields-map"
+  },
+  {
+    "text": "Flooded Mine Map",
+    "id": "flooded-mine-map"
+  },
+  {
+    "text": "Gardens Map",
+    "id": "gardens-map"
+  },
+  {
+    "text": "Geode Map",
+    "id": "geode-map"
+  },
+  {
+    "text": "Ghetto Map",
+    "id": "ghetto-map"
+  },
+  {
+    "text": "Gorge Map",
+    "id": "gorge-map"
+  },
+  {
+    "text": "Graveyard Map",
+    "id": "graveyard-map"
+  },
+  {
+    "text": "Grotto Map",
+    "id": "grotto-map"
+  },
+  {
+    "text": "Haunted Mansion Map",
+    "id": "haunted-mansion-map"
+  },
+  {
+    "text": "Lair of the Hydra Map",
+    "id": "lair-of-the-hydra-map"
+  },
+  {
+    "text": "Iceberg Map",
+    "id": "iceberg-map"
+  },
+  {
+    "text": "Infested Valley Map",
+    "id": "infested-valley-map"
+  },
+  {
+    "text": "Ivory Temple Map",
+    "id": "ivory-temple-map"
+  },
+  {
+    "text": "Jungle Valley Map",
+    "id": "jungle-valley-map"
+  },
+  {
+    "text": "Laboratory Map",
+    "id": "laboratory-map"
+  },
+  {
+    "text": "Lair Map",
+    "id": "lair-map"
+  },
+  {
+    "text": "Lava Chamber Map",
+    "id": "lava-chamber-map"
+  },
+  {
+    "text": "Lava Lake Map",
+    "id": "lava-lake-map"
+  },
+  {
+    "text": "Leyline Map",
+    "id": "leyline-map"
+  },
+  {
+    "text": "Lighthouse Map",
+    "id": "lighthouse-map"
+  },
+  {
+    "text": "Lookout Map",
+    "id": "lookout-map"
+  },
+  {
+    "text": "Malformation Map",
+    "id": "malformation-map"
+  },
+  {
+    "text": "Marshes Map",
+    "id": "marshes-map"
+  },
+  {
+    "text": "Mausoleum Map",
+    "id": "mausoleum-map"
+  },
+  {
+    "text": "Maze Map",
+    "id": "maze-map"
+  },
+  {
+    "text": "Mesa Map",
+    "id": "mesa-map"
+  },
+  {
+    "text": "Mineral Pools Map",
+    "id": "mineral-pools-map"
+  },
+  {
+    "text": "Maze of the Minotaur Map",
+    "id": "maze-of-the-minotaur-map"
+  },
+  {
+    "text": "Moon Temple Map",
+    "id": "moon-temple-map"
+  },
+  {
+    "text": "Mud Geyser Map",
+    "id": "mud-geyser-map"
+  },
+  {
+    "text": "Museum Map",
+    "id": "museum-map"
+  },
+  {
+    "text": "Necropolis Map",
+    "id": "necropolis-map"
+  },
+  {
+    "text": "Orchard Map",
+    "id": "orchard-map"
+  },
+  {
+    "text": "Overgrown Ruin Map",
+    "id": "overgrown-ruin-map"
+  },
+  {
+    "text": "Overgrown Shrine Map",
+    "id": "overgrown-shrine-map"
+  },
+  {
+    "text": "Palace Map",
+    "id": "palace-map"
+  },
+  {
+    "text": "Park Map",
+    "id": "park-map"
+  },
+  {
+    "text": "Pen Map",
+    "id": "pen-map"
+  },
+  {
+    "text": "Peninsula Map",
+    "id": "penisula-map"
+  },
+  {
+    "text": "Phantasmagoria Map",
+    "id": "phantasmagoria-map"
+  },
+  {
+    "text": "Forge of the Phoenix Map",
+    "id": "forge-of-the-phoenix-map"
+  },
+  {
+    "text": "Pier Map",
+    "id": "pier-map"
+  },
+  {
+    "text": "Pit Map",
+    "id": "pit-map"
+  },
+  {
+    "text": "Plateau Map",
+    "id": "plateau-map"
+  },
+  {
+    "text": "Plaza Map",
+    "id": "plaza-map"
+  },
+  {
+    "text": "Port Map",
+    "id": "port-map"
+  },
+  {
+    "text": "Precinct Map",
+    "id": "precinct-map"
+  },
+  {
+    "text": "Primordial Pool Map",
+    "id": "primordial-pool-map"
+  },
+  {
+    "text": "Promenade Map",
+    "id": "promenade-map"
+  },
+  {
+    "text": "Racecourse Map",
+    "id": "racecourse-map"
+  },
+  {
+    "text": "Ramparts Map",
+    "id": "ramparts-map"
+  },
+  {
+    "text": "Reef Map",
+    "id": "reef-map"
+  },
+  {
+    "text": "Relic Chambers Map",
+    "id": "relic-chambers-map"
+  },
+  {
+    "text": "Residence Map",
+    "id": "residence-map"
+  },
+  {
+    "text": "Scriptorium Map",
+    "id": "scriptorium-map"
+  },
+  {
+    "text": "Sepulchre Map",
+    "id": "sepulchre-map"
+  },
+  {
+    "text": "Shipyard Map",
+    "id": "shipyard-map"
+  },
+  {
+    "text": "Shore Map",
+    "id": "shore-map"
+  },
+  {
+    "text": "Shrine Map",
+    "id": "shrine-map"
+  },
+  {
+    "text": "Siege Map",
+    "id": "siege-map"
+  },
+  {
+    "text": "Spider Forest Map",
+    "id": "spider-forest-map"
+  },
+  {
+    "text": "Spider Lair Map",
+    "id": "spider-lair-map"
+  },
+  {
+    "text": "Springs Map",
+    "id": "springs-map"
+  },
+  {
+    "text": "Strand Map",
+    "id": "strand-map"
+  },
+  {
+    "text": "Sulphur Vents Map",
+    "id": "sulphur-vents-map"
+  },
+  {
+    "text": "Summit Map",
+    "id": "summit-map"
+  },
+  {
+    "text": "Sunken City Map",
+    "id": "sunken-city-map"
+  },
+  {
+    "text": "Temple Map",
+    "id": "temple-map"
+  },
+  {
+    "text": "Terrace Map",
+    "id": "terrace-map"
+  },
+  {
+    "text": "Thicket Map",
+    "id": "thicket-map"
+  },
+  {
+    "text": "Torture Chamber Map",
+    "id": "torture-chamber-map"
+  },
+  {
+    "text": "Tower Map",
+    "id": "tower-map"
+  },
+  {
+    "text": "Toxic Sewer Map",
+    "id": "toxic-sewer-map"
+  },
+  {
+    "text": "Tribunal Map",
+    "id": "tribunal-map"
+  },
+  {
+    "text": "Tropical Island Map",
+    "id": "tropical-island-map"
+  },
+  {
+    "text": "Underground River Map",
+    "id": "underground-river-map"
+  },
+  {
+    "text": "Underground Sea Map",
+    "id": "underground-sea-map"
+  },
+  {
+    "text": "Vaal Pyramid Map",
+    "id": "vaal-pyramid-map"
+  },
+  {
+    "text": "Vaal Temple Map",
+    "id": "vaal-temple-map"
+  },
+  {
+    "text": "Vault Map",
+    "id": "vault-map"
+  },
+  {
+    "text": "Villa Map",
+    "id": "villa-map"
+  },
+  {
+    "text": "Volcano Map",
+    "id": "volcano-map"
+  },
+  {
+    "text": "Wasteland Map",
+    "id": "wasteland-map"
+  },
+  {
+    "text": "Waste Pool Map",
+    "id": "waste-pool-map"
+  },
+  {
+    "text": "Waterways Map",
+    "id": "waterways-map"
+  },
+  {
+    "text": "Wharf Map",
+    "id": "wharf-map"
+  },
+  {
+    "text": "Shaped Lookout Map",
+    "id": "shaped-lookout-map"
+  },
+  {
+    "text": "Shaped Beach Map",
+    "id": "shaped-beach-map"
+  },
+  {
+    "text": "Shaped Graveyard Map",
+    "id": "shaped-graveyard-map"
+  },
+  {
+    "text": "Shaped Dungeon Map",
+    "id": "shaped-dungeon-map"
+  },
+  {
+    "text": "Shaped Alleyways Map",
+    "id": "shaped-alleyways-map"
+  },
+  {
+    "text": "Shaped Pen Map",
+    "id": "shaped-pen-map"
+  },
+  {
+    "text": "Shaped Desert Map",
+    "id": "shaped-desert-map"
+  },
+  {
+    "text": "Shaped Arid Lake Map",
+    "id": "shaped-arid-lake-map"
+  },
+  {
+    "text": "Shaped Flooded Mine Map",
+    "id": "shaped-flooded-mine-map"
+  },
+  {
+    "text": "Shaped Marshes Map",
+    "id": "shaped-marshes-map"
+  },
+  {
+    "text": "Shaped Iceberg Map",
+    "id": "shaped-iceberg-map"
+  },
+  {
+    "text": "Shaped Cage Map",
+    "id": "shaped-cage-map"
+  },
+  {
+    "text": "Shaped Springs Map",
+    "id": "shaped-springs-map"
+  },
+  {
+    "text": "Shaped Excavation Map",
+    "id": "shaped-excavation-map"
+  },
+  {
+    "text": "Shaped Leyline Map",
+    "id": "shaped-leyline-map"
+  },
+  {
+    "text": "Shaped Peninsula Map",
+    "id": "shaped-penisula-map"
+  },
+  {
+    "text": "Shaped Port Map",
+    "id": "shaped-port-map"
+  },
+  {
+    "text": "Shaped Burial Chambers Map",
+    "id": "shaped-burial-chambers-map"
+  },
+  {
+    "text": "Shaped Cells Map",
+    "id": "shaped-cells-map"
+  },
+  {
+    "text": "Shaped Arcade Map",
+    "id": "shaped-arcade-map"
+  },
+  {
+    "text": "Shaped City Square Map",
+    "id": "shaped-city-square-map"
+  },
+  {
+    "text": "Shaped Relic Chambers Map",
+    "id": "shaped-relic-chambers-map"
+  },
+  {
+    "text": "Shaped Courthouse Map",
+    "id": "shaped-courthouse-map"
+  },
+  {
+    "text": "Shaped Strand Map",
+    "id": "shaped-strand-map"
+  },
+  {
+    "text": "Shaped Chateau Map",
+    "id": "shaped-chateau-map"
+  },
+  {
+    "text": "Shaped Grotto Map",
+    "id": "shaped-grotto-map"
+  },
+  {
+    "text": "Shaped Gorge Map",
+    "id": "shaped-gorge-map"
+  },
+  {
+    "text": "Shaped Volcano Map",
+    "id": "shaped-volcano-map"
+  },
+  {
+    "text": "Shaped Lighthouse Map",
+    "id": "shaped-lighthouse-map"
+  },
+  {
+    "text": "Shaped Canyon Map",
+    "id": "shaped-canyon-map"
+  },
+  {
+    "text": "Shaped Conservatory Map",
+    "id": "shaped-conservatory-map"
+  },
+  {
+    "text": "Shaped Sulphur Vents Map",
+    "id": "shaped-sulphur-vents-map"
+  },
+  {
+    "text": "Shaped Haunted Mansion Map",
+    "id": "shaped-haunted-mansion-map"
+  },
+  {
+    "text": "Shaped Lookout Map",
+    "id": "shaped-maze-map"
+  },
+  {
+    "text": "Shaped Channel Map",
+    "id": "shaped-channel-map"
+  },
+  {
+    "text": "Shaped Toxic Sewer Map",
+    "id": "shaped-toxic-sewer-map"
+  },
+  {
+    "text": "Shaped Ancient City Map",
+    "id": "shaped-ancient-city-map"
+  },
+  {
+    "text": "Shaped Ivory Temple Map",
+    "id": "shaped-ivory-temple-map"
+  },
+  {
+    "text": "Shaped Spider Lair Map",
+    "id": "shaped-spider-lair-map"
+  },
+  {
+    "text": "Shaped Barrows Map",
+    "id": "shaped-barrows-map"
+  },
+  {
+    "text": "Shaped Mausoleum Map",
+    "id": "shaped-mausoleum-map"
+  },
+  {
+    "text": "Shaped Fields Map",
+    "id": "shaped-fields-map"
+  },
+  {
+    "text": "Shaped Jungle Valley Map",
+    "id": "shaped-jungle-valley-map"
+  },
+  {
+    "text": "Shaped Phantasmagoria Map",
+    "id": "shaped-phantasmagoria-map"
+  },
+  {
+    "text": "Shaped Academy Map",
+    "id": "shaped-academy-map"
+  },
+  {
+    "text": "Shaped Thicket Map",
+    "id": "shaped-thicket-map"
+  },
+  {
+    "text": "Shaped Wharf Map",
+    "id": "shaped-wharf-map"
+  },
+  {
+    "text": "Shaped Ashen Wood Map",
+    "id": "shaped-ashen-wood-map"
+  },
+  {
+    "text": "Shaped Atoll Map",
+    "id": "shaped-atoll-map"
+  },
+  {
+    "text": "Shaped Cemetery Map",
+    "id": "shaped-cemetery-map"
+  },
+  {
+    "text": "Shaped Underground Sea Map",
+    "id": "shaped-underground-sea-map"
+  },
+  {
+    "text": "Shaped Tribunal Map",
+    "id": "shaped-tribunal-map"
+  },
+  {
+    "text": "Shaped Coral Ruins Map",
+    "id": "shaped-coral-ruins-map"
+  },
+  {
+    "text": "Shaped Lava Chamber Map",
+    "id": "shaped-lava-chamber-map"
+  },
+  {
+    "text": "Shaped Residence Map",
+    "id": "shaped-residence-map"
+  },
+  {
+    "text": "Shaped Ramparts Map",
+    "id": "shaped-ramparts-map"
+  },
+  {
+    "text": "Shaped Dunes Map",
+    "id": "shaped-dunes-map"
+  },
+  {
+    "text": "Shaped Bone Crypt Map",
+    "id": "shaped-bone-crypt-map"
+  },
+  {
+    "text": "Shaped Underground River Map",
+    "id": "shaped-underground-river-map"
+  },
+  {
+    "text": "Shaped Gardens Map",
+    "id": "shaped-gardens-map"
+  },
+  {
+    "text": "Shaped Arachnid Nest Map",
+    "id": "shaped-arachnid-nest-map"
+  },
+  {
+    "text": "Shaped Bazaar Map",
+    "id": "shaped-bazaar-map"
+  },
+  {
+    "text": "Shaped Laboratory Map",
+    "id": "shaped-laboratory-map"
+  },
+  {
+    "text": "Shaped Infested Valley Map",
+    "id": "shaped-infested-valley-map"
+  },
+  {
+    "text": "Shaped Overgrown Ruin Map",
+    "id": "shaped-overgrown-ruin-map"
+  },
+  {
+    "text": "Shaped Vaal Pyramid Map",
+    "id": "shaped-vaal-pyramid-map"
+  },
+  {
+    "text": "Shaped Geode Map",
+    "id": "shaped-geode-map"
+  },
+  {
+    "text": "Shaped Armoury Map",
+    "id": "shaped-armoury-map"
+  },
+  {
+    "text": "Shaped Courtyard Map",
+    "id": "shaped-courtyard-map"
+  },
+  {
+    "text": "Shaped Mud Geyser Map",
+    "id": "shaped-mud-geyser-map"
+  },
+  {
+    "text": "Shaped Shore Map",
+    "id": "shaped-shore-map"
+  },
+  {
+    "text": "Shaped Tropical Island Map",
+    "id": "shaped-tropical-island-map"
+  },
+  {
+    "text": "Shaped Mineral Pools Map",
+    "id": "shaped-mineral-pools-map"
+  },
+  {
+    "text": "Shaped Moon Temple Map",
+    "id": "shaped-moon-temple-map"
+  },
+  {
+    "text": "Shaped Sepulchre Map",
+    "id": "shaped-sepulchre-map"
+  },
+  {
+    "text": "Shaped Tower Map",
+    "id": "shaped-tower-map"
+  },
+  {
+    "text": "Shaped Waste Pool Map",
+    "id": "shaped-waste-pool-map"
+  },
+  {
+    "text": "Shaped Plateau Map",
+    "id": "shaped-plateau-map"
+  },
+  {
+    "text": "Shaped Estuary Map",
+    "id": "shaped-estuary-map"
+  },
+  {
+    "text": "Shaped Vault Map",
+    "id": "shaped-vault-map"
+  },
+  {
+    "text": "Shaped Temple Map",
+    "id": "shaped-temple-map"
+  },
+  {
+    "text": "Shaped Arena Map",
+    "id": "shaped-arena-map"
+  },
+  {
+    "text": "Shaped Museum Map",
+    "id": "shaped-museum-map"
+  },
+  {
+    "text": "Shaped Scriptorium Map",
+    "id": "shaped-scriptorium-map"
+  },
+  {
+    "text": "Shaped Siege Map",
+    "id": "shaped-siege-map"
+  },
+  {
+    "text": "Shaped Shipyard Map",
+    "id": "shaped-shipyard-map"
+  },
+  {
+    "text": "Shaped Belfry Map",
+    "id": "shaped-belfry-map"
+  },
+  {
+    "text": "Shaped Arachnid Tomb Map",
+    "id": "shaped-arachnid-tomb-map"
+  },
+  {
+    "text": "Shaped Wasteland Map",
+    "id": "shaped-wasteland-map"
+  },
+  {
+    "text": "Shaped Precinct Map",
+    "id": "shaped-precinct-map"
+  },
+  {
+    "text": "Shaped Bog Map",
+    "id": "shaped-bog-map"
+  },
+  {
+    "text": "Shaped Pier Map",
+    "id": "shaped-pier-map"
+  },
+  {
+    "text": "Shaped Cursed Crypt Map",
+    "id": "shaped-cursed-crypt-map"
+  },
+  {
+    "text": "Shaped Orchard Map",
+    "id": "shaped-orchard-map"
+  }
+]
