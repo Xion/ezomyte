@@ -5,11 +5,8 @@ use std::borrow::Cow;
 use futures::{future, Future as StdFuture, stream, Stream as StdStream};
 use hyper::client::Connect;
 
-use ::{Client, Error, Stash};
-
-
-/// Stream type returned by methods of the `Stashes` type.
-pub type Stream<T> = Box<StdStream<Item = T, Error = Error>>;
+use ::{Client, Stash};
+use super::Stream;
 
 
 /// Interface for accessing the public stashes.
