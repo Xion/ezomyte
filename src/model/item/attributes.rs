@@ -50,7 +50,7 @@ macro_attr! {
 macro_attr! {
     /// Item mod.
     /// For now this is just verbatim text of the mod.
-    #[derive(Clone, Debug, Deserialize,
+    #[derive(Clone, Deserialize,
              NewtypeFrom!, NewtypeDeref!, NewtypeDerefMut!,
              NewtypeDisplay!)]
     pub struct Mod(String);
@@ -61,6 +61,12 @@ impl Mod {
     #[inline]
     pub fn as_str(&self) -> &str {
         self.0.as_str()
+    }
+}
+
+impl fmt::Debug for Mod {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        write!(fmt, "Mod({:?})", self.0)
     }
 }
 

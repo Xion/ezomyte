@@ -13,7 +13,7 @@ const EXPECTING_MSG: &str = "item category as string or 1-element map";
 // Note that "jewels" can be either a standalone string or a map key.
 // The former denotes a regular jewel while the latter should be {"jewels": ["abyss"]}
 // to describe abyss jewels.
-const KEYS: &[&str] = &["accessories", "armour", "jewels", "weapons"];
+const KEYS: &[&str] = &["accessories", "armour", "jewels", "weapons", "currency"];
 const STRINGS: &[&str] = &["jewels", "flasks", "maps", "gems", "cards", "currency"];
 
 
@@ -79,6 +79,9 @@ impl<'de> Visitor<'de> for ItemCategoryVisitor {
                     Some("abyss") => Ok(ItemCategory::Jewel(JewelType::Abyss)),
                     sc => Err(de::Error::custom(format!("unexpected jewel type: {:?}", sc))),
                 },
+                // TODO: figure out why "currency" can also be a map key here rather than string below,
+                // and what additional data it carries
+                "currency" => Ok(ItemCategory::Currency),
                 // TODO: consider storing the key as ItemCategory::Other instead,
                 // to support potentially complex new item categories introduced in future leagues
                 // (but how do we keep the data? add another field to ::Other?)

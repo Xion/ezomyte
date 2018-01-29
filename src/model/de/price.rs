@@ -34,6 +34,8 @@ impl<'de> Visitor<'de> for PriceVisitor {
             return Err(de::Error::invalid_length(0, &"non-empty string"));
         }
 
+        // TODO: we're also seeing prices as ".1 chaos (10:1c)"
+        // which seem to indicate currency trade ratios; we should handle them
         let parts: Vec<_> = v.split_whitespace().collect();
         if parts.len() != 2 {
             return Err(de::Error::invalid_value(Unexpected::Str(v), &EXPECTING_MSG));

@@ -9,7 +9,7 @@ use regex::Regex;
 use serde::de::{self, Deserialize, Visitor, Unexpected};
 use serde_json::Value as Json;
 
-use super::super::{Influence, Item, ItemDetails, Rarity};
+use super::super::{Influence, Item, ItemCategory, ItemDetails, Rarity};
 use super::util::deserialize;
 
 
@@ -291,11 +291,15 @@ impl<'de> Visitor<'de> for ItemVisitor {
             base = "".into();
         }
 
-        // Round up item mods' information into an ItemDetails data type.
+        // Round up most of the item information into an ItemDetails data type.
         let details = {
+            let identified = identified.unwrap_or(true);
+            let has_gear_mods =
+                implicit_mods.is_some() || enchant_mods.is_some()
+                || explicit_mods.is_some() || crafted_mods.is_some();
+
             // TODO: verify that we didn't get an invalid combination of fields
             // (like flask_mods + crafted_mods)
-            let identified = identified.unwrap_or(true);
             if !identified {
                 Some(ItemDetails::Unidentified)
             } else if let Some(tier) = map_tier {
@@ -310,14 +314,16 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 })
             } else if let Some(fm) = flask_mods {
                 Some(ItemDetails::Flask{mods: fm})
-            } else if let (Some(imp), Some(enc),
-                           Some(ex), Some(c)) = (implicit_mods, enchant_mods,
-                                                 explicit_mods, crafted_mods) {
+            } else if has_gear_mods
+                      // Exclude currencies here because the API returns their on-use "mods"
+                      // (like "Reforges a rare item with new random properties" for Chaos Orb)
+                      // as `explicitMods`, and they obviously aren't `Gear`.
+                      && category != ItemCategory::Currency {
                 Some(ItemDetails::Gear{
-                    implicit: imp,
-                    enchants: enc,
-                    explicit: ex,
-                    crafted: c,
+                    implicit: implicit_mods.unwrap_or_default(),
+                    enchants: enchant_mods.unwrap_or_default(),
+                    explicit: explicit_mods.unwrap_or_default(),
+                    crafted: crafted_mods.unwrap_or_default(),
                 })
             } else {
                 // Some items -- like currencies or Sacrifice at Noon/Dusk/etc. fragments
