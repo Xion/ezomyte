@@ -38,7 +38,7 @@ lazy_static! {
     static ref ADDITIONAL_CURRENCY_IDS: HashMap<String, &'static [&'static str]> = hashmap!{
         "exalted".into() => &["exa"] as &[&str],
         "fusing".into() => &["fuse"],
-        "mirror".into() => &["mir"],
+        "mir".into() => &["mirror"],
     };
 }
 

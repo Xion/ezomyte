@@ -191,6 +191,9 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 "flavourText" => {
                     check_duplicate!("flavourText" => flavour_text);
                     let text: Vec<String> = map.next_value()?;
+                    // TODO: some items (like Belly) don't have the trailing \r or \n
+                    // at each string of flavour_text, so we should add them (or spaces)
+                    // if we're merging the text into a single string
                     flavour_text = Some(Some(text.join("").replace('\r', "")));
                 }
                 "properties" => {
