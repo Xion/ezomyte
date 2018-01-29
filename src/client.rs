@@ -119,12 +119,10 @@ impl<C: Clone + Connect> Client<C> {
                         }
                     }
                     if status.is_success() {
-                        serde_json::from_slice::<Out>(&body)
-                            .map_err(|e| Error::from(e))
+                        serde_json::from_slice::<Out>(&body).map_err(Error::Json)
                     } else {
-                        // TODO: proper error handling
                         // TODO: specifically handle 503 from possible maintenance
-                        Err(format!("HTTP status: {}", status).into())
+                        Err(Error::Server(status))
                     }
                 })
             })

@@ -70,6 +70,9 @@ impl<C: Clone + Connect> Stashes<C> {
                     Some(cid) => format!("{}?id={}", STASHES_URL, cid).into(),
                     None => STASHES_URL.into(),
                 };
+                // TODO: what happens when an invalid change_id is passed?
+                // we should handle that as a separate error type here
+                // (which may wrap the crate-level Error)
                 Some(this.client.get(url).and_then(move |resp: PublicStashTabsResponse| {
                     let next_state = match resp.next_change_id {
                         Some(next_cid) => {
