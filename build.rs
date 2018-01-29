@@ -1,15 +1,21 @@
 //! Build script.
+//!
+//! The script takes static data obtained from the API and generates some code
+//! for inclusion in the library source, including e.g. the `Currency` enum.
 
              extern crate itertools;
+#[macro_use] extern crate lazy_static;
+#[macro_use] extern crate maplit;
              extern crate serde;
 #[macro_use] extern crate serde_derive;
              extern crate serde_json;
 
 
+use std::collections::HashMap;
 use std::env;
 use std::error::Error;
-use std::fs;
-use std::io::Write;
+use std::fs::{self, File};
+use std::io::{self, Write};
 use std::path::Path;
 
 use itertools::Itertools;
@@ -24,6 +30,17 @@ fn main() {
 
 const CURRENCY_JSON_FILE: &str = "data/currency.json";
 const CURRENCY_ENUM_FILE: &str = "model/currency/enum.inc.rs";
+const CURRENCY_DE_FILE: &str = "model/de/currency/visit_str.inc.rs";
+
+lazy_static! {
+    /// Mapping from currency IDs loaded from JSON file to their additional IDs
+    /// used in public stash tab item pricing.
+    static ref ADDITIONAL_CURRENCY_IDS: HashMap<String, &'static [&'static str]> = hashmap!{
+        "exalted".into() => &["exa"] as &[&str],
+        "fusing".into() => &["fuse"],
+        "mirror".into() => &["mir"],
+    };
+}
 
 /// Generate code for the `Currency` enum and its deserialization.
 fn generate_currency_code() -> Result<(), Box<Error>> {
@@ -31,32 +48,8 @@ fn generate_currency_code() -> Result<(), Box<Error>> {
     let mut file = fs::OpenOptions::new().read(true).open(data_file)?;
     let currencies: Vec<CurrencyData> = serde_json::from_reader(&mut file)?;
 
-    let enum_file = Path::new(&env::var("OUT_DIR").unwrap()).join(CURRENCY_ENUM_FILE);
-    fs::create_dir_all(enum_file.parent().unwrap())?;
-    let mut out = fs::OpenOptions::new()
-        .create(true).truncate(true).write(true)
-        .open(enum_file)?;
-
-    // TODO: some templating engine could be useful for code generation
-    writeln!(out, "#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]")?;
-    writeln!(out, "pub enum Currency {{")?;
-    {
-        // E.g. #[serde(rename="chaos")] ChaosOrb;
-        for currency in currencies {
-            // TODO: support both the originals & the manual overrides
-            // (the overrides are based on data actually encountered in public stash tabs)
-            // by also generating a custom Deserialize impl
-            let id = match currency.id.as_str() {
-                "exalted" => "exa",
-                "fusing" => "fuse",
-                "mirror" => "mir",
-                id => id,
-            };
-            writeln!(out, "    #[serde(rename=\"{}\")]", id)?;
-            writeln!(out, "    {},", upper_camel_case(&currency.name))?;
-        }
-    }
-    writeln!(out, "}}")?;
+    generate_currency_enum(&currencies)?;
+    generate_currency_de(&currencies)?;
     Ok(())
 }
 
@@ -69,8 +62,56 @@ struct CurrencyData {
     id: String,
 }
 
+fn generate_currency_enum(currencies: &[CurrencyData]) -> io::Result<()> {
+    let mut out = create_out_file(CURRENCY_ENUM_FILE)?;
+
+    // TODO: some templating engine could be useful for code generation
+    writeln!(out, "#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Serialize)]")?;
+    writeln!(out, "pub enum Currency {{")?;
+    {
+        // E.g. #[serde(rename="chaos")] ChaosOrb,
+        for currency in currencies {
+            writeln!(out, "    #[serde(rename=\"{}\")]", currency.id)?;
+            writeln!(out, "    {},", upper_camel_case(&currency.name))?;
+        }
+    }
+    writeln!(out, "}}")?;
+    Ok(())
+}
+
+/// Generate the visit_str() method branches of Currency deserializer.
+fn generate_currency_de(currencies: &[CurrencyData]) -> io::Result<()> {
+    let mut out = create_out_file(CURRENCY_DE_FILE)?;
+
+    writeln!(out, "match v {{")?;
+    for currency in currencies {
+        // Include possible alternative/community "names" for the currencies
+        // so that they are deserialized correctly.
+        let mut patterns: Vec<&str> = vec![&currency.id];
+        if let Some(more) = ADDITIONAL_CURRENCY_IDS.get(&currency.id) {
+            patterns.extend(more.iter());
+        }
+        writeln!(out, "    {} => Ok(Currency::{}),",
+            patterns.into_iter().format_with(" | ", |x, f| f(&format_args!("\"{}\"", x))),
+            upper_camel_case(&currency.name))?;
+    }
+    writeln!(out, "    v => Err(de::Error::invalid_value(Unexpected::Str(v), &EXPECTING_MSG)),")?;
+    writeln!(out, "}}")?;
+    Ok(())
+}
+
 
 // Utility functions
+
+/// Open a file inside the $OUT_DIR for writing.
+fn create_out_file<P: AsRef<Path>>(path: P) -> io::Result<File> {
+    let out_dir = env::var("OUT_DIR").unwrap();
+    let path = Path::new(&out_dir).join(path);
+    fs::create_dir_all(path.parent().unwrap())?;
+    fs::OpenOptions::new()
+        .create(true).truncate(true).write(true)
+        .open(path)
+}
 
 fn upper_camel_case(s: &str) -> String {
     s.chars().filter(|c| c.is_alphanumeric() || c.is_whitespace())

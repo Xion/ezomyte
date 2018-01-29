@@ -4,6 +4,7 @@
 mod util;
 
 mod category;
+mod currency;
 mod experience;
 mod item;
 mod label;
