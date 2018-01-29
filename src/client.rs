@@ -1,10 +1,11 @@
 //! Module defining the PoE API client object.
 
 use futures::{Future as StdFuture, Stream as StdStream};
-use hyper::{self, Method};
+use hyper::{self, Method, StatusCode};
 use hyper::client::{Connect, HttpConnector, Request};
 use hyper::header::UserAgent;
 use log::Level::*;
+use regex::{Regex, RegexBuilder};
 use serde::de::DeserializeOwned;
 use serde_json;
 use tokio_core::reactor::Handle;
@@ -118,10 +119,26 @@ impl<C: Clone + Connect> Client<C> {
                             debug!("Response payload: {}", body_text);
                         }
                     }
+
                     if status.is_success() {
-                        serde_json::from_slice::<Out>(&body).map_err(Error::Json)
+                        return serde_json::from_slice::<Out>(&body).map_err(Error::Json);
+                    }
+
+                    let body_text = String::from_utf8_lossy(&body);
+
+                    // Check if we got an HTML page signaling maintenance.
+                    // It's not perfect but should do well enough in practice.
+                    lazy_static! {
+                        static ref ANGLE_HTML_RE: Regex = RegexBuilder::new("<html")
+                            .case_insensitive(true)
+                            .build().unwrap();
+                    }
+                    let is_maintenance = status == StatusCode::ServiceUnavailable  // HTTP 503
+                        && ANGLE_HTML_RE.is_match(&*body_text)
+                        && body_text.contains("maintenance");
+                    if is_maintenance {
+                        Err(Error::UnderMaintenance)
                     } else {
-                        // TODO: specifically handle 503 from possible maintenance
                         Err(Error::Server(status))
                     }
                 })
