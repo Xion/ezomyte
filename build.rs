@@ -66,6 +66,7 @@ fn generate_currency_enum(currencies: &[CurrencyData]) -> io::Result<()> {
     let mut out = create_out_file(CURRENCY_ENUM_FILE)?;
 
     // TODO: some templating engine could be useful for code generation
+    // (but not the `quote` crate because we're creating unhygenic identifiers here)
     writeln!(out, "#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Serialize)]")?;
     writeln!(out, "pub enum Currency {{")?;
     {
