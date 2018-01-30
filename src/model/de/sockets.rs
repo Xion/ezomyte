@@ -43,13 +43,13 @@ impl<'de> Visitor<'de> for ItemSocketsVisitor {
 
         while let Some(socket) = seq.next_element::<HashMap<String, Json>>()? {
             let color = socket.get("sColour").and_then(|c| c.as_str())
-                .ok_or_else(|| de::Error::custom("socket color missing"))?;
+                .ok_or_else(|| de::Error::missing_field("sColour"))?;
             if color == "A" {
                 abyssal_count += 1;
                 continue;
             }
             let group = socket.get("group").and_then(|g| g.as_u64())
-                .ok_or_else(|| de::Error::custom("socket group number missing"))?;
+                .ok_or_else(|| de::Error::missing_field("group"))?;
             let regular_color = deserialize(color)?;
 
             regular_groups.entry(group).or_insert_with(Vec::new)
