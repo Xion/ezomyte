@@ -29,7 +29,7 @@ pub enum Color {
 #[derive(Debug)]
 pub struct ItemSockets {
     /// Number of abyss sockets the item has.
-    pub(crate) abyss_count: u64,
+    pub(crate) abyssal_count: u64,
     /// Groups of regular sockets that are linked together.
     pub(crate) regular_groups: Vec<SocketGroup>,
 }
@@ -38,7 +38,7 @@ impl Default for ItemSockets {
     fn default() -> Self {
         // Default is no sockets at all, for items that don't have them at all.
         ItemSockets {
-            abyss_count: 0,
+            abyssal_count: 0,
             regular_groups: vec![],
         }
     }
@@ -50,10 +50,10 @@ impl ItemSockets {
         self.regular_groups.iter().map(|g| g.size() as u64).sum()
     }
 
-    /// Number of abyss sockets this item has.
+    /// Number of abyssal sockets this item has.
     #[inline]
-    pub fn abyss_count(&self) -> u64 {
-        self.abyss_count
+    pub fn abyssal_count(&self) -> u64 {
+        self.abyssal_count
     }
 
     /// Colors of all regular sockets (in an unspecified order).

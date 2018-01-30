@@ -37,7 +37,7 @@ impl<'de> Visitor<'de> for ItemSocketsVisitor {
             return Ok(ItemSockets::default());
         }
 
-        let mut abyss_count = 0;
+        let mut abyssal_count = 0;
         let mut regular_groups = HashMap::new();
         let mut indices = HashSet::new();
 
@@ -45,7 +45,7 @@ impl<'de> Visitor<'de> for ItemSocketsVisitor {
             let color = socket.get("sColour").and_then(|c| c.as_str())
                 .ok_or_else(|| de::Error::custom("socket color missing"))?;
             if color == "A" {
-                abyss_count += 1;
+                abyssal_count += 1;
                 continue;
             }
             let group = socket.get("group").and_then(|g| g.as_u64())
@@ -71,6 +71,6 @@ impl<'de> Visitor<'de> for ItemSocketsVisitor {
             .map(|(i, g)| SocketGroup{id: i as u8, colors: g})
             .collect();
 
-        Ok(ItemSockets{abyss_count, regular_groups})
+        Ok(ItemSockets{abyssal_count, regular_groups})
     }
 }
