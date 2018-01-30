@@ -1,8 +1,12 @@
 //! Items that can be traded.
 
-mod attributes;
 mod category;
 mod details;
+mod experience;
+mod influence;
+mod mod_;
+mod quality;
+mod rarity;
 mod sockets;
 
 
@@ -10,9 +14,13 @@ use std::collections::{HashMap, HashSet};
 
 use serde_json::Value as Json;
 
-pub use self::attributes::*;
 pub use self::category::*;
 pub use self::details::ItemDetails;
+pub use self::experience::Experience;
+pub use self::influence::Influence;
+pub use self::mod_::Mod;
+pub use self::quality::Quality;
+pub use self::rarity::Rarity;
 pub use self::sockets::*;
 
 

@@ -1,95 +1,10 @@
-//! Item attributes in the broadest sense
-//! (mods, quality, elder/shaper base, gem experience, etc.).
+//! Type for holding gem experience.
 
 use std::fmt;
 use std::ops::{Add, AddAssign};
 
 use separator::Separatable;
 
-
-macro_attr! {
-    /// Rarity of an item.
-    #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq,
-             IterVariants!(Rarities))]
-    pub enum Rarity {
-        /// Normal ("white") item.
-        ///
-        /// This also includes items which aren't gear, like gems or divination cards.
-        Normal,
-        /// Magic ("blue") item.
-        Magic,
-        /// Rare ("yellow") item.
-        Rare,
-        /// Unique item.
-        Unique,
-    }
-}
-
-impl Default for Rarity {
-    fn default() -> Self {
-        Rarity::Normal
-    }
-}
-
-
-macro_attr! {
-    /// War for the Atlas influence on the item.
-    #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq,
-             IterVariants!(Influences))]
-    pub enum Influence {
-        /// The item base has been influenced by the Elder.
-        /// This is colloquially referred to as an "elder item".
-        Elder,
-        /// This item base has been influenced by the Shaper.
-        /// This is colloquially referred to as a "shaped item".
-        Shaper,
-    }
-}
-
-
-macro_attr! {
-    /// Item mod.
-    /// For now this is just verbatim text of the mod.
-    #[derive(Clone, Deserialize,
-             NewtypeFrom!, NewtypeDeref!, NewtypeDerefMut!,
-             NewtypeDisplay!)]
-    pub struct Mod(String);
-}
-
-impl Mod {
-    /// Mod text as string.
-    #[inline]
-    pub fn as_str(&self) -> &str {
-        self.0.as_str()
-    }
-}
-
-impl fmt::Debug for Mod {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(fmt, "Mod({:?})", self.0)
-    }
-}
-
-
-macro_attr! {
-    /// Quality of an item.
-    #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd,
-             NewtypeFrom!, NewtypeDeref!, NewtypeDerefMut!,
-             NewtypeAdd!, NewtypeAddAssign!)]
-    pub struct Quality(u8);
-}
-
-impl Default for Quality {
-    fn default() -> Self {
-        Quality(0)
-    }
-}
-
-impl fmt::Display for Quality {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(fmt, "+{}%", self.0)
-    }
-}
 
 /// Experience gained by a gem.
 #[derive(Clone, Copy)]

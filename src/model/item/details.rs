@@ -2,7 +2,8 @@
 
 use std::iter;
 
-use super::attributes::{Experience, Mod};
+use super::experience::Experience;
+use super::mod_::Mod;
 
 
 /// Details of the particular items, if known.
@@ -41,10 +42,9 @@ pub enum ItemDetails {
         /// mods affecting charges, etc..
         mods: Vec<Mod>,
     },
-    /// Item with mods.
+    /// Item that goes in a gear slot.
     ///
-    /// This includes most items, such as those in gear slots,
-    /// jewels, maps, and so on.
+    /// This also includes jewels that go in the passive tree or into abyssal sockets.
     Gear {
         /// Implicit mods an item has
         /// (those displayed in navy color above a horizontal line in the UI).
