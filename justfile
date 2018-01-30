@@ -9,7 +9,7 @@ build:
 clean:
 	cargo clean
 test:
-    cargo test
+    cargo test --no-fail-fast
 
 
 update: update-data

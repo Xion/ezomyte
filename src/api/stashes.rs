@@ -6,7 +6,7 @@ use futures::{future, Future as StdFuture, stream, Stream as StdStream};
 use hyper::client::Connect;
 
 use ::{Client, Stash};
-use super::Stream;
+use super::{Batched, Stream};
 
 
 /// Interface for accessing the public stashes.
@@ -27,23 +27,21 @@ impl<C: Clone + Connect> Stashes<C> {
 impl<C: Clone + Connect> Stashes<C> {
     /// Returns a stream of all `Stash` objects from the beginning of time.
     #[inline]
-    pub fn all(&self) -> Stream<Stash> {
+    pub fn all(&self) -> Stream<Batched<Stash>> {
         self.get_stashes_stream(None)
     }
 
     /// Returns a stream of `Stash` objects beginning at given `change_id`.
     #[inline]
-    pub fn since<Cid>(&self, change_id: Cid) -> Stream<Stash>
+    pub fn since<Cid>(&self, change_id: Cid) -> Stream<Batched<Stash>>
         where Cid: Into<String>
     {
         self.get_stashes_stream(Some(change_id.into()))
     }
-    // TODO: find a way to relay the final next-change-id to callers
-    // so they can implement polling for new items if they wish
     // TODO: also, a way to obtain the "current" next-change-id would be nice
     // (or even a method like newest() to automatically start from there)
 
-    fn get_stashes_stream(&self, change_id: Option<String>) -> Stream<Stash> {
+    fn get_stashes_stream(&self, change_id: Option<String>) -> Stream<Batched<Stash>> {
         /// Enum for managing the state machine of the resulting Stream.
         enum State {
             Start{change_id: Option<String>},
@@ -71,6 +69,19 @@ impl<C: Clone + Connect> Stashes<C> {
                 // we should handle that as a separate error type here
                 // (which may wrap the crate-level Error)
                 Some(this.client.get(url).and_then(move |resp: PublicStashTabsResponse| {
+                    let stashes = {
+                        // Wrap the returned stashes in `Batched` type
+                        // to include the current & next change_id.
+                        let curr_cid = change_id.clone();
+                        let next_cid = resp.next_change_id.clone();
+                        resp.stashes.into_iter().map(move |entry| Batched{
+                            entry,
+                            // TODO: these clones are probably unnecessary
+                            // if we returned Batched<Stash, &str>
+                            curr_token: curr_cid.clone(),
+                            next_token: next_cid.clone(),
+                        })
+                    };
                     let next_state = match resp.next_change_id {
                         Some(next_cid) => {
                             // If we got the same change_id, we've reached the end.
@@ -86,7 +97,7 @@ impl<C: Clone + Connect> Stashes<C> {
                             State::End
                         }
                     };
-                    future::ok((stream::iter_ok(resp.stashes), next_state))
+                    future::ok((stream::iter_ok(stashes), next_state))
                 }))
             })
             .flatten()

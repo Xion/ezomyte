@@ -21,7 +21,7 @@ fn main() {
     let client = ezomyte::Client::new(USER_AGENT, &core.handle());
     core.run(
         client.stashes().all().for_each(|stash| {
-            for item in stash.items {
+            for item in &stash.items {
                 println!("{}", item.name.as_ref().unwrap_or(&item.base));
             }
             Ok(())
