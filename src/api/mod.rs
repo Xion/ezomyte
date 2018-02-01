@@ -1,5 +1,6 @@
 //! Module implementing the various APIs exposed by the library.
 
+mod leagues;
 mod stashes;
 
 
@@ -10,6 +11,7 @@ use std::ops::Deref;
 use futures::Stream as StdStream;
 
 use super::error::Error;
+pub use self::leagues::Leagues;
 pub use self::stashes::Stashes;
 
 

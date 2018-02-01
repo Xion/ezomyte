@@ -4,10 +4,10 @@ use std::borrow::Cow;
 use std::fmt;
 
 
-/// League in Path of Exile.
+/// Main league in Path of Exile.
 ///
-/// For our purposes, we're only distinguishing permanent & temporary leagues,
-/// without making note of a particular temporary league name (like "Harbinger" vs "Abyss").
+/// Those are the leagues you can select (or used to be able to select, for historical data)
+/// in the character screen.
 #[derive(Clone)]  // TODO: impl Hash that's basically season.or_else(bools)
 pub struct League {
     /// Season name, if available.
