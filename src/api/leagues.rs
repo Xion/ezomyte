@@ -122,12 +122,19 @@ const MAX_COMPACT_ITEMS: usize = 230;  // as per API docs
 
 
 /// Information about a single league, as retrieved from the PoE API.
+///
+/// *Note*: This type `Deref`s to the `League` type which contains information
+/// about the particular kind of the league: hardcode, SSF, etc.
 #[derive(Debug)]
 pub struct LeagueInfo {
-    id: String,
+    /// ID of the league as returned from the API.
+    /// It typically includes the season name.
+    pub id: String,
     league: League,
-    start_at: DateTime<Utc>,
-    end_at: Option<DateTime<Utc>>,
+    /// When has this league started, or will start.
+    pub start_at: DateTime<Utc>,
+    /// When has this league finished, or will finish, if known.
+    pub end_at: Option<DateTime<Utc>>,
 }
 
 impl Deref for LeagueInfo {

@@ -70,6 +70,7 @@ pub enum StashType {
     /// Map stash tab.
     #[serde(rename = "MapStash")]  // TODO: verify
     Map,
+    // TODO: fragment stash tab
 }
 
 

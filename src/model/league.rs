@@ -113,6 +113,15 @@ impl League {
 }
 
 impl League {
+    /// Add season name to a `League`.
+    ///
+    /// Example: `League::hc().in_season("Abyss")`
+    #[inline]
+    pub fn in_season<S: Into<String>>(self, season: S) -> League {
+        League{season: Some(season.into()), ..self}
+    }
+}
+impl League {
     /// Name of the league's season, if known.
     ///
     /// A season is basically the unique identifying part of all temporary league names.
