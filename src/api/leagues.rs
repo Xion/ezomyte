@@ -91,9 +91,9 @@ impl<C: Clone + Connect> Leagues<C> {
                     None => base_url,
                 };
                 Some(this.client.get(url).and_then(move |resp: LeaguesResponse| {
-                    let count = resp.leagues.len();
+                    let count = resp.len();
                     let next_offset = offset.unwrap_or(0) + count;
-                    let leagues = resp.leagues.into_iter()
+                    let leagues = resp.into_iter()
                         // API output contains some testing/alpha/broken/abandonded/etc. leagues
                         // which don't have the "start_at" field filled in, so we filter them out.
                         .filter(|l| l.start_at.is_some())
@@ -162,13 +162,11 @@ enum Type {
 
 
 /// Response from the leagues' API endpoint.
-#[derive(Debug, Deserialize)]
-struct LeaguesResponse {
-    leagues: Vec<RawLeagueInfo>,
-}
+type LeaguesResponse = Vec<RawLeagueInfo>;
 
 /// A single league info, as obtained from the API.
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct RawLeagueInfo {
     id: String,
     url: Option<String>,
