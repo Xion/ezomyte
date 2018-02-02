@@ -2,13 +2,15 @@
 
 use std::fmt;
 use std::ops::Deref;
+use std::str::FromStr;
 
 use chrono::{DateTime, Utc};
+use conv::TryFrom;
 use futures::{future, Future, stream, Stream as StdStream};
 use hyper::client::Connect;
 use serde::de::{self, Deserializer, Visitor};
 
-use ::{Client, League};
+use ::{Client, League, ParseLeagueError};
 use super::{Batched, Stream};
 
 
@@ -53,7 +55,11 @@ impl<C: Clone + Connect> Leagues<C> {
                 Some(this.client.get(url).and_then(move |resp: LeaguesResponse| {
                     let next_offset = offset.unwrap_or(0) + resp.leagues.len();
                     let leagues = resp.leagues.into_iter()
-                        .map(LeagueInfo::from)
+                        // API output contains some testing/alpha/broken/abandonded/etc. leagues
+                        // which don't have the "start_at" field filled in, so we filter them out.
+                        .filter(|l| l.start_at.is_some())
+                        // TODO: report errors from this conversion rather than skipping the leagues
+                        .filter_map(|l| LeagueInfo::try_from(l).ok())
                         .map(move |entry| Batched{
                             entry, curr_token: offset, next_token: Some(next_offset),
                         });
@@ -82,10 +88,16 @@ impl Deref for LeagueInfo {
     }
 }
 
-// TODO: this should actually be TryFrom since League may fail to parse
-impl From<RawLeagueInfo> for LeagueInfo {
-    fn from(input: RawLeagueInfo) -> LeagueInfo {
-        unimplemented!()
+impl TryFrom<RawLeagueInfo> for LeagueInfo {
+    type Err = ParseLeagueError;
+    fn try_from(input: RawLeagueInfo) -> Result<Self, Self::Err> {
+        let league = League::from_str(&input.id)?;  // XXX: we probably need to remove "([^)]+)" from this
+        Ok(LeagueInfo {
+            id: input.id,
+            league: league,
+            start_at: input.start_at.expect("RawLeagueInfo::start_at"),
+            end_at: input.end_at,
+        })
     }
 }
 
