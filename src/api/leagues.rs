@@ -1,6 +1,5 @@
 //! Module for the PoE league API.
 
-use std::fmt;
 use std::ops::Deref;
 use std::str::FromStr;
 
@@ -8,7 +7,7 @@ use chrono::{DateTime, Utc};
 use conv::TryFrom;
 use futures::{future, Future, stream, Stream as StdStream};
 use hyper::client::Connect;
-use serde::de::{self, Deserializer, Visitor};
+use serde::de::{self, Deserialize, Deserializer};
 
 use ::{Client, League, ParseLeagueError};
 use super::{Batched, Stream};
@@ -137,32 +136,22 @@ struct RawLeagueInfo {
     end_at: Option<DateTime<Utc>>,
 }
 
-/// Deserialize an optional DateTime stored as RFC 3339 string, or as null.
+/// Deserialize an optional UTC DateTime stored as RFC 3339 string, or as null.
 fn deserialize_opt_datetime<'de, D>(deserializer: D) -> Result<Option<DateTime<Utc>>, D::Error>
     where D: Deserializer<'de>
 {
-    deserializer.deserialize_option(OptionDateTimeVisitor)
-}
-struct OptionDateTimeVisitor;
-impl<'de> Visitor<'de> for OptionDateTimeVisitor {
-    type Value = Option<DateTime<Utc>>;
-
-    fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(fmt, "{}", "UTC datetime in RFC 3339 format, or null")
-    }
-
-    fn visit_str<E: de::Error>(self, v: &str) -> Result<Self::Value, E> {
-        let fixed_datetime: DateTime<_> = DateTime::parse_from_rfc3339(v).map_err(|e| {
-            de::Error::custom(format!("failed to parse string as RFC3339 datetime: {}", e))
-        })?;
-        if fixed_datetime.offset().local_minus_utc() != 0 {
-            return Err(de::Error::custom(format!("expected UTC datetime, got one with offset {}",
-                fixed_datetime.offset())));
+    let opt_s: Option<String> = Deserialize::deserialize(deserializer)?;
+    match opt_s {
+        Some(ref s) => {
+            let fixed_datetime: DateTime<_> = DateTime::parse_from_rfc3339(s).map_err(|e| {
+                de::Error::custom(format!("failed to parse string as RFC3339 datetime: {}", e))
+            })?;
+            if fixed_datetime.offset().local_minus_utc() != 0 {
+                return Err(de::Error::custom(format!("expected UTC datetime, got one with offset {}",
+                    fixed_datetime.offset())));
+            }
+            Ok(Some(fixed_datetime.with_timezone(&Utc)))
         }
-        Ok(Some(fixed_datetime.with_timezone(&Utc)))
-    }
-
-    fn visit_none<E: de::Error>(self) -> Result<Self::Value, E> {
-        Ok(None)
+        None => Ok(None),
     }
 }
