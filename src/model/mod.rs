@@ -13,6 +13,6 @@ mod de;
 pub use self::currency::Currency;
 pub use self::item::*;
 pub use self::label::Label;
-pub use self::league::League;
+pub use self::league::*;
 pub use self::price::Price;
 pub use self::stash::*;

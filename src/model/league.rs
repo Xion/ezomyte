@@ -1,7 +1,11 @@
 //! League type.
 
 use std::borrow::Cow;
+use std::error::Error;
 use std::fmt;
+use std::str::FromStr;
+
+use itertools::Itertools;
 
 
 /// Main league in Path of Exile.
@@ -180,4 +184,106 @@ impl fmt::Display for League {
         };
         write!(fmt, "{}", name)
     }
+}
+
+
+/// Error while converting a string league name to `League` type.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ParseLeagueError {
+    /// Error for when the league name is empty.
+    Empty,
+    /// Error for when the league name is malformed.
+    Malformed,
+}
+impl Error for ParseLeagueError {
+    fn description(&self) -> &str { "error parsing league name" }
+    fn cause(&self) -> Option<&Error> { None }
+}
+impl fmt::Display for ParseLeagueError {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        write!(fmt, "{}", match *self {
+            ParseLeagueError::Empty => "got an empty league name",
+            ParseLeagueError::Malformed => "got a malformed league name",
+        })
+    }
+}
+
+impl FromStr for League {
+    type Err = ParseLeagueError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        const COMMON_WORDS: &[&str] = &["Standard", "Hardcore", "HC", "SSF"];
+
+        // Do some basic sanity checks on the league name to see if it's well-formed.
+        if s.is_empty() {
+            return Err(ParseLeagueError::Empty);
+        }
+        let has_valid_words = s.split_whitespace().all(|w| {
+            COMMON_WORDS.contains(&w) || {
+                // Other words are season names which must be capitalized.
+                let first_upper = w.chars().next().map(|c| c.is_uppercase()).unwrap_or(false);
+                let rest_lower = w.chars().skip(1).all(|c| c.is_lowercase());
+                w.len() > 1 && first_upper && rest_lower
+            }
+        });
+        if !has_valid_words {
+            return Err(ParseLeagueError::Malformed);
+        }
+
+        // Extract league's attributes (SC/HC, SSF?) and its season name.
+        let mut league = match s {
+            "Standard" => League::standard(),
+            "Hardcore" => League::hardcore(),
+            "SSF Standard" => League::ssf(),
+            "SSF Hardcore" => League::hardcore_ssf(),
+            s => {
+                let hardcore = s.contains("Hardcore") || s.contains("HC");
+                let ssf = s.contains("SSF");
+                match (hardcore, ssf) {
+                    (false, false) => League::temporary(),
+                    (false, true) => League::temporary_ssf(),
+                    (true, false) => League::temporary_hardcore(),
+                    (true, true) => League::temporary_hardcore_ssf(),
+                }
+            }
+        };
+        league.season = {
+            let season = s.split_whitespace().filter(|w| !COMMON_WORDS.contains(&w)).join("");
+            if season.is_empty() { None } else { Some(season) }
+        };
+        Ok(league)
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+    use model::League;
+
+    #[test]
+    fn permanent_leagues() {
+        assert_eq!(League::standard(), League::from_str("Standard").unwrap());
+        assert_eq!(League::hardcore(), League::from_str("Hardcore").unwrap());
+        assert_eq!(League::ssf(), League::from_str("SSF Standard").unwrap());
+        assert_eq!(League::hardcore_ssf(), League::from_str("SSF Hardcore").unwrap());
+    }
+
+    #[test]
+    fn abyss_leagues() {
+        assert_eq!(League::temporary(), League::from_str("Abyss").unwrap());
+        assert_eq!(League::temp_hc(), League::from_str("Hardcore Abyss").unwrap());
+        assert_eq!(League::temp_ssf(), League::from_str("SSF Abyss").unwrap());
+        assert_eq!(League::temp_hc_ssf(), League::from_str("SSF Abyss HC").unwrap());
+    }
+
+    #[test]
+    fn harbinger_leagues() {
+        assert_eq!(League::temporary(), League::from_str("Harbinger").unwrap());
+        assert_eq!(League::temp_hc(), League::from_str("Hardcore Harbinger").unwrap());
+        assert_eq!(League::temp_ssf(), League::from_str("SSF Harbinger").unwrap());
+        assert_eq!(League::temp_hc_ssf(), League::from_str("SSF Harbinger HC").unwrap());
+    }
+
+    // TODO: all the other past leagues
 }
