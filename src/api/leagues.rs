@@ -1,4 +1,4 @@
-//! Module for the PoE league API.
+//! Module for the PoE leagues' API.
 
 use std::ops::Deref;
 use std::str::FromStr;
@@ -10,7 +10,7 @@ use hyper::client::Connect;
 use serde::de::{self, Deserialize, Deserializer};
 
 use ::{Client, League, ParseLeagueError};
-use super::{Batched, Stream};
+use super::Stream;
 
 
 /// Interface for accessing league information.
@@ -29,12 +29,50 @@ impl<C: Clone + Connect> Leagues<C> {
 }
 
 impl<C: Clone + Connect> Leagues<C> {
-    fn get_leagues_stream(&self, type_: Type) -> Stream<Batched<LeagueInfo, usize>> {
-        // XXX: the State enum, like in Stashes, to detect the end correctly
+    /// Return a stream of all league infos.
+    #[inline]
+    pub fn all(&self) -> Stream<LeagueInfo> {
+        self.get_leagues_stream(Type::All)
+    }
+
+    /// Return a stream of the "main" leagues.
+    ///
+    /// These are the ones that appear in the character selection screen in game.
+    #[inline]
+    pub fn main(&self) -> Stream<LeagueInfo> {
+        self.get_leagues_stream(Type::Main)
+    }
+
+    /// Return a stream of special/event leagues (races, etc.).
+    #[inline]
+    pub fn event(&self) -> Stream<LeagueInfo> {
+        self.get_leagues_stream(Type::Event)
+    }
+
+    /// Return a stream of leagues in a particular season.
+    ///
+    /// Season name is something like "Abyss", "Harbinger", "Breach", etc.
+    #[inline]
+    pub fn in_season<S: Into<String>>(&self, season: S) -> Stream<LeagueInfo> {
+        self.get_leagues_stream(Type::Season(season.into()))
+    }
+
+    fn get_leagues_stream(&self, type_: Type) -> Stream<LeagueInfo> {
+        /// Enum for managing the state machine of the resulting Stream.
+        enum State {
+            Start(Type),
+            Next{type_: Type, offset: usize},
+            End,
+        }
+
         let this = self.clone();
         Box::new(
-            stream::unfold(None, move |offset: Option<usize>| {
-                // TODO: consider using the `url` crate
+            stream::unfold(State::Start(type_), move |state| {
+                let (type_, offset) = match state {
+                    State::Start(type_) => (type_, None),
+                    State::Next{type_, offset} => (type_, Some(offset)),
+                    State::End => return None,
+                };
                 let base_url = {
                     let mut season = None;
                     let type_param = match type_ {
@@ -43,6 +81,7 @@ impl<C: Clone + Connect> Leagues<C> {
                         Type::Event => "event",
                         Type::Season(ref s) => { season = Some(s.clone()); "season" }
                     };
+                    // TODO: consider using the `url` crate
                     // TODO: support non-compact data format, too
                     format!("{}?type={}&compact=1{}", LEAGUES_URL, type_param,
                         season.map(|s| format!("&season={}", s)).unwrap_or_else(String::new)).into()
@@ -52,23 +91,29 @@ impl<C: Clone + Connect> Leagues<C> {
                     None => base_url,
                 };
                 Some(this.client.get(url).and_then(move |resp: LeaguesResponse| {
-                    let next_offset = offset.unwrap_or(0) + resp.leagues.len();
+                    let count = resp.leagues.len();
+                    let next_offset = offset.unwrap_or(0) + count;
                     let leagues = resp.leagues.into_iter()
                         // API output contains some testing/alpha/broken/abandonded/etc. leagues
                         // which don't have the "start_at" field filled in, so we filter them out.
                         .filter(|l| l.start_at.is_some())
                         // TODO: report errors from this conversion rather than skipping the leagues
-                        .filter_map(|l| LeagueInfo::try_from(l).ok())
-                        .map(move |entry| Batched{
-                            entry, curr_token: offset, next_token: Some(next_offset),
-                        });
-                    future::ok((stream::iter_ok(leagues), Some(next_offset)))
+                        .filter_map(|l| LeagueInfo::try_from(l).ok());
+                    let next_state = if 0 < count && count < MAX_COMPACT_ITEMS {
+                        State::Next{type_, offset: next_offset}
+                    } else {
+                        State::End
+                    };
+                    future::ok((stream::iter_ok(leagues), next_state))
                 }))
             })
             .flatten()
         )
     }
 }
+
+const LEAGUES_URL: &str = "/leagues";
+const MAX_COMPACT_ITEMS: usize = 230;  // as per API docs
 
 
 /// Information about a single league, as retrieved from the PoE API.
@@ -101,8 +146,6 @@ impl TryFrom<RawLeagueInfo> for LeagueInfo {
 }
 
 
-// Utility code
-
 /// Type of the league stream to return.
 /// For documentation, see https://www.pathofexile.com/developer/docs/api-resource-leagues.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -117,7 +160,6 @@ enum Type {
     Season(String),
 }
 
-const LEAGUES_URL: &str = "/leagues";
 
 /// Response from the leagues' API endpoint.
 #[derive(Debug, Deserialize)]
