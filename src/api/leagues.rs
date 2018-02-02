@@ -7,6 +7,7 @@ use chrono::{DateTime, Utc};
 use conv::TryFrom;
 use futures::{future, Future, stream, Stream as StdStream};
 use hyper::client::Connect;
+use regex::Regex;
 use serde::de::{self, Deserialize, Deserializer};
 
 use ::{Client, League, ParseLeagueError};
@@ -97,9 +98,13 @@ impl<C: Clone + Connect> Leagues<C> {
                         // API output contains some testing/alpha/broken/abandonded/etc. leagues
                         // which don't have the "start_at" field filled in, so we filter them out.
                         .filter(|l| l.start_at.is_some())
-                        // TODO: report errors from this conversion rather than skipping the leagues
-                        .filter_map(|l| LeagueInfo::try_from(l).ok());
-                    let next_state = if 0 < count && count < MAX_COMPACT_ITEMS {
+                        .filter_map(|l| {
+                            let repr = format!("{:?}", l);
+                            LeagueInfo::try_from(l).map_err(|e| {
+                                warn!("Failed to parse league {}: {}", repr, e); e
+                            }).ok()
+                        });
+                    let next_state = if count == MAX_COMPACT_ITEMS {
                         State::Next{type_, offset: next_offset}
                     } else {
                         State::End
@@ -134,8 +139,14 @@ impl Deref for LeagueInfo {
 
 impl TryFrom<RawLeagueInfo> for LeagueInfo {
     type Err = ParseLeagueError;
+
     fn try_from(input: RawLeagueInfo) -> Result<Self, Self::Err> {
-        let league = League::from_str(&input.id)?;  // XXX: we probably need to remove "([^)]+)" from this
+        lazy_static! {
+            /// Regex to scrub league names like "Medallion (MDS008)"
+            /// which are returned from the API.
+            static ref JUNK_RE: Regex = Regex::new(r#"\([^)]+\)"#).unwrap();
+        }
+        let league = League::from_str(JUNK_RE.replace(&input.id, "").trim())?;
         Ok(LeagueInfo {
             id: input.id,
             league: league,
