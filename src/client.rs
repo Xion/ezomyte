@@ -10,7 +10,7 @@ use serde::de::DeserializeOwned;
 use serde_json;
 use tokio_core::reactor::Handle;
 
-use super::api::{Leagues, Stashes};
+use super::api::{LeagueRules, Leagues, Stashes};
 use super::error::Error;
 
 
@@ -78,6 +78,12 @@ impl<C: Clone + Connect> Client<C> {
     #[inline]
     pub fn leagues(&self) -> Leagues<C> {
         Leagues::new(self.clone())
+    }
+
+    /// Access the interface PoE league rules' information.
+    #[inline]
+    pub fn league_rules(&self) -> LeagueRules<C> {
+        LeagueRules::new(self.clone())
     }
 }
 
