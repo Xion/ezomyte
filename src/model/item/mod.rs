@@ -5,6 +5,7 @@ mod details;
 mod experience;
 mod influence;
 mod mod_;
+mod properties;
 mod quality;
 mod rarity;
 mod sockets;
