@@ -92,6 +92,7 @@ impl<'de> Visitor<'de> for ItemCategoryVisitor {
                 // (because they should, right?)
                 "cards" => Ok(ItemCategory::DivinationCard),
                 "currency" => Ok(ItemCategory::Currency),
+                "flasks" => Ok(ItemCategory::Flask),
                 "gems" => Ok(ItemCategory::Gem),
                 "maps" => Ok(ItemCategory::Map),
                 // TODO: consider storing the key as ItemCategory::Other instead,
