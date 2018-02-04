@@ -10,11 +10,19 @@ use super::super::{AccessoryType, ArmourType, ItemCategory, JewelType, WeaponTyp
 
 const EXPECTING_MSG: &str = "item category as string or 1-element map";
 
-// Note that "jewels" can be either a standalone string or a map key.
-// The former denotes a regular jewel while the latter should be {"jewels": ["abyss"]}
-// to describe abyss jewels.
-const KEYS: &[&str] = &["accessories", "armour", "jewels", "weapons", "currency"];
-const STRINGS: &[&str] = &["jewels", "flasks", "maps", "gems", "cards", "currency"];
+/// Category names as found in the API.
+///
+/// Note that (almost?) all of these can be either a standalone string or a map key.
+/// In case of "jewels", for example, string means a regular jewel while a map
+/// should be {"jewels": ["abyss"]} to describe abyss jewels.
+///
+/// However, it also seems that even categories that should only be represented
+/// as string (like "gems") would sometimes have an empty array attached to them
+/// (i.e. {"gems": []}), so we gotta be prepared for it.
+const CATEGORIES: &[&str] = &[
+    "accessories", "armour", "cards", "currency", "flasks", "gems", "jewels",
+    "maps", "weapons",
+];
 
 
 impl<'de> Deserialize<'de> for ItemCategory {
@@ -77,19 +85,23 @@ impl<'de> Visitor<'de> for ItemCategoryVisitor {
                 },
                 "jewels" => match subcats.get(0).map(|sc| sc.as_str()) {
                     Some("abyss") => Ok(ItemCategory::Jewel(JewelType::Abyss)),
+                    None => Ok(ItemCategory::Jewel(JewelType::Regular)),  // "jewels": []
                     sc => Err(de::Error::custom(format!("unexpected jewel type: {:?}", sc))),
                 },
-                // TODO: figure out why "currency" can also be a map key here rather than string below,
-                // and what additional data it carries
+                // TODO: consider verifying that these keys map to empty arrays
+                // (because they should, right?)
+                "cards" => Ok(ItemCategory::DivinationCard),
                 "currency" => Ok(ItemCategory::Currency),
+                "gems" => Ok(ItemCategory::Gem),
+                "maps" => Ok(ItemCategory::Map),
                 // TODO: consider storing the key as ItemCategory::Other instead,
                 // to support potentially complex new item categories introduced in future leagues
                 // (but how do we keep the data? add another field to ::Other?)
-                _ => Err(de::Error::unknown_field(&key, KEYS)),
+                _ => Err(de::Error::unknown_field(&key, CATEGORIES)),
             }
         } else {
             Err(de::Error::custom(format!(
-                "empty category map, expected one of {}", KEYS.iter().format("/"))))
+                "empty category map, expected one of {}", CATEGORIES.iter().format("/"))))
         }
     }
 
@@ -103,7 +115,7 @@ impl<'de> Visitor<'de> for ItemCategoryVisitor {
             "currency" => Ok(ItemCategory::Currency),
             c => {
                 warn!("Unrecognized item category string `{}`, expected one of: {}",
-                    c, STRINGS.iter().format(", "));
+                    c, CATEGORIES.iter().format(", "));
                 Ok(ItemCategory::Other(c.to_owned()))
             }
         }
@@ -113,9 +125,8 @@ impl<'de> Visitor<'de> for ItemCategoryVisitor {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::{from_str, from_value};
+    use serde_json::from_value;
     use model::{AccessoryType, ArmourType, ItemCategory, JewelType, WeaponType};
-    use super::STRINGS;
 
     #[test]
     fn accessories() {
@@ -203,9 +214,11 @@ mod tests {
     }
 
     #[test]
-    fn all_string_categories_covered() {
-        for s in STRINGS {
-            from_str::<ItemCategory>(&format!(r#""{}""#, s)).unwrap();
-        }
+    fn superfluous_empty_arrays() {
+        // These sometimes appear in actual API response samples.
+        assert_eq!(ItemCategory::DivinationCard, from_value(json!({"cards": []})).unwrap());
+        assert_eq!(ItemCategory::Currency, from_value(json!({"currency": []})).unwrap());
+        assert_eq!(ItemCategory::Gem, from_value(json!({"gems": []})).unwrap());
+        assert_eq!(ItemCategory::Map, from_value(json!({"maps": []})).unwrap());
     }
 }

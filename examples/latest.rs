@@ -35,7 +35,7 @@ const POE_NINJA_STATS_URL: &str = "http://poe.ninja/api/Data/GetStats";
 fn main() {
     env_logger::init();
 
-    let just_changed_id = env::args().skip(1).next() == Some("--change_id".into());
+    let just_change_id = env::args().skip(1).next() == Some("--change_id".into());
 
     let mut core = Core::new().unwrap();
     let http = hyper::Client::new(&core.handle());
@@ -43,7 +43,7 @@ fn main() {
         http.clone(), ezomyte::DEFAULT_API_ROOT, USER_AGENT);
     core.run(
         get_latest_change_id(&http).and_then(move |change_id| {
-            if just_changed_id {
+            if just_change_id {
                 println!("{}", change_id);
                 Box::new(future::ok(())) as Box<Future<Item=_, Error=_>>
             } else {
