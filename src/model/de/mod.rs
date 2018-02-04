@@ -10,6 +10,7 @@ mod item;
 mod label;
 mod league;
 mod price;
+mod properties;
 mod quality;
 mod rarity;
 mod requirement;

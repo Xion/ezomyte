@@ -24,8 +24,8 @@ pub type Value = String;
 // (mostly to hold the types of elemental damage, and whether or not it was affected by an affix)
 
 
-/// Container for miscellaneous item properties,
-/// as obtained from the "properties" JSON array in the stash tabs API response.
+/// Container for miscellaneous item properties.
+/// These are commonly obtained from the "properties" JSON array in the stash tabs API response.
 ///
 /// Most properties have _values_ associated with them (e.g. weapon damage ranges),
 /// though some serve as mere "markers" or "tags" (like gem classes: Spell, Support, Minion, etc.).
@@ -51,7 +51,7 @@ impl Properties {
 impl Properties {
     /// Checks whether given property exists.
     #[inline]
-    pub fn contains<K>(&self, k: &K) -> bool
+    pub fn contains<K: ?Sized>(&self, k: &K) -> bool
         where Key: Borrow<K>, K: Hash + Eq
     {
         self.set.contains(k) || self.map.contains_key(k)
@@ -59,7 +59,7 @@ impl Properties {
 
     /// Retrieve the `Value` of given property, if it exists and has one.
     #[inline]
-    pub fn get_value<'p, K>(&'p self, k: &K) -> Option<&'p Value>
+    pub fn get_value<'p, K: ?Sized>(&'p self, k: &K) -> Option<&'p Value>
         where Key: Borrow<K>, K: Hash + Eq
     {
         self.map.get(k)
@@ -84,6 +84,7 @@ impl Properties {
             self.set.iter().chain(self.map.keys())
         )
     }
+    // TODO: iterator methods for both value-full and value-less properties
 
     /// Returns the total number of properties (with or without values).
     #[inline]
@@ -94,39 +95,27 @@ impl Properties {
 
 // Mutators.
 impl Properties {
-    /// Insert a new, value-less property into the container.
-    ///
-    /// Returns a boolean saying whether the container was modified
-    /// (i.e. it didn't have the property before.)
-    pub fn add(&mut self, key: Key) -> bool {
-        if self.map.contains_key(&key) {
-            return false;
-        }
-        self.set.insert(key)
-    }
-
-    /// Insert a new property with given value into the container.
-    ///
-    /// If the property exists already, its value is updated and the previous one,
-    /// if any, is returned. This means that in case the property existed before
-    /// but didn't have a value, the function will return `Some(None)`.
-    pub fn add_with_value(&mut self, key: Key, value: Value) -> Option<Option<Value>> {
-        let was_in_set = self.set.remove(&key);
-        // There is a brief window between the above and below calls where the container
-        // is in transitional state that shouldn't be observed,
-        // which is why it is made thread-unsafe (i.e. not `Sync`).
-        match self.map.insert(key, value) {
-            Some(prev) => Some(Some(prev)),
-            None => if was_in_set { Some(None) } else { None },
-        }
-    }
-
     /// Clears the container, removing all properties.
     pub fn clear(&mut self) {
         self.set.clear();
         self.map.clear();
     }
     // TODO: drain()
+
+    /// Insert a new property, possibly with a value, into the container.
+    ///
+    /// If `opt_value` is `None`, the property will be inserted
+    /// without any value associated with it.
+    ///
+    /// If the property exists already, its value is updated and the previous one,
+    /// if any, is returned. This means that in case the property existed before
+    /// but didn't have a value, the function will return `Some(None)`.
+    pub fn insert(&mut self, key: Key, opt_value: Option<Value>) -> Option<Option<Value>> {
+        match opt_value {
+            Some(value) => self.put_with_value(key, value),
+            None => self.put(key),
+        }
+    }
 
     /// Returns an iterator of all over property keys & their optional values.
     ///
@@ -141,6 +130,35 @@ impl Properties {
     }
     // TODO: an Entry-like API to insert properties and add/remove their values
 
+    /// Insert a new, value-less property into the container.
+    ///
+    /// If the property exists already, its value is reset and the previous one,
+    /// if any, is returned. This means that in case the property existed before
+    /// but didn't have a value, the function will return `Some(None)`.
+    ///
+    /// If the property didn't exist already, `None` is returned.
+    pub fn put(&mut self, key: Key) -> Option<Option<Value>> {
+        let prev = self.map.remove(&key);
+        // There is a brief window between the above and below calls where the container
+        // is in transitional state that shouldn't be observed,
+        // which is why it is made thread-unsafe (i.e. not `Sync`).
+        if self.set.insert(key) { Some(prev) } else { None }
+    }
+
+    /// Insert a new property with given value into the container.
+    ///
+    /// If the property exists already, its value is updated and the previous one,
+    /// if any, is returned. This means that in case the property existed before
+    /// but didn't have a value, the function will return `Some(None)`.
+    pub fn put_with_value(&mut self, key: Key, value: Value) -> Option<Option<Value>> {
+        let was_in_set = self.set.remove(&key);
+        //  The same note about brief transitional state applies here.
+        match self.map.insert(key, value) {
+            Some(prev) => Some(Some(prev)),
+            None => if was_in_set { Some(None) } else { None },
+        }
+    }
+
     /// Remove a property from the container
     /// and return the value associated with it, if any.
     ///
@@ -148,7 +166,7 @@ impl Properties {
     /// Contrast this with the situation where the property existed
     /// but didn't have a value associated with it,
     /// in which case the return value will be `Some(None)`.
-    pub fn remove<K>(&mut self, key: &K) -> Option<Option<Value>>
+    pub fn remove<K: ?Sized>(&mut self, key: &K) -> Option<Option<Value>>
         where Key: Borrow<K>, K: Hash + Eq
     {
         if self.set.remove(key) {

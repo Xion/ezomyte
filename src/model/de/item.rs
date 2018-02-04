@@ -9,7 +9,7 @@ use regex::Regex;
 use serde::de::{self, Deserialize, Visitor, Unexpected};
 use serde_json::Value as Json;
 
-use super::super::{Influence, Item, ItemCategory, ItemDetails, Rarity};
+use super::super::{Influence, Item, ItemCategory, ItemDetails, Properties, Rarity};
 use super::util::deserialize;
 
 
@@ -89,7 +89,9 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 }
                 "requirements" => {
                     check_duplicate!(requirements);
-                    let req_kvps = Self::deserialize_value_map(&mut map)?.into_iter()
+
+                    // "requirements" use the same format of value encoding as "properties".
+                    let req_kvps = map.next_value::<Properties>()?.into_iter()
                         .filter_map(|(k, v)| v.map(|v| (k, v)));
 
                     let mut reqs = HashMap::new();
@@ -198,7 +200,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 }
                 "properties" => {
                     check_duplicate!(properties);
-                    let mut props = Self::deserialize_value_map(&mut map)?;
+                    let mut props: Properties = map.next_value()?;
 
                     // Pluck out some of the properties that we are providing
                     // as separate fields on `Item`.
@@ -236,7 +238,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 }
                 "additionalProperties" => {
                     // TODO: signal duplicate "additionalProperties"
-                    let mut props = Self::deserialize_value_map(&mut map)?;
+                    let mut props: Properties = map.next_value()?;
 
                     // Currently, only the gem experience
                     // seems to be stored as additionalProperties.
@@ -332,23 +334,11 @@ impl<'de> Visitor<'de> for ItemVisitor {
             }
         };
 
-        // Retain the `properties` that have values,
-        // turning the rest into Item `tags` (after splitting by commas,
-        // which handles stuff like "Spell, Minion" given as single property for gems).
-        let (props_with_values, props_sans_values): (Vec<_>, Vec<_>) =
-            properties.into_iter().partition(|&(_, ref v)| v.is_some());
-        let properties = props_with_values.into_iter()
-            .map(|(k, v)| (k, v.unwrap())).collect();
-        let tags = props_sans_values.into_iter()
-            .map(|(k, _)| k)
-            .flat_map(|t| t.split(',').map(ToOwned::to_owned).collect_vec())
-            .collect();
-
         Ok(Item {
             id,
             name: name.map(|n| n.to_string()),
             base: base.to_string(),
-            level, category, rarity, quality, properties, tags, details,
+            level, category, rarity, quality, properties, details,
             sockets, requirements, corrupted, influence, duplicated, flavour_text,
             extra,
         })
@@ -364,52 +354,6 @@ impl ItemVisitor {
         map.next_value().map(|name: String| {
             if name.is_empty() { None } else { Some(name) }
         })
-    }
-
-    /// Deserialize the wonky "value map" structure that some JSON keys use
-    /// into a more straightforward hashmap.
-    /// The format is used at least by "properties", "additionalProperties",
-    /// and "requirements" keys in the item JSON.
-    ///
-    /// Result will include keys such as "Quality" which should be later plucked
-    /// into separate fields in `Item`.
-    fn deserialize_value_map<'de, V: de::MapAccess<'de>>(
-        map: &mut V
-    ) -> Result<HashMap<String, Option<String>>, V::Error> {
-        let mut result = HashMap::new();
-
-        // The value map array is polymorphic so we'll just deserialize it
-        // to a typed JSON object. Seems hacky, but note that this is still
-        // technically format-independent and allows to deserialize
-        // items from something else than JSON. We're only using JSON DOM
-        // as an intermediate representation.
-        let array: Vec<HashMap<String, Json>> = map.next_value()?;
-        for prop in array {
-            // Example value map (from "properties"):
-            // {
-            //   "name": "Quality",
-            //   "values": [["+17%", 1]],
-            //   "displayMode": 0,
-            //   "type": 6
-            // }
-            // Notice especially the nested array in "values".
-
-            let name = prop.get("name")
-                .and_then(|n| n.as_str().map(|s| s.to_owned()))
-                .ok_or_else(|| de::Error::missing_field("name"))?;
-            let values = prop.get("values").ok_or_else(|| de::Error::missing_field("values"))?;
-            let value = values.as_array()
-                // TODO: support multiple values
-                // (which are probably used for multiple kinds of elemental damage)
-                .and_then(|v| v.get(0)).and_then(|v| v.as_array())
-                // TODO interpret values[i][1], which has to do with damage types
-                // (physical, fire, etc.) or whether the value has been modified
-                // by an affix on them item
-                .and_then(|v| v.get(0)).and_then(|v| v.as_str().map(|s| s.to_owned()));
-            result.insert(name, value);
-        }
-
-        Ok(result)
     }
 }
 impl ItemVisitor {
