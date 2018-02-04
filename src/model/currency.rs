@@ -4,7 +4,6 @@
 // and just included here.
 
 
-/// Currency item used for trading.
 include!(concat!(env!("OUT_DIR"), "/", "model/currency/enum.inc.rs"));
 
 

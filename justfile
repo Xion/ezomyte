@@ -8,6 +8,8 @@ build:
 	cargo build
 clean:
 	cargo clean
+doc:
+	cargo doc --open
 test:
     cargo test --no-fail-fast
 

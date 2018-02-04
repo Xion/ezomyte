@@ -33,12 +33,19 @@ const CURRENCY_ENUM_FILE: &str = "model/currency/enum.inc.rs";
 const CURRENCY_DE_FILE: &str = "model/de/currency/visit_str.inc.rs";
 
 lazy_static! {
-    /// Mapping from currency IDs loaded from JSON file to their additional IDs
+    /// Mapping from currency IDs loaded from JSON files to their additional IDs
     /// used in public stash tab item pricing.
-    static ref ADDITIONAL_CURRENCY_IDS: HashMap<String, &'static [&'static str]> = hashmap!{
-        "exalted".into() => &["exa"] as &[&str],
-        "fusing".into() => &["fuse"],
-        "mir".into() => &["mirror"],
+    static ref ADDITIONAL_CURRENCY_IDS: HashMap<&'static str, &'static [&'static str]> = hashmap!{
+        // Regular currencies.
+        "exalted" => &["exa"] as &[&str],
+        "fusing" => &["fuse"],
+        "mir" => &["mirror"],
+        // Breach league splinters.
+        "splinter-xoph" => &["splinter-of-xoph"],
+        "splinter-tul" => &["splinter-of-tul"],
+        "splinter-esh" => &["splinter-of-esh"],
+        "splinter-uul-netol" => &["splinter-of-uul-netol"],
+        "splinter-chayula" => &["splinter-of-chayula"],
     };
 }
 
@@ -57,7 +64,7 @@ fn generate_currency_code() -> Result<(), Box<Error>> {
     Ok(())
 }
 
-/// Structure describing JSON objects in CURRENCY_JSON_FILE.
+/// Structure describing JSON objects in CURRENCY_JSON_FILES.
 #[derive(Debug, Deserialize)]
 struct CurrencyData {
     image: String,
@@ -71,11 +78,13 @@ fn generate_currency_enum(currencies: &[CurrencyData]) -> io::Result<()> {
 
     // TODO: some templating engine could be useful for code generation
     // (but not the `quote` crate because we're creating unhygenic identifiers here)
+    writeln!(out, "/// Currency item used for trading.")?;
     writeln!(out, "#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Serialize)]")?;
     writeln!(out, "pub enum Currency {{")?;
     {
         // E.g. #[serde(rename="chaos")] ChaosOrb,
         for currency in currencies {
+            writeln!(out, "    /// {}.", currency.name)?;
             writeln!(out, "    #[serde(rename=\"{}\")]", currency.id)?;
             writeln!(out, "    {},", upper_camel_case(&currency.name))?;
         }
@@ -93,7 +102,7 @@ fn generate_currency_de(currencies: &[CurrencyData]) -> io::Result<()> {
         // Include possible alternative/community "names" for the currencies
         // so that they are deserialized correctly.
         let mut patterns: Vec<&str> = vec![&currency.id];
-        if let Some(more) = ADDITIONAL_CURRENCY_IDS.get(&currency.id) {
+        if let Some(more) = ADDITIONAL_CURRENCY_IDS.get(&currency.id.as_str()) {
             patterns.extend(more.iter());
         }
         writeln!(out, "    {} => Ok(Currency::{}),",
