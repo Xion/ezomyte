@@ -28,7 +28,7 @@ fn main() {
 
 // Currency handling
 
-const CURRENCY_JSON_FILE: &str = "data/currency.json";
+const CURRENCY_JSON_FILES: &[&str] = &["data/currency.json", "data/extra/currency.json"];
 const CURRENCY_ENUM_FILE: &str = "model/currency/enum.inc.rs";
 const CURRENCY_DE_FILE: &str = "model/de/currency/visit_str.inc.rs";
 
@@ -44,12 +44,16 @@ lazy_static! {
 
 /// Generate code for the `Currency` enum and its deserialization.
 fn generate_currency_code() -> Result<(), Box<Error>> {
-    let data_file = Path::new(".").join(CURRENCY_JSON_FILE);
-    let mut file = fs::OpenOptions::new().read(true).open(data_file)?;
-    let currencies: Vec<CurrencyData> = serde_json::from_reader(&mut file)?;
+    let mut all_currencies = Vec::new();
+    for &path in CURRENCY_JSON_FILES.iter() {
+        let data_file = Path::new(".").join(path);
+        let mut file = fs::OpenOptions::new().read(true).open(data_file)?;
+        let currencies: Vec<CurrencyData> = serde_json::from_reader(&mut file)?;
+        all_currencies.extend(currencies);
+    }
 
-    generate_currency_enum(&currencies)?;
-    generate_currency_de(&currencies)?;
+    generate_currency_enum(&all_currencies)?;
+    generate_currency_de(&all_currencies)?;
     Ok(())
 }
 
