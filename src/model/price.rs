@@ -7,25 +7,31 @@ use num::ToPrimitive;
 use serde_json::{to_value as to_json, Value as Json};
 
 use super::currency::Currency;
+use super::util::Quasi;
 
 
 /// Price of an item in a particular `Currency`.
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Price(f64, Currency);
+#[derive(Clone, PartialEq)]
+pub struct Price(f64, Quasi<Currency>);
 // TODO: consider using a decimal type for accuracy and the Hash/Eq traits
 
 impl Price {
     /// Create a new `Price` object.
     #[inline]
-    pub fn new<A: ToPrimitive>(amount: A, currency: Currency) -> Self {
+    pub fn new<A, C>(amount: A, currency: C) -> Self
+        where A: ToPrimitive,
+              C: Into<Quasi<Currency>>
+    {
         let amount = amount.to_f64().expect("price amount");
-        Price(amount, currency)
+        Price(amount, currency.into())
     }
 
     /// Create a new `Price` of a single unit of given currency.
     #[inline]
-    pub fn one(currency: Currency) -> Self {
-        Price(1.0, currency)
+    pub fn one<C>(currency: C) -> Self
+        where C: Into<Quasi<Currency>>
+    {
+        Price(1.0, currency.into())
     }
 }
 
@@ -35,7 +41,7 @@ impl Price {
     pub fn amount(&self) -> f64 { self.0 }
     /// Currency used in the price.
     #[inline(always)]
-    pub fn currency(&self) -> Currency { self.1 }
+    pub fn currency(&self) -> &Quasi<Currency> { &self.1 }
 }
 
 impl PartialOrd for Price {
@@ -45,6 +51,16 @@ impl PartialOrd for Price {
         } else {
             None
         }
+    }
+}
+
+impl fmt::Debug for Price {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        // Hide the `Quasi` wrapper in debug representation.
+        write!(fmt, "Price({:?}, {})", self.amount(),
+            self.currency().as_ref()
+                .map(|c| format!("{:?}", c))  // Currency::Foo
+                .unwrap_or_else(|| format!("{:?}", self.currency())))  // "unknown-currency"
     }
 }
 
@@ -60,5 +76,24 @@ impl fmt::Display for Price {
             v => panic!("Unexpected serialization of Currency for Display: {:?}", v),
         };
         write!(fmt, "{} {}", self.amount(), currency)
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use model::{Currency, Quasi};
+    use super::Price;
+
+    #[test]
+    fn display_for_known_currency() {
+        let price = Price::new(1, Currency::ChaosOrb);
+        assert_eq!("1 chaos", format!("{}", price));
+    }
+
+    #[test]
+    fn display_for_unknown_currency() {
+        let price = Price(42.0f64, Quasi::Substitute("orb-of-foo".into()));
+        assert_eq!("42 orb-of-foo", format!("{}", price));
     }
 }

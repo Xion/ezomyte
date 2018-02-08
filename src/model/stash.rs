@@ -121,12 +121,12 @@ impl StashedItem {
     }
 
     /// Optional exact price for the item.
-    pub fn exact_price(&self) -> Option<Price> {
+    pub fn exact_price(&self) -> Option<&Price> {
         self.label().and_then(|l| l.exact_price())
     }
 
     /// Optional negotiable price for the item.
-    pub fn negotiable_price(&self) -> Option<Price> {
+    pub fn negotiable_price(&self) -> Option<&Price> {
         self.label().and_then(|l| l.negotiable_price())
     }
 

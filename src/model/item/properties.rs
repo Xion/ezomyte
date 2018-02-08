@@ -222,6 +222,7 @@ impl<'p> IntoIterator for &'p Properties {
 
 impl fmt::Debug for Properties {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        // TODO: handle alternate debug repr. by pretty-printing the "set"
         write!(fmt, "Properties{{{}}}", self.iter()
             .map(|(k, v)| format!("\"{}\"{}",
                 k, v.map(|v| format!(": \"{}\"", v)).unwrap_or_else(String::new)))

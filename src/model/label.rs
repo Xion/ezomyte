@@ -40,28 +40,28 @@ impl Label {
     /// Return a possible price in the label.
     ///
     /// This doesn't distinguish between the exact price and negotiable/buyout price.
-    pub fn price(&self) -> Option<Price> {
+    pub fn price(&self) -> Option<&Price> {
         match *self {
-            Label::ExactPrice(p) => Some(p),
-            Label::NegotiablePrice(p) => Some(p),
+            Label::ExactPrice(ref p) => Some(p),
+            Label::NegotiablePrice(ref p) => Some(p),
             _ => None,
         }
     }
 
     /// Return the exact `Price` specified in this `Label`, if any.
     #[inline]
-    pub fn exact_price(&self) -> Option<Price> {
+    pub fn exact_price(&self) -> Option<&Price> {
         match *self {
-            Label::ExactPrice(p) => Some(p),
+            Label::ExactPrice(ref p) => Some(p),
             _ => None,
         }
     }
 
     /// Return the negotiable (buyout) `Price` specified in this `Label`, if any.
     #[inline]
-    pub fn negotiable_price(&self) -> Option<Price> {
+    pub fn negotiable_price(&self) -> Option<&Price> {
         match *self {
-            Label::NegotiablePrice(p) => Some(p),
+            Label::NegotiablePrice(ref p) => Some(p),
             _ => None,
         }
     }
@@ -103,8 +103,8 @@ impl fmt::Display for Label {
         match *self {
             Label::Empty => write!(fmt, ""),
             Label::Cosmetic(ref s) => write!(fmt, "{}", s),
-            Label::ExactPrice(p) => write!(fmt, "~price {}", p),
-            Label::NegotiablePrice(p) => write!(fmt, "~b/o {}", p),
+            Label::ExactPrice(ref p) => write!(fmt, "~price {}", p),
+            Label::NegotiablePrice(ref p) => write!(fmt, "~b/o {}", p),
             Label::Unknown(ref t, ref v) => write!(fmt, "~{} {}", t, v),
         }
     }

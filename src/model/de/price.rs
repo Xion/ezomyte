@@ -5,7 +5,8 @@ use std::num::{ParseIntError, ParseFloatError};
 
 use serde::de::{self, Deserialize, Visitor, Unexpected};
 
-use super::super::Price;
+use super::super::{Currency, Price};
+use super::super::util::Quasi;
 use super::util::deserialize;
 
 
@@ -43,7 +44,7 @@ impl<'de> Visitor<'de> for PriceVisitor {
 
         let amount: f64 = parse_amount(parts[0]).map_err(|e| de::Error::custom(
             format!("cannot parse price amount `{}`: {}", parts[0], e)))?;
-        let currency = deserialize(parts[1])?;
+        let currency: Quasi<Currency> = deserialize(parts[1])?;
         Ok(Price::new(amount, currency))
     }
 }
