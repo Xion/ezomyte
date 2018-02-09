@@ -10,6 +10,7 @@ use serde::de::{self, Deserialize, Visitor, Unexpected};
 use serde_json::Value as Json;
 
 use super::super::{Influence, Item, ItemCategory, ItemDetails, Properties, Rarity};
+use super::super::util::Quasi;
 use super::util::deserialize;
 
 
@@ -111,7 +112,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 // Item category / type.
                 "category" => {
                     check_duplicate!(category);
-                    category = Some(map.next_value()?);
+                    category = Some(map.next_value::<Quasi<ItemCategory>>()?);
                 }
                 "frameType" => {
                     check_duplicate!("frameType" => rarity);
@@ -320,7 +321,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
                       // Exclude currencies here because the API returns their on-use "mods"
                       // (like "Reforges a rare item with new random properties" for Chaos Orb)
                       // as `explicitMods`, and they obviously aren't `Gear`.
-                      && category != ItemCategory::Currency {
+                      && category.as_ref() != Some(&ItemCategory::Currency) {
                 Some(ItemDetails::Gear{
                     implicit: implicit_mods.unwrap_or_default(),
                     enchants: enchant_mods.unwrap_or_default(),

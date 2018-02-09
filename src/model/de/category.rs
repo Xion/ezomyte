@@ -95,9 +95,6 @@ impl<'de> Visitor<'de> for ItemCategoryVisitor {
                 "flasks" => Ok(ItemCategory::Flask),
                 "gems" => Ok(ItemCategory::Gem),
                 "maps" => Ok(ItemCategory::Map),
-                // TODO: consider storing the key as ItemCategory::Other instead,
-                // to support potentially complex new item categories introduced in future leagues
-                // (but how do we keep the data? add another field to ::Other?)
                 _ => Err(de::Error::unknown_field(&key, CATEGORIES)),
             }
         } else {
@@ -114,10 +111,10 @@ impl<'de> Visitor<'de> for ItemCategoryVisitor {
             "gems" => Ok(ItemCategory::Gem),
             "cards" => Ok(ItemCategory::DivinationCard),
             "currency" => Ok(ItemCategory::Currency),
-            c => {
+            _ => {
                 warn!("Unrecognized item category string `{}`, expected one of: {}",
-                    c, CATEGORIES.iter().format(", "));
-                Ok(ItemCategory::Other(c.to_owned()))
+                    v, CATEGORIES.iter().format(", "));
+                Err(de::Error::unknown_field(&v, CATEGORIES))
             }
         }
     }

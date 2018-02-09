@@ -10,11 +10,6 @@ mod quality;
 mod rarity;
 mod sockets;
 
-
-use std::collections::HashMap;
-
-use serde_json::Value as Json;
-
 pub use self::category::*;
 pub use self::details::ItemDetails;
 pub use self::experience::Experience;
@@ -24,6 +19,13 @@ pub use self::properties::Properties;
 pub use self::quality::Quality;
 pub use self::rarity::Rarity;
 pub use self::sockets::*;
+
+
+use std::collections::HashMap;
+
+use serde_json::Value as Json;
+
+use super::util::Quasi;
 
 
 
@@ -46,7 +48,7 @@ pub struct Item {
     pub level: u64,
     /// Category of the item.
     /// This indicates what you can do with the item, e.g. the slot it is worn on.
-    pub category: ItemCategory,
+    pub category: Quasi<ItemCategory>,
     /// Item rarity, such as magic or unique.
     ///
     /// For items other than gear, this will be just `Normal`.
