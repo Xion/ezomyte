@@ -10,7 +10,7 @@ use std::fmt;
 use std::hash::Hash;
 use std::iter::FromIterator;
 
-use itertools::Itertools;
+use super::super::util::ExplicitDebug;
 
 
 /// Type of a property key.
@@ -222,10 +222,13 @@ impl<'p> IntoIterator for &'p Properties {
 
 impl fmt::Debug for Properties {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        // TODO: handle alternate debug repr. by pretty-printing the "set"
-        write!(fmt, "Properties{{{}}}", self.iter()
-            .map(|(k, v)| format!("\"{}\"{}",
-                k, v.map(|v| format!(": \"{}\"", v)).unwrap_or_else(String::new)))
-            .format(", "))
+        fmt.debug_set()
+            .entries(
+                self.iter().map(|(k, v)| {
+                    format!("\"{}\"{}", k, v.map(|v| format!(": \"{}\"", v))
+                        .unwrap_or_else(String::new))
+                })
+                .map(ExplicitDebug::from))
+            .finish()
     }
 }
