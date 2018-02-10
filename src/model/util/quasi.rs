@@ -9,6 +9,8 @@ use conv::errors::NoError;
 use serde::de::{Deserialize, Deserializer, IntoDeserializer};
 use serde::ser::{Serialize, Serializer};
 
+use super::json::Json;
+
 
 /// Quasi-equivalent wrapper over a deserialized type.
 ///
@@ -24,7 +26,7 @@ use serde::ser::{Serialize, Serializer};
 /// There is intentionally no equivalent interface to access the subsititute value
 /// outside of pattern matching.
 #[must_use]
-pub enum Quasi<T, S = String> {
+pub enum Quasi<T, S = Json> {
     /// The usual, "true" value.
     True(T),
     /// The subsititute, "fake", undeserialized value.
