@@ -1,0 +1,552 @@
+[
+  {
+    "type": "crafted",
+    "text": "# to maximum Life",
+    "id": "crafted.stat_3299347043"
+  },
+  {
+    "type": "crafted",
+    "text": "#% to Lightning Resistance",
+    "id": "crafted.stat_1671376347"
+  },
+  {
+    "type": "crafted",
+    "text": "#% to Cold Resistance",
+    "id": "crafted.stat_4220027924"
+  },
+  {
+    "type": "crafted",
+    "text": "#% to Fire Resistance",
+    "id": "crafted.stat_3372524247"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Elemental Damage with Attack Skills",
+    "id": "crafted.stat_387439868"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Energy Shield",
+    "id": "crafted.stat_4015621042"
+  },
+  {
+    "type": "crafted",
+    "text": "Adds # to # Physical Damage (Local)",
+    "id": "crafted.stat_1940865751"
+  },
+  {
+    "type": "crafted",
+    "text": "Adds # to # Physical Damage to Attacks",
+    "id": "crafted.stat_3032590688"
+  },
+  {
+    "type": "crafted",
+    "text": "#% to all Elemental Resistances",
+    "id": "crafted.stat_2901986750"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Spell Damage",
+    "id": "crafted.stat_2974417149"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Attack Speed (Local)",
+    "id": "crafted.stat_210067635"
+  },
+  {
+    "type": "crafted",
+    "text": "# to maximum Energy Shield",
+    "id": "crafted.stat_3489782002"
+  },
+  {
+    "type": "crafted",
+    "text": "Adds # to # Lightning Damage to Attacks",
+    "id": "crafted.stat_1754445556"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Armour (Local)",
+    "id": "crafted.stat_1062208444"
+  },
+  {
+    "type": "crafted",
+    "text": "# to maximum Energy Shield (Local)",
+    "id": "crafted.stat_4052037485"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Critical Strike Chance",
+    "id": "crafted.stat_2375316951"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Global Critical Strike Chance",
+    "id": "crafted.stat_587431675"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Evasion Rating (Local)",
+    "id": "crafted.stat_124859000"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Physical Damage (Local)",
+    "id": "crafted.stat_1805374733"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Movement Speed",
+    "id": "crafted.stat_2250533757"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased maximum Energy Shield",
+    "id": "crafted.stat_2482852589"
+  },
+  {
+    "type": "crafted",
+    "text": "# to Intelligence",
+    "id": "crafted.stat_328541901"
+  },
+  {
+    "type": "crafted",
+    "text": "Can have multiple Crafted Mods",
+    "id": "crafted.stat_1859333175"
+  },
+  {
+    "type": "crafted",
+    "text": "# to Strength",
+    "id": "crafted.stat_4080418644"
+  },
+  {
+    "type": "crafted",
+    "text": "#% to Global Critical Strike Multiplier",
+    "id": "crafted.stat_3556824919"
+  },
+  {
+    "type": "crafted",
+    "text": "# to maximum Mana",
+    "id": "crafted.stat_1050105434"
+  },
+  {
+    "type": "crafted",
+    "text": "# to Dexterity",
+    "id": "crafted.stat_3261801346"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Attack Speed",
+    "id": "crafted.stat_681332047"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Armour and Evasion",
+    "id": "crafted.stat_2451402625"
+  },
+  {
+    "type": "crafted",
+    "text": "Adds # to # Cold Damage to Attacks",
+    "id": "crafted.stat_4067062424"
+  },
+  {
+    "type": "crafted",
+    "text": "Adds # to # Fire Damage to Attacks",
+    "id": "crafted.stat_1573130764"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Armour and Energy Shield",
+    "id": "crafted.stat_3321629045"
+  },
+  {
+    "type": "crafted",
+    "text": "# to Armour (Local)",
+    "id": "crafted.stat_3484657501"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Evasion and Energy Shield",
+    "id": "crafted.stat_1999113824"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Critical Strike Chance for Spells",
+    "id": "crafted.stat_737908626"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Flask Life Recovery rate",
+    "id": "crafted.stat_51994685"
+  },
+  {
+    "type": "crafted",
+    "text": "# to Evasion Rating (Local)",
+    "id": "crafted.stat_53045048"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Cast Speed",
+    "id": "crafted.stat_2891184298"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Rarity of Items found",
+    "id": "crafted.stat_3917489142"
+  },
+  {
+    "type": "crafted",
+    "text": "# to all Attributes",
+    "id": "crafted.stat_1379411836"
+  },
+  {
+    "type": "crafted",
+    "text": "#% to Fire and Lightning Resistances",
+    "id": "crafted.stat_3441501978"
+  },
+  {
+    "type": "crafted",
+    "text": "#% to Cold and Lightning Resistances",
+    "id": "crafted.stat_4277795662"
+  },
+  {
+    "type": "crafted",
+    "text": "#% to Fire and Cold Resistances",
+    "id": "crafted.stat_2915988346"
+  },
+  {
+    "type": "crafted",
+    "text": "# to Accuracy Rating",
+    "id": "crafted.stat_803737631"
+  },
+  {
+    "type": "crafted",
+    "text": "Adds # to # Cold Damage (Local)",
+    "id": "crafted.stat_1037193709"
+  },
+  {
+    "type": "crafted",
+    "text": "Adds # to # Lightning Damage (Local)",
+    "id": "crafted.stat_3336890334"
+  },
+  {
+    "type": "crafted",
+    "text": "#% of Physical Attack Damage Leeched as Life",
+    "id": "crafted.stat_3593843976"
+  },
+  {
+    "type": "crafted",
+    "text": "Adds # to # Chaos Damage to Attacks",
+    "id": "crafted.stat_674553446"
+  },
+  {
+    "type": "crafted",
+    "text": "Adds # to # Fire Damage (Local)",
+    "id": "crafted.stat_709508406"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Flask effect duration",
+    "id": "crafted.stat_3741323227"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Armour",
+    "id": "crafted.stat_2866361420"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Mana Regeneration Rate",
+    "id": "crafted.stat_789117908"
+  },
+  {
+    "type": "crafted",
+    "text": "#% of Physical Attack Damage Leeched as Mana",
+    "id": "crafted.stat_3237948413"
+  },
+  {
+    "type": "crafted",
+    "text": "Adds # to # Lightning Damage to Spells",
+    "id": "crafted.stat_2831165374"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Fire Damage",
+    "id": "crafted.stat_3962278098"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Evasion Rating",
+    "id": "crafted.stat_2106365538"
+  },
+  {
+    "type": "crafted",
+    "text": "Minions deal #% increased Damage",
+    "id": "crafted.stat_1589917703"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Damage over Time",
+    "id": "crafted.stat_967627487"
+  },
+  {
+    "type": "crafted",
+    "text": "Adds # to # Fire Damage to Spells",
+    "id": "crafted.stat_1133016593"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Lightning Damage",
+    "id": "crafted.stat_2231156303"
+  },
+  {
+    "type": "crafted",
+    "text": "Adds # to # Cold Damage to Spells",
+    "id": "crafted.stat_2469416729"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Damage taken from Damage Over Time",
+    "id": "crafted.stat_1101403182"
+  },
+  {
+    "type": "crafted",
+    "text": "#% faster start of Energy Shield Recharge",
+    "id": "crafted.stat_1782086450"
+  },
+  {
+    "type": "crafted",
+    "text": "# to Accuracy Rating (Local)",
+    "id": "crafted.stat_691932474"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Cold Damage",
+    "id": "crafted.stat_3291658075"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Flask Mana Recovery rate",
+    "id": "crafted.stat_1412217137"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Trap Damage",
+    "id": "crafted.stat_2941585404"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Mine Damage",
+    "id": "crafted.stat_2137912951"
+  },
+  {
+    "type": "crafted",
+    "text": "#% of Lightning Damage Leeched as Life",
+    "id": "crafted.stat_80079005"
+  },
+  {
+    "type": "crafted",
+    "text": "# to Weapon range",
+    "id": "crafted.stat_350598685"
+  },
+  {
+    "type": "crafted",
+    "text": "#% of Fire Damage Leeched as Life",
+    "id": "crafted.stat_3848282610"
+  },
+  {
+    "type": "crafted",
+    "text": "#% Chance to Block (Shields)",
+    "id": "crafted.stat_4253454700"
+  },
+  {
+    "type": "crafted",
+    "text": "#% of Cold Damage Leeched as Life",
+    "id": "crafted.stat_3999401129"
+  },
+  {
+    "type": "crafted",
+    "text": "Socketed Gems are Supported by Level # Blood Magic",
+    "id": "crafted.stat_3922006600"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Projectile Speed",
+    "id": "crafted.stat_3759663284"
+  },
+  {
+    "type": "crafted",
+    "text": "#% chance to cause Bleeding on Hit",
+    "id": "crafted.stat_1519615863"
+  },
+  {
+    "type": "crafted",
+    "text": "# Life gained for each Enemy hit by your Attacks",
+    "id": "crafted.stat_2797971005"
+  },
+  {
+    "type": "crafted",
+    "text": "#% reduced Enemy Block Chance",
+    "id": "crafted.stat_2477381238"
+  },
+  {
+    "type": "crafted",
+    "text": "Flasks gain a Charge when you take a Critical Strike",
+    "id": "crafted.stat_301104070"
+  },
+  {
+    "type": "crafted",
+    "text": "Reflects # Physical Damage to Melee Attackers",
+    "id": "crafted.stat_3767873853"
+  },
+  {
+    "type": "crafted",
+    "text": "Minions have #% increased maximum Life",
+    "id": "crafted.stat_770672621"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Curse Duration",
+    "id": "crafted.stat_3824372849"
+  },
+  {
+    "type": "crafted",
+    "text": "Cannot roll Caster Mods",
+    "id": "crafted.stat_1149326139"
+  },
+  {
+    "type": "crafted",
+    "text": "# to maximum number of Zombies",
+    "id": "crafted.stat_1652515349"
+  },
+  {
+    "type": "crafted",
+    "text": "Cannot roll Attack Mods",
+    "id": "crafted.stat_4122424929"
+  },
+  {
+    "type": "crafted",
+    "text": "Attack Projectiles Return to You after hitting targets",
+    "id": "crafted.stat_1578737937"
+  },
+  {
+    "type": "crafted",
+    "text": "#% chance to Avoid being Stunned",
+    "id": "crafted.stat_4262448838"
+  },
+  {
+    "type": "crafted",
+    "text": "#% additional Block Chance",
+    "id": "crafted.stat_1702195217"
+  },
+  {
+    "type": "crafted",
+    "text": "#% additional Block Chance while Dual Wielding",
+    "id": "crafted.stat_2166444903"
+  },
+  {
+    "type": "crafted",
+    "text": "# to maximum number of Skeletons",
+    "id": "crafted.stat_2428829184"
+  },
+  {
+    "type": "crafted",
+    "text": "#% reduced Enemy Stun Threshold with this Weapon",
+    "id": "crafted.stat_832404842"
+  },
+  {
+    "type": "crafted",
+    "text": "Suffixes Cannot Be Changed",
+    "id": "crafted.stat_3464137628"
+  },
+  {
+    "type": "crafted",
+    "text": "Item drops on Death if Equipped by an Animated Guardian",
+    "id": "crafted.stat_3909846940"
+  },
+  {
+    "type": "crafted",
+    "text": "Reflects # Physical Damage to Attackers on Block",
+    "id": "crafted.stat_1445684883"
+  },
+  {
+    "type": "crafted",
+    "text": "#% chance to Freeze",
+    "id": "crafted.stat_2309614417"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Trap Throwing Speed",
+    "id": "crafted.stat_118398748"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Mine Laying Speed",
+    "id": "crafted.stat_1896971621"
+  },
+  {
+    "type": "crafted",
+    "text": "Prefixes Cannot Be Changed",
+    "id": "crafted.stat_2879723104"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Stun Duration on Enemies",
+    "id": "crafted.stat_2517001139"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Chill Duration on Enemies",
+    "id": "crafted.stat_3485067555"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Freeze Duration on Enemies",
+    "id": "crafted.stat_1073942215"
+  },
+  {
+    "type": "crafted",
+    "text": "#% chance to Ignite",
+    "id": "crafted.stat_1335054179"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Ignite Duration on Enemies",
+    "id": "crafted.stat_1086147743"
+  },
+  {
+    "type": "crafted",
+    "text": "#% chance to Avoid being Shocked",
+    "id": "crafted.stat_1871765599"
+  },
+  {
+    "type": "crafted",
+    "text": "#% chance to Shock",
+    "id": "crafted.stat_1538773178"
+  },
+  {
+    "type": "crafted",
+    "text": "#% chance to Avoid being Frozen",
+    "id": "crafted.stat_1514829491"
+  },
+  {
+    "type": "crafted",
+    "text": "#% chance to Avoid being Knocked Back",
+    "id": "crafted.stat_2362265695"
+  },
+  {
+    "type": "crafted",
+    "text": "#% chance to Avoid being Ignited",
+    "id": "crafted.stat_1783006896"
+  },
+  {
+    "type": "crafted",
+    "text": "#% chance to Avoid being Chilled",
+    "id": "crafted.stat_3483999943"
+  },
+  {
+    "type": "crafted",
+    "text": "#% increased Shock Duration on Enemies",
+    "id": "crafted.stat_3668351662"
+  }
+]
