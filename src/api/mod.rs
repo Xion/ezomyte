@@ -2,7 +2,13 @@
 
 mod league_rules;
 mod leagues;
+mod pvp_matches;
 mod stashes;
+
+pub use self::league_rules::LeagueRules;
+pub use self::leagues::Leagues;
+pub use self::pvp_matches::PvpMatches;
+pub use self::stashes::Stashes;
 
 
 use std::borrow::Borrow;
@@ -12,9 +18,6 @@ use std::ops::Deref;
 use futures::Stream as StdStream;
 
 use super::error::Error;
-pub use self::league_rules::LeagueRules;
-pub use self::leagues::Leagues;
-pub use self::stashes::Stashes;
 
 
 /// Stream type returned by various API methods.

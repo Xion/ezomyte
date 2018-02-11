@@ -1,6 +1,7 @@
 //! Wrapper over `serde_json::Value` with some additional trait implementations.
 
 use std::fmt;
+use std::ops::Deref;
 use std::str::FromStr;
 
 use serde::de::{self, Deserialize, Deserializer, IntoDeserializer, Visitor};
@@ -17,6 +18,13 @@ macro_attr! {
     #[derive(Clone, PartialEq,
              NewtypeDisplay!, NewtypeFrom!)]
     pub struct Json(Value);
+}
+
+impl Deref for Json {
+    type Target = Value;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }
 
 impl Json {

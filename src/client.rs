@@ -10,7 +10,7 @@ use serde::de::DeserializeOwned;
 use serde_json;
 use tokio_core::reactor::Handle;
 
-use super::api::{LeagueRules, Leagues, Stashes};
+use super::api::{LeagueRules, Leagues, PvpMatches, Stashes};
 use super::error::Error;
 
 
@@ -84,6 +84,12 @@ impl<C: Clone + Connect> Client<C> {
     #[inline]
     pub fn league_rules(&self) -> LeagueRules<C> {
         LeagueRules::new(self.clone())
+    }
+
+    /// Access the interface for PoE PvP matches information.
+    #[inline]
+    pub fn pvp_matches(&self) -> PvpMatches<C> {
+        PvpMatches::new(self.clone())
     }
 }
 
