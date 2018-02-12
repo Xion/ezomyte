@@ -1,7 +1,13 @@
 //!
-//! ezomyte
 //! Path of Exile API client
 //!
+//! ## Usage
+//!
+//! See [the crate README](https://github.com/Xion/ezomyte) for usage information.
+//!
+
+#![allow(dead_code)]  // TODO: prune unused parts
+#![allow(missing_docs)]
 
                              extern crate chrono;
                              extern crate conv;
