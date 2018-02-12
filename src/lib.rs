@@ -36,6 +36,7 @@ mod error;
 mod model;
 mod util;
 
+pub use self::api::*;
 pub use self::client::*;
 pub use self::error::*;
 pub use self::model::*;

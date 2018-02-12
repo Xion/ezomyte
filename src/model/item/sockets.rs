@@ -1,13 +1,14 @@
 //! Structures defining the sockets on items.
 
 
-/// A color of an item or socket.
+/// A color of an gem or socket.
 ///
-/// In PoE, this is associated with a particular main stat.
+/// In PoE, a color is also associated with a particular main stat,
+/// like Strength or Dexterity.
 ///
 /// *Note*: Although it does appear as such in the API,
-/// "abyss" is not a color so it's not included here.
-/// See `ItemSockets::abyss_count` for the number of abyss sockets an item has.
+/// "abyss" is not really a socket color, and it is not included here.
+/// See `ItemSockets::abyssal_count` for the number of abyssal sockets an item has.
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
 pub enum Color {
     /// Red gem or socket, associated with Strength.
