@@ -3,7 +3,7 @@
 use std::iter;
 
 use super::experience::Experience;
-use super::mod_::Mod;
+use super::mods::Mod;
 
 
 /// Details of the particular items, if known.
