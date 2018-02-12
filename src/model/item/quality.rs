@@ -4,7 +4,7 @@ use std::fmt;
 
 
 macro_attr! {
-    /// Quality of an item.
+    /// Quality of an item as a numeric percentage value.
     #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Ord, PartialOrd,
              NewtypeFrom!, NewtypeDeref!, NewtypeDerefMut!,
              NewtypeAdd!, NewtypeAddAssign!)]
