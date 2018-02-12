@@ -49,7 +49,7 @@ fn main() {
             let uniques = stash.items.iter().filter(|i| i.rarity == Rarity::Unique);
             for item in uniques {
                 // Prints something like "Belly of the Beast -- Full Wyrmscale".
-                println!("{}; {} -- {}",
+                println!("{} -- {}",
                     item.name.as_ref().map(|n| n.as_str()).unwrap_or("<unnamed>"),
                     item.base);
             }
