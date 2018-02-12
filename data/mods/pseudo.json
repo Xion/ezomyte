@@ -1,0 +1,422 @@
+[
+  {
+    "type": "pseudo",
+    "text": "+#% total to Cold Resistance",
+    "id": "pseudo.pseudo_total_cold_resistance"
+  },
+  {
+    "type": "pseudo",
+    "text": "+#% total to Fire Resistance",
+    "id": "pseudo.pseudo_total_fire_resistance"
+  },
+  {
+    "type": "pseudo",
+    "text": "+#% total to Lightning Resistance",
+    "id": "pseudo.pseudo_total_lightning_resistance"
+  },
+  {
+    "type": "pseudo",
+    "text": "+#% total Elemental Resistance",
+    "id": "pseudo.pseudo_total_elemental_resistance"
+  },
+  {
+    "type": "pseudo",
+    "text": "+#% total Resistance",
+    "id": "pseudo.pseudo_total_resistance"
+  },
+  {
+    "type": "pseudo",
+    "text": "# total Resistances",
+    "id": "pseudo.pseudo_count_resistances"
+  },
+  {
+    "type": "pseudo",
+    "text": "# total Elemental Resistances",
+    "id": "pseudo.pseudo_count_elemental_resistances"
+  },
+  {
+    "type": "pseudo",
+    "text": "+#% total to all Elemental Resistances",
+    "id": "pseudo.pseudo_total_all_elemental_resistances"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Strength",
+    "id": "pseudo.pseudo_total_strength"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Dexterity",
+    "id": "pseudo.pseudo_total_dexterity"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Intelligence",
+    "id": "pseudo.pseudo_total_intelligence"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to all Attributes",
+    "id": "pseudo.pseudo_total_all_attributes"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total maximum Life",
+    "id": "pseudo.pseudo_total_life"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total maximum Mana",
+    "id": "pseudo.pseudo_total_mana"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total maximum Energy Shield",
+    "id": "pseudo.pseudo_total_energy_shield"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% total increased maximum Energy Shield",
+    "id": "pseudo.pseudo_increased_energy_shield"
+  },
+  {
+    "type": "pseudo",
+    "text": "+#% total Attack Speed",
+    "id": "pseudo.pseudo_total_attack_speed"
+  },
+  {
+    "type": "pseudo",
+    "text": "+#% total Cast Speed",
+    "id": "pseudo.pseudo_total_cast_speed"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% total increased Physical Damage",
+    "id": "pseudo.pseudo_increased_physical_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Spell Damage",
+    "id": "pseudo.pseudo_increased_spell_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "+#% total Critical Strike Chance for Spells",
+    "id": "pseudo.pseudo_critical_strike_chance_for_spells"
+  },
+  {
+    "type": "pseudo",
+    "text": "+#% Global Critical Strike Chance",
+    "id": "pseudo.pseudo_global_critical_strike_chance"
+  },
+  {
+    "type": "pseudo",
+    "text": "+#% Global Critical Strike Multiplier",
+    "id": "pseudo.pseudo_global_critical_strike_multiplier"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Physical Damage",
+    "id": "pseudo.pseudo_adds_physical_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Lightning Damage",
+    "id": "pseudo.pseudo_adds_lightning_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Cold Damage",
+    "id": "pseudo.pseudo_adds_cold_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Fire Damage",
+    "id": "pseudo.pseudo_adds_fire_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Elemental Damage",
+    "id": "pseudo.pseudo_adds_elemental_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Chaos Damage",
+    "id": "pseudo.pseudo_adds_chaos_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Damage",
+    "id": "pseudo.pseudo_adds_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Physical Damage to Attacks",
+    "id": "pseudo.pseudo_adds_physical_damage_to_attacks"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Lightning Damage to Attacks",
+    "id": "pseudo.pseudo_adds_lightning_damage_to_attacks"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Cold Damage to Attacks",
+    "id": "pseudo.pseudo_adds_cold_damage_to_attacks"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Fire Damage to Attacks",
+    "id": "pseudo.pseudo_adds_fire_damage_to_attacks"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Elemental Damage to Attacks",
+    "id": "pseudo.pseudo_adds_elemental_damage_to_attacks"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Chaos Damage to Attacks",
+    "id": "pseudo.pseudo_adds_chaos_damage_to_attacks"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Damage to Attacks",
+    "id": "pseudo.pseudo_adds_damage_to_attacks"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Physical Damage to Spells",
+    "id": "pseudo.pseudo_adds_physical_damage_to_spells"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Lightning Damage to Spells",
+    "id": "pseudo.pseudo_adds_lightning_damage_to_spells"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Cold Damage to Spells",
+    "id": "pseudo.pseudo_adds_cold_damage_to_spells"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Fire Damage to Spells",
+    "id": "pseudo.pseudo_adds_fire_damage_to_spells"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Elemental Damage to Spells",
+    "id": "pseudo.pseudo_adds_elemental_damage_to_spells"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Chaos Damage to Spells",
+    "id": "pseudo.pseudo_adds_chaos_damage_to_spells"
+  },
+  {
+    "type": "pseudo",
+    "text": "Adds # to # Damage to Spells",
+    "id": "pseudo.pseudo_adds_damage_to_spells"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Elemental Damage",
+    "id": "pseudo.pseudo_increased_elemental_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Lightning Damage",
+    "id": "pseudo.pseudo_increased_lightning_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Cold Damage",
+    "id": "pseudo.pseudo_increased_cold_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Fire Damage",
+    "id": "pseudo.pseudo_increased_fire_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Lightning Spell Damage",
+    "id": "pseudo.pseudo_increased_lightning_spell_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Cold Spell Damage",
+    "id": "pseudo.pseudo_increased_cold_spell_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Fire Spell Damage",
+    "id": "pseudo.pseudo_increased_fire_spell_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Lightning Damage with Attack Skills",
+    "id": "pseudo.pseudo_increased_lightning_damage_with_attack_skills"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Cold Damage with Attack Skills",
+    "id": "pseudo.pseudo_increased_cold_damage_with_attack_skills"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Fire Damage with Attack Skills",
+    "id": "pseudo.pseudo_increased_fire_damage_with_attack_skills"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Elemental Damage with Attack Skills",
+    "id": "pseudo.pseudo_increased_elemental_damage_with_attack_skills"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Rarity of Items found",
+    "id": "pseudo.pseudo_increased_rarity"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Burning Damage",
+    "id": "pseudo.pseudo_increased_burning_damage"
+  },
+  {
+    "type": "pseudo",
+    "text": "# Life Regenerated per Second",
+    "id": "pseudo.pseudo_total_life_regen"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% of Life Regenerated per Second",
+    "id": "pseudo.pseudo_percent_life_regen"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% of Physical Attack Damage Leeched as Life",
+    "id": "pseudo.pseudo_physical_attack_damage_leeched_as_life"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% of Physical Attack Damage Leeched as Mana",
+    "id": "pseudo.pseudo_physical_attack_damage_leeched_as_mana"
+  },
+  {
+    "type": "pseudo",
+    "text": "#% increased Mana Regeneration Rate",
+    "id": "pseudo.pseudo_increased_mana_regen"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Gems",
+    "id": "pseudo.pseudo_total_additional_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Elemental Gems",
+    "id": "pseudo.pseudo_total_additional_elemental_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Fire Gems",
+    "id": "pseudo.pseudo_total_additional_fire_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Cold Gems",
+    "id": "pseudo.pseudo_total_additional_cold_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Lightning Gems",
+    "id": "pseudo.pseudo_total_additional_lightning_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Chaos Gems",
+    "id": "pseudo.pseudo_total_additional_chaos_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Spell Gems",
+    "id": "pseudo.pseudo_total_additional_spell_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Projectile Gems",
+    "id": "pseudo.pseudo_total_additional_projectile_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Bow Gems",
+    "id": "pseudo.pseudo_total_additional_bow_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Melee Gems",
+    "id": "pseudo.pseudo_total_additional_melee_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Minion Gems",
+    "id": "pseudo.pseudo_total_additional_minion_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Strength Gems",
+    "id": "pseudo.pseudo_total_additional_strength_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Dexterity Gems",
+    "id": "pseudo.pseudo_total_additional_dexterity_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Intelligence Gems",
+    "id": "pseudo.pseudo_total_additional_intelligence_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Aura Gems",
+    "id": "pseudo.pseudo_total_additional_aura_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Movement Gems",
+    "id": "pseudo.pseudo_total_additional_movement_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Curse Gems",
+    "id": "pseudo.pseudo_total_additional_curse_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Vaal Gems",
+    "id": "pseudo.pseudo_total_additional_vaal_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Support Gems",
+    "id": "pseudo.pseudo_total_additional_support_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Skill Gems",
+    "id": "pseudo.pseudo_total_additional_skill_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Warcry Gems",
+    "id": "pseudo.pseudo_total_additional_warcry_gem_levels"
+  },
+  {
+    "type": "pseudo",
+    "text": "+# total to Level of Socketed Golem Gems",
+    "id": "pseudo.pseudo_total_additional_golem_gem_levels"
+  }
+]
