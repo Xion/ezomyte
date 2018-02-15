@@ -70,7 +70,9 @@ pub enum StashType {
     /// Map stash tab.
     #[serde(rename = "MapStash")]  // TODO: verify
     Map,
-    // TODO: fragment stash tab
+    /// Fragment stash tab.
+    #[serde(rename = "FragmentStash")]  // TODO: verify
+    Fragment,
 }
 
 
@@ -130,15 +132,31 @@ impl StashedItem {
         self.label().and_then(|l| l.negotiable_price())
     }
 
-    /// Position of the item in the stash tab.
+    /// Position of the item (`(x, y)`) in the stash tab.
     #[inline]
     pub fn position(&self) -> (u64, u64) {
         (self.x, self.y)
     }
 
-    /// Size of the item in stash tab tiles.
+    /// Horizontal offset of the item in the stash tab.
+    #[inline]
+    pub fn x(&self) -> u64 { self.x }
+
+    /// Vertical offset of the item in the stash tab.
+    #[inline]
+    pub fn y(&self) -> u64 { self.y }
+
+    /// Dimensions of the item (`(width, height)`) in stash tab tiles.
     #[inline]
     pub fn size(&self) -> (u64, u64) {
         (self.width, self.height)
     }
+
+    /// Width of the item in stash tab tiles.
+    #[inline]
+    pub fn width(&self) -> u64 { self.width }
+
+    /// Height of the item in stash tab tiles.
+    #[inline]
+    pub fn height(&self) -> u64 { self.height }
 }

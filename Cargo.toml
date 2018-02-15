@@ -1,6 +1,6 @@
 [package]
 name = "ezomyte"
-version = "0.0.1"
+version = "0.0.2"
 description = "Path of Exile API client library"
 authors = ["Karol Kuczmarski <karol.kuczmarski@gmail.com>"]
 documentation = "https://docs.rs/ezomyte"
