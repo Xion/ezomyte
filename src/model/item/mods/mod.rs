@@ -1,5 +1,10 @@
 //! Item mod (modifier).
 
+mod id;
+
+pub use self::id::{ModId, ModType};
+
+
 use std::fmt;
 
 
