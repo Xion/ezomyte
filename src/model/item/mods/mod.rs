@@ -16,6 +16,8 @@ use smallvec::SmallVec;
 /// A single item mod occurrence.
 #[derive(Clone)]
 pub struct Mod {
+    /// Type of the mod.
+    type_: ModType,
     /// Original text of the mod.
     text: String,
     /// Parsed mod information & values.
@@ -27,11 +29,36 @@ impl Mod {
     pub fn new<T: Into<String>>(type_: ModType, text: T) -> Self {
         let text = text.into();
         let data = database::ITEM_MODS.lookup(type_, &text);
-        Mod{text, data}
+        Mod{type_, text, data}
     }
 }
 
 impl Mod {
+    /// Mod type (explicit, implicit, etc.).
+    #[inline]
+    pub fn mod_type(&self) -> ModType {
+        self.type_
+    }
+
+    /// Information about the particular item mod.
+    #[inline]
+    pub fn info(&self) -> Option<&ModInfo> {
+        self.data.as_ref().map(|&(ref mi, _)| &**mi)
+    }
+
+    /// Values associated with this particular mod's occurrence, if known.
+    ///
+    /// For example, if the mod is "+6% increased Attack Speed",
+    /// its values include a single number 6.
+    ///
+    /// Note that not every number in the mod text is an actual mod value.
+    /// A typical example is "+3000 to Evasion Rating" (flask mod),
+    /// where "3000" is just a constant part of the mod text.
+    #[inline]
+    pub fn values(&self) -> Option<&ModValues> {
+        self.data.as_ref().map(|&(_, ref mv)| mv)
+    }
+
     /// Mod text as string.
     #[inline]
     pub fn as_str(&self) -> &str {
@@ -41,8 +68,16 @@ impl Mod {
 
 impl fmt::Debug for Mod {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        // TODO: better Debug, maybe a standard derived one even
-        write!(fmt, "Mod::new({:?})", self.text)
+        let mut ds = fmt.debug_struct("Mod");
+        ds.field("type", &self.type_);
+        match self.data {
+            Some((ref mi, ref vs)) => {
+                ds.field("text", &mi.text());
+                ds.field("values", vs);
+            }
+            None => { ds.field("text", &self.text); }
+        }
+        ds.finish()
     }
 }
 

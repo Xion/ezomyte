@@ -103,6 +103,10 @@ pub struct ModInfo {
     ///
     /// This is parsed from a string such as "implicit.stat_587431675".
     id: ModId,
+    /// Template for the mod text.
+    ///
+    /// This contains the placeholders for mod values, e.g. "+# to maximum Life".
+    text_template: String,
     /// Regular expression matching the textual form of the mod
     /// as it appears on items.
     ///
@@ -113,17 +117,24 @@ pub struct ModInfo {
 
 impl ModInfo {
     /// Create `ModInfo` from given mod ID and its text (as obtained from the PoE API).
-    fn from_raw(id: &str, text: &str) -> Result<Self, Box<Error>> {
+    fn from_raw<T: Into<String>>(id: &str, text: T) -> Result<Self, Box<Error>> {
+        // TODO: handle "+N to Foo" to mean "N to Foo"; we get things like "+43% to Cold Resistance"
+        // but the API mod data says "#% to Cold Resistance" (no "+")
         const VALUE_RE: &str = r"(\d+(?:\.\d+)?)";  // Regex for integer or float values.
         lazy_static! {
-            static ref HASH: String = regex::escape("#");
+            /// Placeholder for mod value in the text template.
+            static ref VALUE_PH: String = regex::escape("#");
         }
 
         let id = ModId::from_str(id)?;
+
+        let text = text.into();
         let regex_str = format!("^{}$",
-            regex::escape(text.trim()).replace(HASH.as_str(), VALUE_RE));
+            regex::escape(text.trim()).replace(VALUE_PH.as_str(), VALUE_RE));
+
         Ok(ModInfo {
             id: id,
+            text_template: text,
             regex: Regex::new(&regex_str)?,
         })
     }
@@ -134,6 +145,15 @@ impl ModInfo {
     #[inline]
     pub fn id(&self) -> ModId {
         self.id
+    }
+
+    /// Expected format of the mod's text on an item.
+    ///
+    /// This is a string that in most cases contains hashes (`#`) as placeholders
+    /// for mod's numerical, e.g. "+#% increased Attack Speed".
+    #[inline]
+    pub fn text(&self) -> &str {
+        self.text_template.as_str()
     }
 
     /// Returns how many parameters there are in the mod that are variable between items.
