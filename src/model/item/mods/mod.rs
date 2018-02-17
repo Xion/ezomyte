@@ -1,6 +1,7 @@
 //! Item mod (modifier).
 
 mod id;
+mod database;
 
 pub use self::id::{ModId, ModType};
 
@@ -30,3 +31,8 @@ impl fmt::Debug for Mod {
         write!(fmt, "Mod({:?})", self.0)
     }
 }
+
+
+/// Type of a mod parameter value
+/// -- that is, the number that varies between occurrences of a mod on items.
+pub type ModValue = f64;

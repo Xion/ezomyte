@@ -13,6 +13,7 @@ use serde::de::{self, Deserialize, Deserializer, Unexpected};
 
 
 /// Mod identifier, including it's type (crafted, implicit, etc.) and a unique number.
+#[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub struct ModId {
     type_: ModType,
     number: u64,
@@ -60,6 +61,19 @@ impl<'de> Deserialize<'de> for ModId {
     }
 }
 
+impl ModId {
+    /// Type of the mod (crafted, explicit, etc.).
+    #[inline]
+    pub fn mod_type(&self) -> ModType {
+        self.type_
+    }
+
+    /// Mod's identifying number (unique within mods of the same type).
+    pub fn mod_number(&self) -> u64 {
+        self.number
+    }
+}
+
 impl fmt::Debug for ModId {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         write!(fmt, "ModId::new({:?}, {:?})", self.type_, self.number)
@@ -92,17 +106,20 @@ impl fmt::Display for Error {
 }
 
 
-/// Type of an item mod.
-#[derive(Debug)]
-pub enum ModType {
-    /// Mods crafted by Forsaken Master benches.
-    Crafted,
-    /// Mods that can be enchanted on items in the Lord's Labirynth.
-    Enchant,
-    /// Explicit ("regular") item mods
-    Explicit,
-    /// Implicit item mods (inherent to the item base).
-    Implicit,
+macro_attr! {
+    /// Type of an item mod.
+    #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash,
+             IterVariants!(ModTypes))]
+    pub enum ModType {
+        /// Mods crafted by Forsaken Master benches.
+        Crafted,
+        /// Mods that can be enchanted on items in the Lord's Labirynth.
+        Enchant,
+        /// Explicit ("regular") item mods
+        Explicit,
+        /// Implicit item mods (inherent to the item base).
+        Implicit,
+    }
 }
 
 impl FromStr for ModType {
