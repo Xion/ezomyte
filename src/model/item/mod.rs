@@ -14,7 +14,7 @@ pub use self::category::*;
 pub use self::details::ItemDetails;
 pub use self::experience::Experience;
 pub use self::influence::Influence;
-pub use self::mods::Mod;
+pub use self::mods::{Mod, ModType};
 pub use self::properties::Properties;
 pub use self::quality::Quality;
 pub use self::rarity::Rarity;

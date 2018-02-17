@@ -132,8 +132,9 @@ fn generate_item_mod_code() -> Result<(), Box<Error>> {
 fn generate_item_mods_id_mapping() -> io::Result<()> {
     let mut out = create_out_file(ITEM_MODS_DATABASE_FILE)?;
 
-    // TODO: consider splitting the hashmap between mod types, since there are more than 3k of them
-    // and the vast majority is in the "explicit" category
+    // TODO: definitely split the hashmap between mod types, since there are more than 3k of them
+    // and the vast majority is in the "explicit" category,
+    // AND we are looking them by mod types, too
     writeln!(out, "{{")?;
     writeln!(out, "let mut hm = HashMap::new();")?;
     for &mod_type in ITEM_MODS_TYPES.iter() {

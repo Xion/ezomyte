@@ -9,7 +9,7 @@ use regex::Regex;
 use serde::de::{self, Deserialize, Visitor, Unexpected};
 use serde_json::Value as Json;
 
-use super::super::{Influence, Item, ItemCategory, ItemDetails, Properties, Rarity};
+use super::super::{Influence, Item, ItemCategory, ItemDetails, Mod, ModType, Properties, Rarity};
 use super::super::util::Quasi;
 use super::util::deserialize;
 
@@ -132,23 +132,23 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 }
                 "utilityMods" => {
                     check_duplicate!("utilityMods" => flask_mods);
-                    flask_mods = Some(map.next_value()?);
+                    flask_mods = Some(Self::deserialize_mods(&mut map, ModType::Explicit)?);
                 }
                 "implicitMods" => {
                     check_duplicate!("implicitMods" => implicit_mods);
-                    implicit_mods = Some(map.next_value()?);
+                    implicit_mods = Some(Self::deserialize_mods(&mut map, ModType::Implicit)?);
                 }
                 "enchantMods" => {
                     check_duplicate!("enchantMods" => enchant_mods);
-                    enchant_mods = Some(map.next_value()?);
+                    enchant_mods = Some(Self::deserialize_mods(&mut map, ModType::Enchant)?);
                 }
                 "explicitMods" => {
                     check_duplicate!("explicitMods" => explicit_mods);
-                    explicit_mods = Some(map.next_value()?);
+                    explicit_mods = Some(Self::deserialize_mods(&mut map, ModType::Explicit)?);
                 }
                 "craftedMods" => {
                     check_duplicate!("craftedMods" => crafted_mods);
-                    crafted_mods = Some(map.next_value()?);
+                    crafted_mods = Some(Self::deserialize_mods(&mut map, ModType::Crafted)?);
                 }
 
                 // Sockets.
@@ -354,6 +354,15 @@ impl ItemVisitor {
     {
         map.next_value().map(|name: String| {
             if name.is_empty() { None } else { Some(name) }
+        })
+    }
+
+    /// Deserialize a collection of item mods of given type.
+    fn deserialize_mods<'de, V>(map: &mut V, mod_type: ModType) -> Result<Vec<Mod>, V::Error>
+        where V: de::MapAccess<'de>
+    {
+        map.next_value().map(|mods: Vec<String>| {
+            mods.into_iter().map(|m| Mod::new(mod_type, m)).collect()
         })
     }
 }

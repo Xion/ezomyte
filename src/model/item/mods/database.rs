@@ -12,7 +12,7 @@ use std::sync::Arc;
 use regex::{self, Regex, RegexSet, RegexSetBuilder};
 
 use super::ModValues;
-use super::id::ModId;
+use super::id::{ModId, ModType};
 use util::parse_number;
 
 
@@ -61,19 +61,24 @@ impl Database {
         self.all_mods.len()
     }
 
-    /// Lookup a mod by its actual text on an item.
-    pub(super) fn lookup(&self, text: &str) -> Option<(Arc<ModInfo>, ModValues)> {
-        let matched_indices: Vec<_> = self.regexes.matches(text.trim()).iter().collect();
-        if matched_indices.len() > 1 {
-            warn!("Mod text {:?} matched {} (>1) known mods!", text, matched_indices.len());
+    /// Lookup a mod by its actual text on an item & mod type.
+    pub(super) fn lookup(&self, mod_type: ModType, text: &str) -> Option<(Arc<ModInfo>, ModValues)> {
+        let mut matched_mods = Vec::new();
+        for idx in self.regexes.matches(text.trim()).iter() {
+            let mod_ = &self.all_mods[idx];
+            if mod_.id().mod_type() == mod_type {
+                matched_mods.push(mod_);
+            }
+        }
+        if matched_mods.len() > 1 {
+            warn!("Mod text {:?} matched {} (>1) known mods!", text, matched_mods.len());
             return None;
         }
-        matched_indices.into_iter().next().map(|idx| {
-            let mod_ = self.all_mods[idx].clone();
+        matched_mods.into_iter().next().map(|mod_| {
             trace!("Mod text {:?} matched {:?}", text, mod_);
             let values = mod_.parse_text(text)
                 .expect(&format!("mod values for {:?} after parsing by {:?}", text, mod_));
-            (mod_, values)
+            (mod_.clone(), values)
         })
     }
 }

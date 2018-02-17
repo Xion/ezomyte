@@ -10,7 +10,6 @@ pub use self::id::{ModId, ModType};
 use std::fmt;
 use std::sync::Arc;
 
-use serde::de::{Deserialize, Deserializer};
 use smallvec::SmallVec;
 
 
@@ -24,28 +23,11 @@ pub struct Mod {
 }
 
 impl Mod {
-    // XXX: mod text isn't enough because there are duplicates between categories,
-    // e.g. EDWA is both explicit and crafted
-
     /// Create `Mod` from given mod text that's found on an item.
-    pub fn with_text<T: Into<String>>(text: T) -> Self {
+    pub fn new<T: Into<String>>(type_: ModType, text: T) -> Self {
         let text = text.into();
-        let data = database::ITEM_MODS.lookup(&text);
+        let data = database::ITEM_MODS.lookup(type_, &text);
         Mod{text, data}
-    }
-}
-
-impl From<String> for Mod {
-    fn from(s: String) -> Self {
-        Mod::with_text(s)
-    }
-}
-impl<'de> Deserialize<'de> for Mod {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
-    {
-        let text: String = Deserialize::deserialize(deserializer)?;
-        Ok(Mod::with_text(text))
     }
 }
 
@@ -60,7 +42,7 @@ impl Mod {
 impl fmt::Debug for Mod {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         // TODO: better Debug, maybe a standard derived one even
-        write!(fmt, "Mod::with_text({:?})", self.text)
+        write!(fmt, "Mod::new({:?})", self.text)
     }
 }
 
