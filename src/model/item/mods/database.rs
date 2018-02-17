@@ -11,7 +11,7 @@ use std::sync::Arc;
 
 use regex::{self, Regex, RegexSet, RegexSetBuilder};
 
-use super::ModValue;
+use super::ModValues;
 use super::id::ModId;
 use util::parse_number;
 
@@ -61,7 +61,21 @@ impl Database {
         self.all_mods.len()
     }
 
-    // TODO: mod lookup based on texts on the items
+    /// Lookup a mod by its actual text on an item.
+    pub(super) fn lookup(&self, text: &str) -> Option<(Arc<ModInfo>, ModValues)> {
+        let matched_indices: Vec<_> = self.regexes.matches(text.trim()).iter().collect();
+        if matched_indices.len() > 1 {
+            warn!("Mod text {:?} matched {} (>1) known mods!", text, matched_indices.len());
+            return None;
+        }
+        matched_indices.into_iter().next().map(|idx| {
+            let mod_ = self.all_mods[idx].clone();
+            trace!("Mod text {:?} matched {:?}", text, mod_);
+            let values = mod_.parse_text(text)
+                .expect(&format!("mod values for {:?} after parsing by {:?}", text, mod_));
+            (mod_, values)
+        })
+    }
 }
 
 impl fmt::Debug for Database {
@@ -95,13 +109,14 @@ pub struct ModInfo {
 impl ModInfo {
     /// Create `ModInfo` from given mod ID and its text (as obtained from the PoE API).
     fn from_raw(id: &str, text: &str) -> Result<Self, Box<Error>> {
-        const VALUE_RE: &str = r#"(\d+(?:\.\d+))?"#;  // Regex for integer or float values.
+        const VALUE_RE: &str = r"(\d+(?:\.\d+)?)";  // Regex for integer or float values.
         lazy_static! {
             static ref HASH: String = regex::escape("#");
         }
 
         let id = ModId::from_str(id)?;
-        let regex_str = regex::escape(text).replace(HASH.as_str(), VALUE_RE);
+        let regex_str = format!("^{}$",
+            regex::escape(text.trim()).replace(HASH.as_str(), VALUE_RE));
         Ok(ModInfo {
             id: id,
             regex: Regex::new(&regex_str)?,
@@ -129,12 +144,12 @@ impl ModInfo {
     /// Parse mod text from an actual item and return the corresponding mod values.
     ///
     /// If the text doesn't match this mod, `None` is returned.
-    pub fn parse_text(&self, text: &str) -> Option<Vec<ModValue>> {
+    pub fn parse_text(&self, text: &str) -> Option<ModValues> {
         if self.param_count() == 0 {
-            return Some(vec![]);
+            return Some(ModValues::new());
         }
-        self.regex.captures(text).map(|caps| {
-            caps.iter()
+        self.regex.captures(text.trim()).map(|caps| {
+            caps.iter().skip(1)
                 .map(Option::unwrap)  // if there was a match, then every group caught a value
                 .map(|m| parse_number(m.as_str()).unwrap())  // and they were all numbers
                 .collect()

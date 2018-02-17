@@ -32,7 +32,7 @@ pub fn https_client(handle: &Handle) -> HttpsClient {
 /// The input number can be an integer, a float, or a numerator/denominator rational.
 pub fn parse_number(s: &str) -> Result<f64, ParseNumberError> {
     // Assume number is in the from of `$NUMBER` or `$NUMBER / $NUMBER`.
-    let nums: Vec<_> = s.split('/').collect();
+    let nums: Vec<_> = s.trim().split('/').collect();
     let num_count = nums.len();
     match num_count {
         1 => {
@@ -52,12 +52,13 @@ pub fn parse_number(s: &str) -> Result<f64, ParseNumberError> {
     }
 }
 
+/// Error while parsing a number.
 #[derive(Debug, Error)]
 pub enum ParseNumberError {
-    /// Error parsing floating point amount.
+    /// Error parsing a floating point number.
     Float(ParseFloatError),
-    /// Error parsing rational amount (X/Y fraction where X,Y are integers).
+    /// Error parsing a rational number (X/Y fraction where X,Y are integers).
     Rational(ParseIntError),
-    /// General syntax error while parsing the amount.
+    /// General syntax error while parsing the number.
     Syntax,
 }
