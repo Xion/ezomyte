@@ -118,34 +118,37 @@ fn generate_currency_de(currencies: &[CurrencyData]) -> io::Result<()> {
 
 // Item mod handling
 
-const ITEM_MOD_DATA_DIR: &str = "data/mods";
-const ITEM_MOD_TYPES: &[&str] = &["crafted", "enchant", "explicit", "implicit"];
-const ITEM_MOD_DATABASE_FILE: &str = "model/item/mods/database.inc.rs";
+const ITEM_MODS_DATA_DIR: &str = "data/mods";
+const ITEM_MODS_TYPES: &[&str] = &["crafted", "enchant", "explicit", "implicit"];
+const ITEM_MODS_DATABASE_FILE: &str = "model/item/mods/database/by_id.inc.rs";
 
 /// Generate code for the database of `ModInfo`s.
 fn generate_item_mod_code() -> Result<(), Box<Error>> {
-    let mut out = create_out_file(ITEM_MOD_DATABASE_FILE)?;
+    generate_item_mods_id_mapping()?;
+    Ok(())
+}
 
-    // TODO: split the hashmap between mod types, since there are more than 3k of them
+/// Generate the mapping of all `ModId`s to their `ModInfo`s.
+fn generate_item_mods_id_mapping() -> io::Result<()> {
+    let mut out = create_out_file(ITEM_MODS_DATABASE_FILE)?;
+
+    // TODO: consider splitting the hashmap between mod types, since there are more than 3k of them
     // and the vast majority is in the "explicit" category
-    // TODO: also add a reverse index from mod texts to ModInfos that will be used
-    // to lookup the infos for actual item mod occurrences
-    writeln!(out, "lazy_static! {{")?;
-    writeln!(out, "    /// Database of known item mods.")?;
-    writeln!(out, "    pub static ref ITEM_MODS: HashMap<ModId, ModInfo> = hashmap!{{")?;
-    for &mod_type in ITEM_MOD_TYPES.iter() {
-        let data_file = Path::new(".").join(ITEM_MOD_DATA_DIR).join(mod_type).with_extension("json");
+    writeln!(out, "{{")?;
+    writeln!(out, "let mut hm = HashMap::new();")?;
+    for &mod_type in ITEM_MODS_TYPES.iter() {
+        let data_file = Path::new(".").join(ITEM_MODS_DATA_DIR).join(mod_type).with_extension("json");
         let file = fs::OpenOptions::new().read(true).open(data_file)?;
         let mods: Vec<ItemModData> = serde_json::from_reader(file)?;
         for imd in mods {
-            // TODO: it would probably speed up compilation of we didn't use hashmap!{}
-            // and just write out the .insert()'s verbatim
-            writeln!(out,
-                r#"        ModId::from_str("{id}").unwrap() => ModInfo::from_raw("{id}", "{text}").unwrap(),"#,
-                id=imd.id, text=imd.text)?;
+            writeln!(out, "hm.insert(")?;
+            writeln!(out, r#"    ModId::from_str("{}").unwrap(),"#, imd.id)?;
+            writeln!(out, r#"    Arc::new(ModInfo::from_raw("{}", "{}").unwrap()),"#,
+                imd.id, imd.text)?;
+            writeln!(out, ");")?;
         }
     }
-    writeln!(out, "    }};")?;
+    writeln!(out, "hm")?;
     writeln!(out, "}}")?;
     Ok(())
 }

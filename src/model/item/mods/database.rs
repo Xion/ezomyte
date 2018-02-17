@@ -5,13 +5,76 @@
 use std::collections::HashMap;
 use std::cmp::{Eq, PartialEq};
 use std::error::Error;
+use std::fmt;
 use std::str::FromStr;
+use std::sync::Arc;
 
-use regex::{self, Regex};
+use regex::{self, Regex, RegexSet, RegexSetBuilder};
 
 use super::ModValue;
 use super::id::ModId;
 use util::parse_number;
+
+
+// TODO: the item database takes quite a bit of space in memory,
+// so the support for it should be gated behind a flag
+lazy_static! {
+    /// Database of known item mods.
+    pub static ref ITEM_MODS: Database = Database::new().unwrap();
+}
+
+/// Structure holding information about all known item mods.
+pub struct Database {
+    /// Mapping of mod IDs to their infos.
+    by_id: HashMap<ModId, Arc<ModInfo>>,
+    /// Regex set for quickly matching actual occurrences of mods on items.
+    regexes: RegexSet,
+    /// All mods in the order corresponding to the `regexes` order of regular expressions.
+    all_mods: Vec<Arc<ModInfo>>,
+}
+
+impl Database {
+    /// Create the database and initialize it with known mods.
+    fn new() -> Result<Self, Box<Error>> {
+        let by_id = include!(concat!(
+            env!("OUT_DIR"), "/", "model/item/mods/database/by_id.inc.rs"));
+        let all_mods: Vec<_> = by_id.values().cloned().collect();
+        let regexes = RegexSetBuilder::new(all_mods.iter().map(|mi| mi.regex.as_str()))
+            .case_insensitive(true)
+            .size_limit(MOD_REGEXES_SIZE_LIMIT_BYTES)
+            // TODO: .dfa_size_limit() too?
+            .build()?;
+        Ok(Database{by_id, all_mods, regexes})
+    }
+}
+
+impl Database {
+    /// Returns an iterator over all mods.
+    #[inline]
+    pub fn iter<'d>(&'d self) -> Box<Iterator<Item=&'d ModInfo> + 'd> {
+        Box::new(self.all_mods.iter().map(|mi| &**mi))
+    }
+
+    /// Total number of mods in the database.
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.all_mods.len()
+    }
+
+    // TODO: mod lookup based on texts on the items
+}
+
+impl fmt::Debug for Database {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(fmt, "Database(<{} mods>)", self.len())
+    }
+}
+
+/// Size limit for the compiled set of regular expression for all mod texts'.
+///
+/// We need to override it explicitly because the default (which seem to be 10MB)
+/// is not enough to hold the `RegexSet` of all item mod texts.
+const MOD_REGEXES_SIZE_LIMIT_BYTES: usize = 64 * 1024 * 1024;
 
 
 /// Information about a single known item mod.
@@ -88,9 +151,6 @@ impl PartialEq for ModInfo {
 impl Eq for ModInfo {}
 
 
-include!(concat!(env!("OUT_DIR"), "/", "model/item/mods/database.inc.rs"));
-
-
 #[cfg(test)]
 mod tests {
     use super::super::id::ModType;
@@ -106,7 +166,7 @@ mod tests {
     fn all_item_mod_types_in_db() {
         // Check that we have loaded mods of all types.
         for mt in ModType::iter_variants() {
-            let mod_count = ITEM_MODS.keys().filter(|k| k.mod_type() == mt).count();
+            let mod_count = ITEM_MODS.iter().filter(|mi| mi.id().mod_type() == mt).count();
             assert!(mod_count > 0);
         }
     }

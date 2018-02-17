@@ -42,11 +42,13 @@ pub struct Item {
     /// It may be missing for white items, or generic items like gems.
     pub name: Option<String>,
     /// Item base (type).
+    ///
     /// This is something like "Rustic Sash", "Crimson Jewel", or "Sunder".
     pub base: String,
     /// Item level.
     pub level: u64,
     /// Category of the item.
+    ///
     /// This indicates what you can do with the item, e.g. the slot it is worn on.
     pub category: Quasi<ItemCategory>,
     /// Item rarity, such as magic or unique.
@@ -55,9 +57,9 @@ pub struct Item {
     pub rarity: Rarity,
     /// Item quality.
     pub quality: Quality,
-    /// Item properties.
+    /// Innate item properties.
     ///
-    /// Properties are characteristics inherent to a particular item type,
+    /// These properties are characteristics inherent to a particular item type,
     /// like armor/evasion/energy shield values and weapon damage range.
     /// Properties may have values (like damage ranges)
     /// or not (like gem "tags", e.g. "Spell", "Support", etc).
