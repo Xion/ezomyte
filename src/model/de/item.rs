@@ -257,6 +257,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 }
 
                 // Ignored / unrecognized fields.
+                "nextLevelRequirements" => { map.next_value::<Json>()?; },  // ignore for now
                 "verified" => { map.next_value::<bool>()?; }  // ignore
                 "support" => { map.next_value::<bool>()?; }   // ignore
                 "league" => { map.next_value::<String>()?; }  // ignore, handled by `Stash`

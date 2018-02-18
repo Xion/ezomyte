@@ -118,9 +118,7 @@ pub struct ModInfo {
 impl ModInfo {
     /// Create `ModInfo` from given mod ID and its text (as obtained from the PoE API).
     fn from_raw<T: Into<String>>(id: &str, text: T) -> Result<Self, Box<Error>> {
-        // TODO: handle "+N to Foo" to mean "N to Foo"; we get things like "+43% to Cold Resistance"
-        // but the API mod data says "#% to Cold Resistance" (no "+")
-        const VALUE_RE: &str = r"(\d+(?:\.\d+)?)";  // Regex for integer or float values.
+        const VALUE_RE: &str = r"\+?(\d+(?:\.\d+)?)";  // Regex for integer or float values.
         lazy_static! {
             /// Placeholder for mod value in the text template.
             static ref VALUE_PH: String = regex::escape("#");

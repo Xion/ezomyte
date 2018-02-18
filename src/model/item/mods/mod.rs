@@ -52,8 +52,8 @@ impl Mod {
     /// its values include a single number 6.
     ///
     /// Note that not every number in the mod text is an actual mod value.
-    /// A typical example is "+3000 to Evasion Rating" (flask mod),
-    /// where "3000" is just a constant part of the mod text.
+    /// A typical example is "Has 1 Abyssal Socket",
+    /// where "1" is just a constant part of the mod text.
     #[inline]
     pub fn values(&self) -> Option<&ModValues> {
         self.data.as_ref().map(|&(_, ref mv)| mv)
