@@ -3,17 +3,16 @@
 //! Note that the actual data here is filled in using a build script.
 
 use std::collections::HashMap;
-use std::cmp::{Eq, PartialEq};
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use regex::{self, Regex, RegexSet, RegexSetBuilder};
+use regex::{RegexSet, RegexSetBuilder};
 
 use super::ModValues;
 use super::id::{ModId, ModType};
-use util::parse_number;
+use super::info::ModInfo;
 
 
 // TODO: the item database takes quite a bit of space in memory,
@@ -94,99 +93,6 @@ impl fmt::Debug for Database {
 /// We need to override it explicitly because the default (which seem to be 10MB)
 /// is not enough to hold the `RegexSet` of all item mod texts.
 const MOD_REGEXES_SIZE_LIMIT_BYTES: usize = 64 * 1024 * 1024;
-
-
-/// Information about a single known item mod.
-#[derive(Clone, Debug)]
-pub struct ModInfo {
-    /// Identifier of the mod.
-    ///
-    /// This is parsed from a string such as "implicit.stat_587431675".
-    id: ModId,
-    /// Template for the mod text.
-    ///
-    /// This contains the placeholders for mod values, e.g. "+# to maximum Life".
-    text_template: String,
-    /// Regular expression matching the textual form of the mod
-    /// as it appears on items.
-    ///
-    /// Within the regex, indexed (unnamed) capture groups are expected to be filled
-    /// by specific mod values, e.g. "(\d+)% increased Global Critical Strike Chance".
-    regex: Regex,
-}
-
-impl ModInfo {
-    /// Create `ModInfo` from given mod ID and its text (as obtained from the PoE API).
-    fn from_raw<T: Into<String>>(id: &str, text: T) -> Result<Self, Box<Error>> {
-        const VALUE_RE: &str = r"\+?(\d+(?:\.\d+)?)";  // Regex for integer or float values.
-        lazy_static! {
-            /// Placeholder for mod value in the text template.
-            static ref VALUE_PH: String = regex::escape("#");
-        }
-
-        let id = ModId::from_str(id)?;
-
-        let text = text.into();
-        let regex_str = format!("^{}$",
-            regex::escape(text.trim()).replace(VALUE_PH.as_str(), VALUE_RE));
-
-        Ok(ModInfo {
-            id: id,
-            text_template: text,
-            regex: Regex::new(&regex_str)?,
-        })
-    }
-}
-
-impl ModInfo {
-    /// ID of the mod.
-    #[inline]
-    pub fn id(&self) -> ModId {
-        self.id
-    }
-
-    /// Expected format of the mod's text on an item.
-    ///
-    /// This is a string that in most cases contains hashes (`#`) as placeholders
-    /// for mod's numerical, e.g. "+#% increased Attack Speed".
-    #[inline]
-    pub fn text(&self) -> &str {
-        self.text_template.as_str()
-    }
-
-    /// Returns how many parameters there are in the mod that are variable between items.
-    ///
-    /// Currently, all mods seem to have either zero parameters (e.g. "Has no sockets"),
-    /// one parameter (e.g. "#% increased Attack Speed"), or two parameters
-    /// (e.g. "Adds # to # Lightning Damage").
-    #[inline]
-    pub fn param_count(&self) -> usize {
-        self.regex.captures_len() - 1  // -1 because the entire regex match is counted here
-    }
-
-    /// Parse mod text from an actual item and return the corresponding mod values.
-    ///
-    /// If the text doesn't match this mod, `None` is returned.
-    pub fn parse_text(&self, text: &str) -> Option<ModValues> {
-        if self.param_count() == 0 {
-            return Some(ModValues::new());
-        }
-        self.regex.captures(text.trim()).map(|caps| {
-            caps.iter().skip(1)
-                .map(Option::unwrap)  // if there was a match, then every group caught a value
-                .map(|m| parse_number(m.as_str()).unwrap())  // and they were all numbers
-                .collect()
-        })
-    }
-    // TODO: the opposite operation perhaps?
-}
-
-impl PartialEq for ModInfo {
-    fn eq(&self, other: &ModInfo) -> bool {
-        self.id == other.id
-    }
-}
-impl Eq for ModInfo {}
 
 
 #[cfg(test)]

@@ -1,10 +1,11 @@
 //! Item mod (modifier).
 
 mod id;
+mod info;
 mod database;
 
-pub use self::database::ModInfo;
 pub use self::id::{ModId, ModType};
+pub use self::info::ModInfo;
 
 
 use std::fmt;
