@@ -120,37 +120,51 @@ fn generate_currency_de(currencies: &[CurrencyData]) -> io::Result<()> {
 
 const ITEM_MODS_DATA_DIR: &str = "data/mods";
 const ITEM_MODS_TYPES: &[&str] = &["crafted", "enchant", "explicit", "implicit"];
-const ITEM_MODS_DATABASE_FILE: &str = "model/item/mods/database/by_id.inc.rs";
+const ITEM_MODS_DATABASE_FILE: &str = "model/item/mods/database/by_type_and_id.inc.rs";
 
 /// Generate code for the database of `ModInfo`s.
 fn generate_item_mod_code() -> Result<(), Box<Error>> {
-    generate_item_mods_id_mapping()?;
+    generate_item_mods_mapping()?;
     Ok(())
 }
 
-/// Generate the mapping of all `ModId`s to their `ModInfo`s.
-fn generate_item_mods_id_mapping() -> io::Result<()> {
+/// Generate the mapping of all `ModType`s to mappings of `ModId`s to their `ModInfo`s
+/// (i.e. a `HashMap<ModType, HashMap<ModId, Arc<ModInfo>>>`).
+fn generate_item_mods_mapping() -> io::Result<()> {
     let out = create_out_file(ITEM_MODS_DATABASE_FILE)?;
     let mut ctx = codegen::Context::new(out);
 
-    // TODO: definitely split the hashmap between mod types, since there are more than 3k of them
-    // and the vast majority is in the "explicit" category,
-    // AND we are looking them by mod types, too
     ctx.begin("{")?;
     ctx.emit("let mut hm = HashMap::new();")?;
     for &mod_type in ITEM_MODS_TYPES.iter() {
-        let data_file = Path::new(".").join(ITEM_MODS_DATA_DIR).join(mod_type).with_extension("json");
-        let file = fs::OpenOptions::new().read(true).open(data_file)?;
-        let mods: Vec<ItemModData> = serde_json::from_reader(file)?;
-        for imd in mods {
-            // Some mod texts contain newlines because they're used in the UI.
-            let text = imd.text.replace('\n', " ");
-            ctx.begin("hm.insert(")?;
-            emit!(ctx, r#"ModId::from_str("{}").unwrap(),"#, imd.id)?;
-            emit!(ctx, r#"Arc::new(ModInfo::from_raw("{}", "{}").unwrap()),"#,
-                imd.id, text)?;
-            ctx.end(");")?;
-        }
+        ctx.begin("hm.insert(")?;
+        emit!(ctx, r#"ModType::from_str("{}").unwrap(),"#, mod_type)?;
+        generate_item_mods_mapping_for_type(&mut ctx, mod_type)?;
+        ctx.end(");")?;
+    }
+    ctx.emit("hm")?;
+    ctx.end("}")?;
+    Ok(())
+}
+
+/// Generate mapping of `ModId`s of given `ModType` to their `ModInfo`s.
+fn generate_item_mods_mapping_for_type<W: io::Write>(
+    ctx: &mut codegen::Context<W>, mod_type: &str
+) -> io::Result<()> {
+    let data_file = Path::new(".").join(ITEM_MODS_DATA_DIR).join(mod_type).with_extension("json");
+    let file = fs::OpenOptions::new().read(true).open(data_file)?;
+    let mods: Vec<ItemModData> = serde_json::from_reader(file)?;
+
+    ctx.begin("{")?;
+    ctx.emit("let mut hm = HashMap::new();")?;
+    for imd in mods {
+        // Some mod texts contain newlines because they're used in the UI.
+        let text = imd.text.replace('\n', " ");
+        ctx.begin("hm.insert(")?;
+        emit!(ctx, r#"ModId::from_str("{}").unwrap(),"#, imd.id)?;
+        emit!(ctx, r#"Arc::new(ModInfo::from_raw("{}", "{}").unwrap()),"#,
+            imd.id, text)?;
+        ctx.end(");")?;
     }
     ctx.emit("hm")?;
     ctx.end("}")?;

@@ -24,8 +24,12 @@ lazy_static! {
 
 /// Structure holding information about all known item mods.
 pub struct Database {
-    /// Mapping of mod IDs to their infos.
-    by_id: HashMap<ModId, Arc<ModInfo>>,
+    /// Mapping of mod types -> mod IDs -> mod infos.
+    ///
+    /// This is a nested `HashMap` because we access mods by their type
+    /// during `Item` deserialization.
+    by_type_and_id: HashMap<ModType, HashMap<ModId, Arc<ModInfo>>>,
+    // TODO: we should have four regexes for each ModType
     /// Regex set for quickly matching actual occurrences of mods on items.
     regexes: RegexSet,
     /// All mods in the order corresponding to the `regexes` order of regular expressions.
@@ -35,15 +39,16 @@ pub struct Database {
 impl Database {
     /// Create the database and initialize it with known mods.
     fn new() -> Result<Self, Box<Error>> {
-        let by_id = include!(concat!(
-            env!("OUT_DIR"), "/", "model/item/mods/database/by_id.inc.rs"));
-        let all_mods: Vec<_> = by_id.values().cloned().collect();
+        let by_type_and_id = include!(concat!(
+            env!("OUT_DIR"), "/", "model/item/mods/database/by_type_and_id.inc.rs"));
+        let all_mods: Vec<_> = by_type_and_id.values()
+            .flat_map(|id2info| id2info.values()).cloned().collect();
         let regexes = RegexSetBuilder::new(all_mods.iter().map(|mi| mi.regex.as_str()))
             .case_insensitive(true)
             .size_limit(MOD_REGEXES_SIZE_LIMIT_BYTES)
             // TODO: .dfa_size_limit() too?
             .build()?;
-        Ok(Database{by_id, all_mods, regexes})
+        Ok(Database{by_type_and_id, all_mods, regexes})
     }
 }
 
