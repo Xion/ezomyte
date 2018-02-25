@@ -15,9 +15,10 @@
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
-use std::io::{self, Write};
+use std::io;
 use std::path::Path;
 
+use ezomyte_build::codegen;
 use ezomyte_build::files::create_out_file;
 use ezomyte_build::strings::upper_camel_case;
 use itertools::Itertools;
@@ -77,30 +78,27 @@ struct CurrencyData {
 }
 
 fn generate_currency_enum(currencies: &[CurrencyData]) -> io::Result<()> {
-    let mut out = create_out_file(CURRENCY_ENUM_FILE)?;
+    let out = create_out_file(CURRENCY_ENUM_FILE)?;
+    let mut ctx = codegen::Context::new(out);
 
-    // TODO: some templating engine could be useful for code generation
-    // (but not the `quote` crate because we're creating unhygenic identifiers here)
-    writeln!(out, "/// Currency item used for trading.")?;
-    writeln!(out, "#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Serialize)]")?;
-    writeln!(out, "pub enum Currency {{")?;
-    {
-        // E.g. #[serde(rename="chaos")] ChaosOrb,
-        for currency in currencies {
-            writeln!(out, "    /// {}.", currency.name)?;
-            writeln!(out, "    #[serde(rename=\"{}\")]", currency.id)?;
-            writeln!(out, "    {},", upper_camel_case(&currency.name))?;
-        }
+    ctx.emit("/// Currency item used for trading.")?;
+    ctx.emit("#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Serialize)]")?;
+    ctx.begin("pub enum Currency {")?;
+    for currency in currencies {
+        ctx.emit(format!("/// {}.", currency.name))?;
+        ctx.emit(format!("#[serde(rename=\"{}\")]", currency.id))?;
+        ctx.emit(format!("{},", upper_camel_case(&currency.name)))?;
     }
-    writeln!(out, "}}")?;
+    ctx.end("}")?;
     Ok(())
 }
 
 /// Generate the visit_str() method branches of Currency deserializer.
 fn generate_currency_de(currencies: &[CurrencyData]) -> io::Result<()> {
-    let mut out = create_out_file(CURRENCY_DE_FILE)?;
+    let out = create_out_file(CURRENCY_DE_FILE)?;
+    let mut ctx = codegen::Context::new(out);
 
-    writeln!(out, "match v {{")?;
+    ctx.begin("match v {")?;
     for currency in currencies {
         // Include possible alternative/community "names" for the currencies
         // so that they are deserialized correctly.
@@ -108,12 +106,12 @@ fn generate_currency_de(currencies: &[CurrencyData]) -> io::Result<()> {
         if let Some(more) = ADDITIONAL_CURRENCY_IDS.get(&currency.id.as_str()) {
             patterns.extend(more.iter());
         }
-        writeln!(out, "    {} => Ok(Currency::{}),",
+        ctx.emit(format!("{} => Ok(Currency::{}),",
             patterns.into_iter().format_with(" | ", |x, f| f(&format_args!("\"{}\"", x))),
-            upper_camel_case(&currency.name))?;
+            upper_camel_case(&currency.name)))?;
     }
-    writeln!(out, "    v => Err(de::Error::invalid_value(Unexpected::Str(v), &EXPECTING_MSG)),")?;
-    writeln!(out, "}}")?;
+    ctx.emit("v => Err(de::Error::invalid_value(Unexpected::Str(v), &EXPECTING_MSG)),")?;
+    ctx.end("}")?;
     Ok(())
 }
 
@@ -132,27 +130,30 @@ fn generate_item_mod_code() -> Result<(), Box<Error>> {
 
 /// Generate the mapping of all `ModId`s to their `ModInfo`s.
 fn generate_item_mods_id_mapping() -> io::Result<()> {
-    let mut out = create_out_file(ITEM_MODS_DATABASE_FILE)?;
+    let out = create_out_file(ITEM_MODS_DATABASE_FILE)?;
+    let mut ctx = codegen::Context::new(out);
 
     // TODO: definitely split the hashmap between mod types, since there are more than 3k of them
     // and the vast majority is in the "explicit" category,
     // AND we are looking them by mod types, too
-    writeln!(out, "{{")?;
-    writeln!(out, "let mut hm = HashMap::new();")?;
+    ctx.begin("{")?;
+    ctx.emit("let mut hm = HashMap::new();")?;
     for &mod_type in ITEM_MODS_TYPES.iter() {
         let data_file = Path::new(".").join(ITEM_MODS_DATA_DIR).join(mod_type).with_extension("json");
         let file = fs::OpenOptions::new().read(true).open(data_file)?;
         let mods: Vec<ItemModData> = serde_json::from_reader(file)?;
         for imd in mods {
-            writeln!(out, "hm.insert(")?;
-            writeln!(out, r#"    ModId::from_str("{}").unwrap(),"#, imd.id)?;
-            writeln!(out, r#"    Arc::new(ModInfo::from_raw("{}", "{}").unwrap()),"#,
-                imd.id, imd.text)?;
-            writeln!(out, ");")?;
+            // Some mod texts contain newlines because they're used in the UI.
+            let text = imd.text.replace('\n', " ");
+            ctx.begin("hm.insert(")?;
+            ctx.emit(format!(r#"ModId::from_str("{}").unwrap(),"#, imd.id))?;
+            ctx.emit(format!(r#"Arc::new(ModInfo::from_raw("{}", "{}").unwrap()),"#,
+                imd.id, text))?;
+            ctx.end(");")?;
         }
     }
-    writeln!(out, "hm")?;
-    writeln!(out, "}}")?;
+    ctx.emit("hm")?;
+    ctx.end("}")?;
     Ok(())
 }
 

@@ -3,5 +3,6 @@
 extern crate itertools;
 
 
+pub mod codegen;
 pub mod files;
 pub mod strings;
