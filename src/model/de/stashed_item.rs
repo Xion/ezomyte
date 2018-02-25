@@ -4,10 +4,10 @@ use std::collections::HashMap;
 use std::fmt;
 
 use serde::de::{self, Deserialize, Visitor};
-use serde_json::Value as Json;
 
 use super::super::StashedItem;
-use super::util::{deserialize, NoopIntoDeserializer};
+use super::super::util::Json;
+use super::util::deserialize;
 
 
 const EXPECTING_MSG: &str = "map with stashed item data";
@@ -66,7 +66,7 @@ impl<'de> Visitor<'de> for StashedItemVisitor {
                 key => {
                     // Everything else we're passing through to the Item deserializer.
                     let value: Json = map.next_value()?;
-                    item.insert(key.to_owned(), NoopIntoDeserializer::new(value));
+                    item.insert(key.to_owned(), value);
                 }
             }
         }

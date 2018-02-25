@@ -4,10 +4,10 @@ use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 use serde::de::{self, Deserialize, Visitor};
-use serde_json::Value as Json;
 
 use super::super::Stash;
-use super::util::{deserialize, NoopIntoDeserializer};
+use super::super::util::Json;
+use super::util::deserialize;
 
 
 const EXPECTING_MSG: &str = "map with item stash data";
@@ -66,7 +66,6 @@ impl<'de> Visitor<'de> for StashVisitor {
                 }
                 "items" => {
                     let items_json: Vec<HashMap<String, Json>> = map.next_value()?;
-
                     league = Some({
                         // The API puts "league" as a key on the items, not the stash,
                         // so we have to pluck it from there.
@@ -83,16 +82,7 @@ impl<'de> Visitor<'de> for StashVisitor {
                         // and making Stash::league into an Option just for this is awkward.
                         deserialize(leagues.into_iter().next().unwrap_or("Standard"))?
                     });
-
-                    // Deserialize the actual items from the JSON structure
-                    // (after applying a newtype workaround to serde_json::Value
-                    //  so that we can call deserialize() on the whole vector of hashmaps).
-                    let items_de: Vec<HashMap<_, _>> = items_json.into_iter()
-                        .map(|i| i.into_iter()
-                            .map(|(k, v)| (k, NoopIntoDeserializer::new(v)))
-                            .collect()
-                        ).collect();
-                    items = Some(deserialize(items_de).map_err(|e| {
+                    items = Some(deserialize(items_json).map_err(|e| {
                         de::Error::custom(format!("cannot deserialize stashed items: {}", e))
                     })?);
                 }
