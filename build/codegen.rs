@@ -1,5 +1,6 @@
 //! Module with code generation utilities.
 
+use std::fmt;
 use std::io::{self, Write};
 use std::thread;
 
@@ -109,6 +110,19 @@ impl<W: Write> Context<W> {
         self.pending_line_indents = self.indent_level;
         Ok(self)
     }
+
+    /// Emit a formatted line of code at the current indentation level.
+    ///
+    /// Note that you should typically use the `emit!` macro instead.
+    pub fn emit_fmt(&mut self, args: fmt::Arguments) -> io::Result<&mut Self> {
+        self.emit(format!("{}", args))
+    }
 }
-// TODO: we could provide a generic Write implementation but it would have to be pretty smart
-// about detecting newlines in input and applying indentation appropriately
+
+/// Emit a formatted line of code to given `Context`.
+#[macro_export]
+macro_rules! emit {
+    ($ctx:expr, $fmt:expr, $($args:tt)*) => (
+        $ctx.emit_fmt(format_args!($fmt, $($args)*))
+    );
+}

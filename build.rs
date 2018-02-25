@@ -3,7 +3,7 @@
 //! The script takes static data obtained from the API and generates some code
 //! for inclusion in the library source, including e.g. the `Currency` enum.
 
-             extern crate ezomyte_build;  // auxiliary crate in `build/`
+#[macro_use] extern crate ezomyte_build;  // auxiliary crate in `build/`
              extern crate itertools;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate maplit;
@@ -85,9 +85,9 @@ fn generate_currency_enum(currencies: &[CurrencyData]) -> io::Result<()> {
     ctx.emit("#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Serialize)]")?;
     ctx.begin("pub enum Currency {")?;
     for currency in currencies {
-        ctx.emit(format!("/// {}.", currency.name))?;
-        ctx.emit(format!("#[serde(rename=\"{}\")]", currency.id))?;
-        ctx.emit(format!("{},", upper_camel_case(&currency.name)))?;
+        emit!(ctx, "/// {}.", currency.name)?;
+        emit!(ctx, "#[serde(rename=\"{}\")]", currency.id)?;
+        emit!(ctx, "{},", upper_camel_case(&currency.name))?;
     }
     ctx.end("}")?;
     Ok(())
@@ -106,9 +106,9 @@ fn generate_currency_de(currencies: &[CurrencyData]) -> io::Result<()> {
         if let Some(more) = ADDITIONAL_CURRENCY_IDS.get(&currency.id.as_str()) {
             patterns.extend(more.iter());
         }
-        ctx.emit(format!("{} => Ok(Currency::{}),",
+        emit!(ctx, "{} => Ok(Currency::{}),",
             patterns.into_iter().format_with(" | ", |x, f| f(&format_args!("\"{}\"", x))),
-            upper_camel_case(&currency.name)))?;
+            upper_camel_case(&currency.name))?;
     }
     ctx.emit("v => Err(de::Error::invalid_value(Unexpected::Str(v), &EXPECTING_MSG)),")?;
     ctx.end("}")?;
@@ -146,9 +146,9 @@ fn generate_item_mods_id_mapping() -> io::Result<()> {
             // Some mod texts contain newlines because they're used in the UI.
             let text = imd.text.replace('\n', " ");
             ctx.begin("hm.insert(")?;
-            ctx.emit(format!(r#"ModId::from_str("{}").unwrap(),"#, imd.id))?;
-            ctx.emit(format!(r#"Arc::new(ModInfo::from_raw("{}", "{}").unwrap()),"#,
-                imd.id, text))?;
+            emit!(ctx, r#"ModId::from_str("{}").unwrap(),"#, imd.id)?;
+            emit!(ctx, r#"Arc::new(ModInfo::from_raw("{}", "{}").unwrap()),"#,
+                imd.id, text)?;
             ctx.end(");")?;
         }
     }
