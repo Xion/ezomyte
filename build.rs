@@ -3,6 +3,7 @@
 //! The script takes static data obtained from the API and generates some code
 //! for inclusion in the library source, including e.g. the `Currency` enum.
 
+             extern crate ezomyte_build;  // auxiliary crate in `build/`
              extern crate itertools;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate maplit;
@@ -12,12 +13,13 @@
 
 
 use std::collections::HashMap;
-use std::env;
 use std::error::Error;
-use std::fs::{self, File};
+use std::fs;
 use std::io::{self, Write};
 use std::path::Path;
 
+use ezomyte_build::files::create_out_file;
+use ezomyte_build::strings::upper_camel_case;
 use itertools::Itertools;
 
 
@@ -161,33 +163,4 @@ struct ItemModData {
     type_: String,
     text: String,
     id: String,
-}
-
-
-// Utility functions
-
-/// Open a file inside the $OUT_DIR for writing.
-fn create_out_file<P: AsRef<Path>>(path: P) -> io::Result<File> {
-    let out_dir = env::var("OUT_DIR").unwrap();
-    let path = Path::new(&out_dir).join(path);
-    fs::create_dir_all(path.parent().unwrap())?;
-    fs::OpenOptions::new()
-        .create(true).truncate(true).write(true)
-        .open(path)
-}
-
-fn upper_camel_case(s: &str) -> String {
-    s.chars().filter(|c| c.is_alphanumeric() || c.is_whitespace())
-        .collect::<String>()
-        .split_whitespace().map(capitalize).join("")
-}
-
-fn capitalize(s: &str) -> String {
-    let mut result = String::new();
-    if s.is_empty() {
-        return result;
-    }
-    result.push_str(s.chars().next().unwrap().to_uppercase().to_string().as_str());
-    result.push_str(s.chars().skip(1).collect::<String>().to_lowercase().as_str());
-    result
 }

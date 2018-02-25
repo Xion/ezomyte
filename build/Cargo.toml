@@ -1,0 +1,18 @@
+[package]
+name = "ezomyte_build"
+version = "0.0.1"
+description = "Utilities for the ezomyte crate's build script"
+authors = ["Karol Kuczmarski <karol.kuczmarski@gmail.com>"]
+publish = false
+
+[lib]
+name = "ezomyte_build"
+path = "lib.rs"
+crate-type = ["rlib"]
+test = false
+doctest = false
+bench = false
+doc = false
+
+[dependencies]
+itertools = "0.7"
