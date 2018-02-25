@@ -29,7 +29,7 @@ impl Mod {
     /// Create `Mod` from given mod text that's found on an item.
     pub fn new<T: Into<String>>(type_: ModType, text: T) -> Self {
         let text = text.into();
-        let data = database::ITEM_MODS.lookup(type_, &text);
+        let data = database::ITEM_MODS.resolve(type_, &text);
         Mod{type_, text, data}
     }
 }

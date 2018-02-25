@@ -25,15 +25,12 @@ lazy_static! {
 /// Structure holding information about all known item mods.
 pub struct Database {
     /// Mapping of mod types -> mod IDs -> mod infos.
-    ///
-    /// This is a nested `HashMap` because we access mods by their type
-    /// during `Item` deserialization.
     by_type_and_id: HashMap<ModType, HashMap<ModId, Arc<ModInfo>>>,
-    // TODO: we should have four regexes for each ModType
-    /// Regex set for quickly matching actual occurrences of mods on items.
-    regexes: RegexSet,
-    /// All mods in the order corresponding to the `regexes` order of regular expressions.
-    all_mods: Vec<Arc<ModInfo>>,
+    /// Map of `RegexMatcher`s by `ModType`.
+    ///
+    /// This is used during `Item` deserialization to lookup the mods by their
+    /// UI texts (e.g. "+7% increased Maximum Life").
+    matchers_by_type: HashMap<ModType, RegexMatcher<Arc<ModInfo>>>,
 }
 
 impl Database {
@@ -41,14 +38,14 @@ impl Database {
     fn new() -> Result<Self, Box<Error>> {
         let by_type_and_id = include!(concat!(
             env!("OUT_DIR"), "/", "model/item/mods/database/by_type_and_id.inc.rs"));
-        let all_mods: Vec<_> = by_type_and_id.values()
-            .flat_map(|id2info| id2info.values()).cloned().collect();
-        let regexes = RegexSetBuilder::new(all_mods.iter().map(|mi| mi.regex.as_str()))
-            .case_insensitive(true)
-            .size_limit(MOD_REGEXES_SIZE_LIMIT_BYTES)
-            // TODO: .dfa_size_limit() too?
-            .build()?;
-        Ok(Database{by_type_and_id, all_mods, regexes})
+        let matchers_by_type = by_type_and_id.iter()
+            .map(|(&mod_type, id2info)| {
+                let matcher = RegexMatcher::new(
+                    id2info.values().map(|mi| (mi.regex.as_str(), mi.clone())))?;
+                Ok((mod_type, matcher))
+            })
+            .collect::<Result<HashMap<_, _>, Box<Error>>>()?;
+        Ok(Database{by_type_and_id, matchers_by_type})
     }
 }
 
@@ -56,29 +53,30 @@ impl Database {
     /// Returns an iterator over all mods.
     #[inline]
     pub fn iter<'d>(&'d self) -> Box<Iterator<Item=&'d ModInfo> + 'd> {
-        Box::new(self.all_mods.iter().map(|mi| &**mi))
+        Box::new(
+            self.matchers_by_type.values().flat_map(|rm| rm.items().map(|mi| &**mi))
+        )
     }
 
     /// Total number of mods in the database.
     #[inline]
     pub fn len(&self) -> usize {
-        self.all_mods.len()
+        self.matchers_by_type.values().map(|rm| rm.count()).sum()
     }
 
-    /// Lookup a mod by its actual text on an item & mod type.
-    pub(super) fn lookup(&self, mod_type: ModType, text: &str) -> Option<(Arc<ModInfo>, ModValues)> {
-        let mut matched_mods = Vec::new();
-        for idx in self.regexes.matches(text.trim()).iter() {
-            let mod_ = &self.all_mods[idx];
-            if mod_.id().mod_type() == mod_type {
-                matched_mods.push(mod_);
-            }
-        }
-        if matched_mods.len() > 1 {
-            warn!("Mod text {:?} matched {} (>1) known mods!", text, matched_mods.len());
-            return None;
-        }
-        matched_mods.into_iter().next().map(|mod_| {
+    /// Lookup a mod by its `ModId`.
+    #[inline]
+    pub(super) fn lookup(&self, id: ModId) -> Option<Arc<ModInfo>> {
+        self.by_type_and_id.get(&id.mod_type())
+            .and_then(|id2info| id2info.get(&id))
+            .map(|mi| mi.clone())
+    }
+
+    /// Resolve a mod's actual text on an item.
+    ///
+    /// Returns the matched `ModInfo` and the values parsed from the text.
+    pub(super) fn resolve(&self, mod_type: ModType, text: &str) -> Option<(Arc<ModInfo>, ModValues)> {
+        self.matchers_by_type.get(&mod_type).and_then(|rm| rm.lookup(text)).map(|mod_| {
             trace!("Mod text {:?} matched {:?}", text, mod_);
             let values = mod_.parse_text(text)
                 .expect(&format!("mod values for {:?} after parsing by {:?}", text, mod_));
@@ -93,11 +91,79 @@ impl fmt::Debug for Database {
     }
 }
 
+
+/// Matcher from regular expressions to some other arbitrary types.
+///
+/// This is used to match mods texts to `ModInfo`s.
+#[derive(Debug)]
+struct RegexMatcher<T> {
+    /// Regex set for doing the actual matching.
+    regex_set: RegexSet,
+    /// List of items that the regexes map to.
+    items: Vec<T>,
+}
+
+impl<T> RegexMatcher<T> {
+    /// Create a new `RegexMatcher` given a mapping in the form of iterable of pairs.
+    #[inline]
+    pub fn new<'r, I>(mapping: I) -> Result<Self, Box<Error>>
+        where I: IntoIterator<Item=(&'r str, T)>
+    {
+        let mut regexes = Vec::new();
+        let mut items = Vec::new();
+        for (regex, item) in mapping.into_iter() {
+            regexes.push(regex);
+            items.push(item);
+        }
+
+        let regex_set = RegexSetBuilder::new(regexes)
+            .case_insensitive(true)
+            .size_limit(MOD_REGEXES_SIZE_LIMIT_BYTES)
+            // TODO: .dfa_size_limit() too?
+            .build()?;
+        Ok(RegexMatcher{regex_set, items})
+    }
+}
+
+impl<T> RegexMatcher<T> {
+    /// Return the number of regular expressions being matched against.
+    #[inline]
+    pub fn count(&self) -> usize {
+        self.regex_set.len()
+    }
+
+    /// Return an iterator over the possible items.
+    #[inline]
+    pub fn items<'r>(&'r self) -> Box<Iterator<Item=&'r T> + 'r> {
+        Box::new(self.items.iter())
+    }
+
+    /// Try to match given text against all the regular expressions
+    /// and return a reference to the corresponding item that matched, if any.
+    pub fn lookup<'m, 's>(&'m self, text: &'s str) -> Option<&'m T> {
+        // TODO: so even after splitting the mods by type, matching their texts
+        // is still dogshit slow :(
+        // we could try do a pre-match based on the first character,
+        // (effectively making ~20 separate RegexSets), but that's likely to hotspot
+        // "+" since many mods start with +something...
+
+        let mut matched = Vec::new();
+        for idx in self.regex_set.matches(text).iter() {
+            matched.push(&self.items[idx]);
+        }
+        if matched.len() > 1 {
+            warn!("Ambiguous text for regular expression matching: {:?}", text);
+            return None;
+        }
+        matched.into_iter().next()
+    }
+}
+
 /// Size limit for the compiled set of regular expression for all mod texts'.
 ///
 /// We need to override it explicitly because the default (which seem to be 10MB)
 /// is not enough to hold the `RegexSet` of all item mod texts.
-const MOD_REGEXES_SIZE_LIMIT_BYTES: usize = 64 * 1024 * 1024;
+const MOD_REGEXES_SIZE_LIMIT_BYTES: usize = 48 * 1024 * 1024;
 
 
 #[cfg(test)]
