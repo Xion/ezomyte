@@ -1,5 +1,5 @@
 //! Example showing how to use the client to query & display
-//! just the names of publically visible items.
+//! just the names of publicly visible items.
 
 extern crate env_logger;
 extern crate ezomyte;
