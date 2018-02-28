@@ -92,12 +92,31 @@ impl Database {
     ///
     /// Returns the matched `ModInfo` and the values parsed from the text.
     pub(super) fn resolve(&self, mod_type: ModType, text: &str) -> Option<(Arc<ModInfo>, ModValues)> {
-        self.matchers_by_type.get(&mod_type).and_then(|rm| rm.lookup(text)).map(|mod_| {
-            trace!("Mod text {:?} matched {:?}", text, mod_);
-            let values = mod_.parse_text(text)
-                .expect(&format!("mod values for {:?} after parsing by {:?}", text, mod_));
-            (mod_.clone(), values)
-        })
+        let matcher =  self.matchers_by_type.get(&mod_type)?;
+
+        let mut matching_mods = matcher.lookup_all(text);
+        let match_count = matching_mods.len();
+        let mod_ = match match_count {
+            0 => { return None; }
+            1 => {
+                let mod_ = matching_mods.into_iter().next().unwrap();
+                trace!("Mod text {:?} matched {:?}", text, mod_);
+                mod_
+            }
+            n => {
+                // In case of multiple matches, pick the longest one.
+                // This should address picking the correct variants between cases like
+                // "#% increased Attack Damage" vs. "#% increased Attack Damage per 450 Evasion Rating".
+                warn!("Mod text `{}` ({:?}) matched {} mods: {:?}",
+                    text, mod_type, n, matching_mods);
+                matching_mods.sort_by_key(|mi| -(mi.regex.as_str().len() as isize));
+                matching_mods.into_iter().next().unwrap()
+            }
+        };
+
+        let values = mod_.parse_text(text)
+            .expect(&format!("mod values for {:?} after parsing by {:?}", text, mod_));
+        Some((mod_.clone(), values))
     }
 }
 
@@ -107,6 +126,8 @@ impl fmt::Debug for Database {
     }
 }
 
+
+// Mod text matching
 
 /// Matcher from regular expressions to some other arbitrary types.
 ///
@@ -143,10 +164,11 @@ impl<T> RegexMatcher<T> {
         where P: IntoIterator<Item=&'r str>,
               I: IntoIterator<Item=(&'r str, T)>
     {
-        let prefixes: Vec<&str> = prefixes.into_iter().collect();
+        let mut prefixes: Vec<&str> = prefixes.into_iter().collect();
         if prefixes.is_empty() {
             return Self::new(mapping);
         }
+        prefixes.sort_by_key(|p| -(p.len() as isize));  // descending length
 
         // Create a temporary matcher shard to dispatch the regexes
         // into their final, prefix-based shards.
@@ -242,7 +264,8 @@ impl<T> RegexMatcher<T> {
         )
     }
 
-    /// Try to match given text against all known patterns.
+    /// Try to match given text against all known patterns
+    /// and return the first match.
     ///
     /// Sharded patterns are tried first, followed by the optional fallback.
     pub fn lookup<'m, 's>(&'m self, text: &'s str) -> Option<&'m T> {
@@ -251,6 +274,28 @@ impl<T> RegexMatcher<T> {
             }).or_else(|| {
                 self.fallback.as_ref().and_then(|fb| fb.lookup(text))
             })
+    }
+
+    /// Try to match given text against known patterns
+    /// and return all matches.
+    ///
+    /// Sharded patterns are tried first, and all shards are queried.
+    /// Only if they haven't yielded ANY matches, the optional fallback is then tried.
+    pub fn lookup_all<'m, 's>(&'m self, text: &'s str) -> Vec<&'m T> {
+        let regular_matches = match self.shards {
+            Some(ref shards) => {
+                shards.lookup_all(text).into_iter()
+                    .flat_map(|sh| sh.lookup_all(text))
+                    .collect()
+            }
+            None => Vec::new(),
+        };
+        if !regular_matches.is_empty() {
+            return regular_matches;
+        }
+
+        self.fallback.as_ref().map(|fb| fb.lookup_all(text))
+            .unwrap_or_else(Vec::new)
     }
 
     /// Total number of shards used (incl. the possible fallback).
@@ -318,9 +363,6 @@ impl<T> RegexMatcherShard<T> {
     pub fn lookup<'m, 's>(&'m self, text: &'s str) -> Option<&'m T> {
         let matched = self.lookup_all(text);
         if matched.len() > 1 {
-            // TODO: this is fine if one match is the longest
-            // (it covers cases like "#% increased Attack Damage" vs.
-            //  "#% increased Attack Damage per 450 Evasion Rating")
             warn!("Ambiguous text in RegexMatcherShard::lookup(): {:?} (matched {} items)",
                 text, matched.len());
             return None;
@@ -345,6 +387,7 @@ mod tests {
     fn item_mods_db_is_valid() {
         // This will cause evaluation of the lazily initialized static.
         assert!(ITEM_MODS.len() > 0);
+        // TODO: benchmark that
     }
 
     #[test]
