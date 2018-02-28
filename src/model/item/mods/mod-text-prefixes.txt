@@ -1,0 +1,63 @@
+//
+// String prefixes of mods' texts that are used for bucketing/sharding them
+// in order to make the resulting RegexSets smaller and faster.
+//
+// Note that:
+//
+// * this has nothing to do with what "prefix" & "suffix" means in terms of PoE affixes
+// * if a prefix starts with another prefix, the shorter one should be LAST
+//
+
+1% increased
+#% additional
+Adds
+Area contains
+Area is
+Attack
+Cannot
+#% chance
+Curse
+Enemies
+Gain
+Grants
+#% increased Accuracy
+#% increased Attack
+#% increased Critical
+#% increased Damage
+#% increased Effect
+#% increased Elemental
+#% increased Movement
+#% increased Physical
+#% increased Spell
+#% increased
+Increases and Reductions
+# Life
+# Mana
+Minions
+Monsters
+#% more
+Nearby
+#% of Attack
+#% of Damage
+#% of Life
+#% of Physical
+Passives
+Players
+Projectiles
+Recover
+#% reduced
+Reflect
+Remove
+Socketed Gems are Supported by Level #
+Socketed Gems
+#% to Critical Strike
+# to Level of Socketed
+Trigger
+Unaffected by
+Unique Boss
+With at least
+You cannot
+You gain
+You have
+Your
+You

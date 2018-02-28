@@ -33,24 +33,29 @@ pub struct ModInfo {
 impl ModInfo {
     /// Create `ModInfo` from given mod ID and its text (as obtained from the PoE API).
     pub(super) fn from_raw<T: Into<String>>(id: &str, text: T) -> Result<Self, Box<Error>> {
-        const VALUE_RE: &str = r"\+?(\d+(?:\.\d+)?)";  // Regex for integer or float values.
-        lazy_static! {
-            /// Placeholder for mod value in the text template.
-            static ref VALUE_PH: String = regex::escape("#");
-        }
-
         let id = ModId::from_str(id)?;
-
         let text = text.into();
-        let regex_str = format!("^{}$",
-            regex::escape(text.trim()).replace(VALUE_PH.as_str(), VALUE_RE));
-
+        let regex_str = regex_from_mod_text_template(&text);
         Ok(ModInfo {
             id: id,
             text_template: text,
             regex: Regex::new(&regex_str)?,
         })
     }
+}
+
+/// Convert a mod text template from PoE API (like "#% increased Life")
+/// to a regular expression that can match the actual mod texts
+/// (something like "^(\d+)% increased Life$").
+pub(super) fn regex_from_mod_text_template(text: &str) -> String {
+    /// Regex for integer or float values that occur in mod texts.
+    const VALUE_RE: &str = r"\+?(\d+(?:\.\d+)?)";
+    lazy_static! {
+        /// Placeholder for mod value in the text template.
+        /// It is replaced with `VALUE_RE` when converting mod text template to a regex.
+        static ref VALUE_PH: String = regex::escape("#");
+    }
+     format!("^{}$", regex::escape(text.trim()).replace(VALUE_PH.as_str(), VALUE_RE))
 }
 
 impl ModInfo {

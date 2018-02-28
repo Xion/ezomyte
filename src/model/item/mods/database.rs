@@ -6,7 +6,6 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
-use std::iter;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -14,7 +13,7 @@ use regex::{self, RegexSet, RegexSetBuilder};
 
 use super::ModValues;
 use super::id::{ModId, ModType};
-use super::info::ModInfo;
+use super::info::{ModInfo, regex_from_mod_text_template};
 
 
 // TODO: the item database takes quite a bit of space in memory,
@@ -38,13 +37,26 @@ pub struct Database {
 impl Database {
     /// Create the database and initialize it with known mods.
     fn new() -> Result<Self, Box<Error>> {
+        lazy_static! {
+            /// Mod text prefixes for the `RegexMatcher` shards.
+            ///
+            /// This is used to divide the space of mods into several buckets/shards
+            /// to speed up the matching of actual mod texts against the known templates.
+            static ref PREFIXES: Vec<String> = include_str!("mod-text-prefixes.txt")
+                .split("\n")
+                .filter(|line| !line.is_empty() && !line.trim_left().starts_with("//"))
+                .map(regex_from_mod_text_template)
+                .map(|p| p.trim_right_matches("$").to_owned())  // `^...$` -> `^...`
+                .collect();
+        }
+
         // This is created by the build script from the JSON files in `data/mods`.
         let by_type_and_id = include!(concat!(
             env!("OUT_DIR"), "/", "model/item/mods/database/by_type_and_id.inc.rs"));
         let matchers_by_type = by_type_and_id.iter()
             .map(|(&mod_type, id2info)| {
-                // TODO: use RegexMatcher with prefix shards
-                let matcher = RegexMatcher::new(
+                let matcher = RegexMatcher::with_shards(
+                    PREFIXES.iter().map(|p| p.as_str()),
                     id2info.values().map(|mi| (mi.regex.as_str(), mi.clone())))?;
                 Ok((mod_type, matcher))
             })
@@ -101,29 +113,40 @@ impl fmt::Debug for Database {
 /// This is used to match mods texts to `ModInfo`s.
 #[derive(Debug)]
 struct RegexMatcher<T> {
-    shards: RegexMatcherShard<RegexMatcherShard<T>>,
+    /// Shards of the regex matcher.
+    shards: Option<RegexMatcherShard<RegexMatcherShard<T>>>,
+    /// Fallback shard for when the item doesn't match any of the shards.
+    fallback: Option<RegexMatcherShard<T>>,
 }
 
 impl<T> RegexMatcher<T> {
+    /// Create a `RegexMatcher` that doesn't actually match anything.
+    pub fn empty() -> Self {
+        RegexMatcher{shards: None, fallback: None}
+    }
+
     /// Create a simple `RegexMatcher` that doesn't use sharding.
     pub fn new<'r, I>(mapping: I) -> Result<Self, Box<Error>>
         where I: IntoIterator<Item=(&'r str, T)>
     {
-        let inner_shard = RegexMatcherShard::new(mapping)?;
-        let shards = RegexMatcherShard::new(iter::once((CATCH_ALL_RE, inner_shard)))
-            .expect("outer shard in RegexMatcher::new");
-        Ok(RegexMatcher{shards})
+        Ok(RegexMatcher{
+            shards: None,
+            fallback: Some(RegexMatcherShard::new(mapping)?),
+        })
     }
 
     /// Create a `RegexMatcher` that matches regular to some other arbitrary types.
     ///
     /// The regular expressions are sharded into subsets based on their given prefixes
-    /// to speed up matching over a large sequence of regexes.
+    /// in order to speed up matching over a large sequence of regexes.
     pub fn with_shards<'r, P, I>(prefixes: P, mapping: I) -> Result<Self, Box<Error>>
         where P: IntoIterator<Item=&'r str>,
               I: IntoIterator<Item=(&'r str, T)>
     {
         let prefixes: Vec<&str> = prefixes.into_iter().collect();
+        if prefixes.is_empty() {
+            return Self::new(mapping);
+        }
 
         // Create a temporary matcher shard to dispatch the regexes
         // into their final, prefix-based shards.
@@ -141,9 +164,18 @@ impl<T> RegexMatcher<T> {
         let mut shard_splits: Vec<Vec<_>> = (0..prefixes.len()).map(|_| Vec::new()).collect();
         let mut catchall = Vec::new();
         for (re, item) in mapping {
-            let shard = match prefix_matcher.lookup(re) {
-                Some(&idx) => &mut shard_splits[idx],
-                None => &mut catchall,
+            // Pick the first shard that matches this regex.
+            // TODO: make sure the prefixes which are themselves prefixes of another prefixes (yo dawg)
+            // are placed later in the prefix list; maybe just sort it by descending length?
+            let shard = match prefix_matcher.lookup_all(re).into_iter().next() {
+                Some(&idx) => {
+                    trace!("Mod regex `{}` goes in shard for prefix `{}`", re, prefixes[idx]);
+                    &mut shard_splits[idx]
+                },
+                None => {
+                    trace!("Mod regex `{}` goes in the fallback shard", re);
+                    &mut catchall
+                },
             };
             shard.push((re, item));
         }
@@ -153,42 +185,79 @@ impl<T> RegexMatcher<T> {
         // This is using the same set of prefixes at the outer level,
         // but now they are actually being used normally, w/o escaping.
         let prefix_regexes: Vec<Cow<str>> = prefixes.iter()
-            .map(|&p| {
-                if p.starts_with("^") { p.into() } else { format!("^{}", p).into() }
-            })
+            .map(|&p| if p.starts_with("^") { p.into() } else { format!("^{}", p).into() })
             .collect();
-        let shards = RegexMatcherShard::new(
+        let shards_mapping =
             prefix_regexes.iter().map(|p| &**p).zip(shard_splits.into_iter())
+                // Eliminate empty shards.
+                // Note that this may mean all shards are empty,
+                // in which case we'll only use the `fallback` (if any).
+                .filter(|&(_, ref shard)| !shard.is_empty())
                 .map(|(p, shard)| {
                     let shard = RegexMatcherShard::new(shard)?;
                     Ok((p, shard))
                 })
-                .chain(iter::once(Ok((CATCH_ALL_RE, RegexMatcherShard::new(catchall)?))))
-                .collect::<Result<Vec<_>, Box<Error>>>()?
-        )?;
+                .collect::<Result<Vec<_>, Box<Error>>>()?;
+        let shards = if shards_mapping.is_empty() { None } else {
+            Some(RegexMatcherShard::new(shards_mapping)?)
+        };
 
-        Ok(RegexMatcher{shards})
+        // As for the regular expressions that didn't fall into any prefix bucket,
+        // put them into the fallback shard.
+        let fallback = if catchall.is_empty() { None } else {
+            Some(RegexMatcherShard::new(catchall)?)
+        };
+
+        Ok(RegexMatcher{shards, fallback})
     }
 }
-
-/// A regular expression that matches everything.
-/// Used for catch-all shard in `RegexMatcher`.
-const CATCH_ALL_RE: &str = ".*";
+impl<T> Default for RegexMatcher<T> {
+    fn default() -> Self {
+        RegexMatcher::empty()
+    }
+}
 
 impl<T> RegexMatcher<T> {
     /// Return the number of regular expressions being matched against.
     pub fn count(&self) -> usize {
-        self.shards.items().map(|shard| shard.count()).sum()
+        let regular_count = match self.shards {
+            Some(ref shards) => shards.items().map(|shard| shard.count()).sum(),
+            None => 0,
+        };
+        regular_count + self.fallback.iter().count()
+    }
+
+    /// Whether a fallback (catch-all) shard is used by this matcher.
+    pub fn has_fallback(&self) -> bool {
+        self.fallback.is_some()
     }
 
     /// Return an iterator over all possible items.
     #[inline]
     pub fn items<'r>(&'r self) -> Box<Iterator<Item=&'r T> + 'r> {
-        Box::new(self.shards.items().flat_map(|shard| shard.items()))
+        Box::new(
+            self.shards.iter()
+                .flat_map(|shards| { shards.items().flat_map(|sh| sh.items()) })
+                .chain(self.fallback.iter().flat_map(|fb| fb.items()))
+        )
     }
 
+    /// Try to match given text against all known patterns.
+    ///
+    /// Sharded patterns are tried first, followed by the optional fallback.
     pub fn lookup<'m, 's>(&'m self, text: &'s str) -> Option<&'m T> {
-        self.shards.lookup(text).and_then(|shard| shard.lookup(text))
+        self.shards.as_ref().and_then(|shards| {
+                shards.lookup(text).and_then(|sh| sh.lookup(text))
+            }).or_else(|| {
+                self.fallback.as_ref().and_then(|fb| fb.lookup(text))
+            })
+    }
+
+    /// Total number of shards used (incl. the possible fallback).
+    pub fn shard_count(&self) -> usize {
+        let regular_shards = self.shards.as_ref().map(|shards| shards.count()).unwrap_or(0);
+        let fallback_shard = if self.has_fallback() { 1 } else { 0 };
+        regular_shards + fallback_shard
     }
 }
 
@@ -217,18 +286,19 @@ impl<T> RegexMatcherShard<T> {
 
         let regex_set = RegexSetBuilder::new(regexes)
             .case_insensitive(true)
-            .size_limit(MOD_REGEXES_SIZE_LIMIT_BYTES)
+            .size_limit(SHARD_REGEXSET_SIZE_LIMIT_BYTES)
             // TODO: .dfa_size_limit() too?
             .build()?;
         Ok(RegexMatcherShard{regex_set, items})
     }
 }
 
-/// Size limit for the compiled set of regular expression for all mod texts'.
+/// Size limit for a single compiled set of regular expressions
+/// in the `RegexMatcherShard`.
 ///
-/// We need to override it explicitly because the default (which seem to be 10MB)
-/// is not enough to hold the `RegexSet` of all item mod texts.
-const MOD_REGEXES_SIZE_LIMIT_BYTES: usize = 48 * 1024 * 1024;
+/// *Note*: If this limits gets exceeded, it is preferrable to adjust the sharding
+/// (in mods-text-prefixes.txt) rather than raising it.
+const SHARD_REGEXSET_SIZE_LIMIT_BYTES: usize = 8 * 1024 * 1024;
 
 impl<T> RegexMatcherShard<T> {
     /// Return the number of regular expressions being matched against by this shard.
@@ -246,15 +316,22 @@ impl<T> RegexMatcherShard<T> {
     /// Try to match given text against all regular expressions in the shard,
     /// and return a reference to the corresponding item that matched (if any).
     pub fn lookup<'m, 's>(&'m self, text: &'s str) -> Option<&'m T> {
-        let mut matched = Vec::new();
-        for idx in self.regex_set.matches(text).iter() {
-            matched.push(&self.items[idx]);
-        }
+        let matched = self.lookup_all(text);
         if matched.len() > 1 {
-            warn!("Ambiguous text for regular expression matching: {:?}", text);
+            // TODO: this is fine if one match is the longest
+            // (it covers cases like "#% increased Attack Damage" vs.
+            //  "#% increased Attack Damage per 450 Evasion Rating")
+            warn!("Ambiguous text in RegexMatcherShard::lookup(): {:?} (matched {} items)",
+                text, matched.len());
             return None;
         }
         matched.into_iter().next()
+    }
+
+    /// Try to match given text against all regular expressions in the shard.
+    /// Returns a reference to all items that matched.
+    pub fn lookup_all<'m, 's>(&'m self, text: &'s str) -> Vec<&'m T> {
+        self.regex_set.matches(text).iter().map(|idx| &self.items[idx]).collect()
     }
 }
 
