@@ -38,6 +38,7 @@ pub struct Database {
 impl Database {
     /// Create the database and initialize it with known mods.
     fn new() -> Result<Self, Box<Error>> {
+        // This is created by the build script from the JSON files in `data/mods`.
         let by_type_and_id = include!(concat!(
             env!("OUT_DIR"), "/", "model/item/mods/database/by_type_and_id.inc.rs"));
         let matchers_by_type = by_type_and_id.iter()
@@ -108,8 +109,6 @@ impl<T> RegexMatcher<T> {
     pub fn new<'r, I>(mapping: I) -> Result<Self, Box<Error>>
         where I: IntoIterator<Item=(&'r str, T)>
     {
-        const CATCH_ALL_RE: &str = ".*";  // matches everything
-
         let inner_shard = RegexMatcherShard::new(mapping)?;
         let shards = RegexMatcherShard::new(iter::once((CATCH_ALL_RE, inner_shard)))
             .expect("outer shard in RegexMatcher::new");
@@ -140,16 +139,13 @@ impl<T> RegexMatcher<T> {
 
         // Divide the (regex, item) pairs into those shards.
         let mut shard_splits: Vec<Vec<_>> = (0..prefixes.len()).map(|_| Vec::new()).collect();
+        let mut catchall = Vec::new();
         for (re, item) in mapping {
-            let shard_idx = match prefix_matcher.lookup(re) {
-                Some(&idx) => idx,
-                None => {
-                    // TODO: maybe this should be an error?
-                    warn!("No matching prefix shard for regex: {}", re);
-                    continue;
-                }
+            let shard = match prefix_matcher.lookup(re) {
+                Some(&idx) => &mut shard_splits[idx],
+                None => &mut catchall,
             };
-            shard_splits[shard_idx].push((re, item));
+            shard.push((re, item));
         }
 
         // Create the final matcher of matchers.
@@ -164,15 +160,20 @@ impl<T> RegexMatcher<T> {
         let shards = RegexMatcherShard::new(
             prefix_regexes.iter().map(|p| &**p).zip(shard_splits.into_iter())
                 .map(|(p, shard)| {
-                    let shard = RegexMatcherShard::new(shard.into_iter())?;
+                    let shard = RegexMatcherShard::new(shard)?;
                     Ok((p, shard))
                 })
+                .chain(iter::once(Ok((CATCH_ALL_RE, RegexMatcherShard::new(catchall)?))))
                 .collect::<Result<Vec<_>, Box<Error>>>()?
         )?;
 
         Ok(RegexMatcher{shards})
     }
 }
+
+/// A regular expression that matches everything.
+/// Used for catch-all shard in `RegexMatcher`.
+const CATCH_ALL_RE: &str = ".*";
 
 impl<T> RegexMatcher<T> {
     /// Return the number of regular expressions being matched against.
@@ -223,6 +224,12 @@ impl<T> RegexMatcherShard<T> {
     }
 }
 
+/// Size limit for the compiled set of regular expression for all mod texts'.
+///
+/// We need to override it explicitly because the default (which seem to be 10MB)
+/// is not enough to hold the `RegexSet` of all item mod texts.
+const MOD_REGEXES_SIZE_LIMIT_BYTES: usize = 48 * 1024 * 1024;
+
 impl<T> RegexMatcherShard<T> {
     /// Return the number of regular expressions being matched against by this shard.
     #[inline]
@@ -250,12 +257,6 @@ impl<T> RegexMatcherShard<T> {
         matched.into_iter().next()
     }
 }
-
-/// Size limit for the compiled set of regular expression for all mod texts'.
-///
-/// We need to override it explicitly because the default (which seem to be 10MB)
-/// is not enough to hold the `RegexSet` of all item mod texts.
-const MOD_REGEXES_SIZE_LIMIT_BYTES: usize = 48 * 1024 * 1024;
 
 
 #[cfg(test)]
