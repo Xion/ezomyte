@@ -16,6 +16,13 @@ build = "build.rs"
 travis-ci = { repository = "Xion/ezomyte" }
 maintenance = { status = "experimental" }
 
+[features]
+# Enables the mod database which is used to resolve item mod texts
+# and extract the mod values.
+# This is disabled by default because it increases memory usage by
+# a couple dozen MB and needs a few seconds to initialize on first use.
+mods_db = []
+
 [dependencies]
 chrono = "0.4"
 conv = "0.3"

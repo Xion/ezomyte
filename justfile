@@ -4,14 +4,17 @@
 
 default: test
 
-build:
-	cargo build
+
+ALL_FEATURES = "mods_db"
+
+build +ARGS='':
+	cargo build {{ARGS}} --features="{{ALL_FEATURES}}"
 clean:
 	cargo clean
 doc:
 	cargo doc --open
 test:
-    cargo test --no-fail-fast
+    cargo test --no-fail-fast --features="{{ALL_FEATURES}}"
 
 
 # Update the content of JSON data files by re-downloading it

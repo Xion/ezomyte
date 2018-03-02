@@ -13,6 +13,7 @@
 
 
 use std::collections::HashMap;
+use std::env;
 use std::error::Error;
 use std::fs;
 use std::io;
@@ -26,7 +27,14 @@ use itertools::Itertools;
 
 fn main() {
     generate_currency_code().unwrap();
-    generate_item_mod_code().unwrap();
+    if is_feature_enabled("mods_db") {
+        generate_item_mod_code().unwrap();
+    }
+}
+
+fn is_feature_enabled(name: &str) -> bool {
+    let var = format!("CARGO_FEATURE_{}", name.replace("-", "_").to_uppercase());
+    env::var(&var).is_ok()
 }
 
 

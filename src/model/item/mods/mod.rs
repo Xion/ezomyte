@@ -1,8 +1,8 @@
 //! Item mod (modifier).
 
-mod id;
-mod info;
-mod database;
+                            mod id;
+                            mod info;
+#[cfg(feature = "mods_db")] mod database;
 
 pub use self::id::{ModId, ModType};
 pub use self::info::ModInfo;
@@ -27,9 +27,18 @@ pub struct Mod {
 
 impl Mod {
     /// Create `Mod` from given mod text that's found on an item.
+    #[cfg(feature = "mods_db")]
     pub fn new<T: Into<String>>(type_: ModType, text: T) -> Self {
         let text = text.into();
         let data = database::ITEM_MODS.resolve(type_, &text);
+        Mod{type_, text, data}
+    }
+
+    /// Create `Mod` from given mod text that's found on an item.
+    #[cfg(not(feature = "mods_db"))]
+    pub fn new<T: Into<String>>(type_: ModType, text: T) -> Self {
+        let text = text.into();
+        let data = None;
         Mod{type_, text, data}
     }
 }
@@ -43,6 +52,7 @@ impl Mod {
 
     /// Information about the particular item mod.
     #[inline]
+    #[cfg(feature = "mods_db")]
     pub fn info(&self) -> Option<&ModInfo> {
         self.data.as_ref().map(|&(ref mi, _)| &**mi)
     }
@@ -56,6 +66,7 @@ impl Mod {
     /// A typical example is "Has 1 Abyssal Socket",
     /// where "1" is just a constant part of the mod text.
     #[inline]
+    #[cfg(feature = "mods_db")]
     pub fn values(&self) -> Option<&ModValues> {
         self.data.as_ref().map(|&(_, ref mv)| mv)
     }

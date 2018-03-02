@@ -168,7 +168,9 @@ impl<T> RegexMatcher<T> {
         if prefixes.is_empty() {
             return Self::new(mapping);
         }
-        prefixes.sort_by_key(|p| -(p.len() as isize));  // descending length
+        // Make sure the prefixes which are themselves prefixes of another prefixes (yo dawg)
+        // are placed later in the prefix list by sorting on descending length.
+        prefixes.sort_by_key(|p| -(p.len() as isize));
 
         // Create a temporary matcher shard to dispatch the regexes
         // into their final, prefix-based shards.
@@ -187,8 +189,6 @@ impl<T> RegexMatcher<T> {
         let mut catchall = Vec::new();
         for (re, item) in mapping {
             // Pick the first shard that matches this regex.
-            // TODO: make sure the prefixes which are themselves prefixes of another prefixes (yo dawg)
-            // are placed later in the prefix list; maybe just sort it by descending length?
             let shard = match prefix_matcher.lookup_all(re).into_iter().next() {
                 Some(&idx) => {
                     trace!("Mod regex `{}` goes in shard for prefix `{}`", re, prefixes[idx]);

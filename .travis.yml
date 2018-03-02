@@ -17,6 +17,7 @@ matrix:
 # Test script
 #
 
+# TODO: test all combination of features
 script:
   - cargo build
   - cargo test --no-fail-fast
