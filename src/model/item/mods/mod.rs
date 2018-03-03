@@ -27,18 +27,15 @@ pub struct Mod {
 
 impl Mod {
     /// Create `Mod` from given mod text that's found on an item.
-    #[cfg(feature = "mods_db")]
     pub fn new<T: Into<String>>(type_: ModType, text: T) -> Self {
         let text = text.into();
-        let data = database::ITEM_MODS.resolve(type_, &text);
-        Mod{type_, text, data}
-    }
 
-    /// Create `Mod` from given mod text that's found on an item.
-    #[cfg(not(feature = "mods_db"))]
-    pub fn new<T: Into<String>>(type_: ModType, text: T) -> Self {
-        let text = text.into();
+        // Resolve mod text against item mod database if it's available.
+        #[cfg(feature = "mods_db")]
+        let data = database::ITEM_MODS.resolve(type_, &text);
+        #[cfg(not(feature = "mods_db"))]
         let data = None;
+
         Mod{type_, text, data}
     }
 }
