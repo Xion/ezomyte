@@ -3,6 +3,7 @@
                             mod id;
                             mod info;
 #[cfg(feature = "mods_db")] mod database;
+#[cfg(test)]                mod tests;
 
 pub use self::id::{ModId, ModType};
 pub use self::info::ModInfo;

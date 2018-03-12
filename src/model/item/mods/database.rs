@@ -16,12 +16,19 @@ use super::id::{ModId, ModType};
 use super::info::{ModInfo, regex_from_mod_text_template};
 
 
-// TODO: the item database takes quite a bit of space in memory,
-// so the support for it should be gated behind a flag
 lazy_static! {
     /// Database of known item mods.
     pub static ref ITEM_MODS: Database = Database::new().unwrap();
 }
+
+/// Initialize the item database at this point in the program.
+///
+/// If you don't perform na explicit initialization,
+/// the database will be initialized upon the first item mod lookup.
+pub fn initialize() {
+    let _ = &*ITEM_MODS;
+}
+
 
 /// Structure holding information about all known item mods.
 pub struct Database {
@@ -380,14 +387,30 @@ impl<T> RegexMatcherShard<T> {
 
 #[cfg(test)]
 mod tests {
+    use std::time::Instant;
     use super::super::id::ModType;
-    use super::ITEM_MODS;
+    use super::{initialize, ITEM_MODS};
+
+    #[test]
+    fn initialize_actually_initializes() {
+        let first_init_duration = {
+            let start = Instant::now();
+            initialize();
+            Instant::now().duration_since(start)
+        };
+        let second_init_time = {
+            let start = Instant::now();
+            initialize();
+            Instant::now().duration_since(start)
+        };
+        // The factor here is super conservative.
+        assert!(first_init_duration >= second_init_time * 100);
+    }
+    // TODO: benchmark for the initialization
 
     #[test]
     fn item_mods_db_is_valid() {
-        // This will cause evaluation of the lazily initialized static.
         assert!(ITEM_MODS.len() > 0);
-        // TODO: benchmark that
     }
 
     #[test]
