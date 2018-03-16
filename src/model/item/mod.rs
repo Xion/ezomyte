@@ -118,6 +118,8 @@ impl Item {
         self.details.as_ref().map(|d| d.is_identified()).unwrap_or(true)
     }
 }
+// TODO: implement Display that corresponds to the way items are copied to clipboard
+// when you hover over them in game and press Ctrl+C
 
 /// A particular kind of requirement that a character must satisfy
 /// in order to use an item.
