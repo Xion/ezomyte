@@ -4,7 +4,7 @@ use std::cmp::{Eq, PartialEq};
 use std::error::Error;
 use std::str::FromStr;
 
-use regex::{self, Regex};
+use regex::{self, Regex, RegexBuilder};
 
 use util::parse_number;
 use super::ModValues;
@@ -39,7 +39,7 @@ impl ModInfo {
         Ok(ModInfo {
             id: id,
             text_template: text,
-            regex: Regex::new(&regex_str)?,
+            regex: RegexBuilder::new(&regex_str).case_insensitive(true).build()?,
         })
     }
 }

@@ -1,7 +1,7 @@
 //! Identifier of an item mod in the mod database.
 //!
 //! Mod identifiers in their raw form are textual idents such as "crafted.stat_3299347043".
-//! Types define here introduce some more compile-time safety to those values.
+//! Types defined here introduce some more compile-time safety to those values.
 
 use std::error;
 use std::fmt;
