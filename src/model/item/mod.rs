@@ -22,6 +22,7 @@ pub use self::sockets::*;
 
 
 use std::collections::HashMap;
+use std::iter;
 
 use serde_json::Value as Json;
 
@@ -116,6 +117,12 @@ impl Item {
     #[inline]
     pub fn is_identified(&self) -> bool {
         self.details.as_ref().map(|d| d.is_identified()).unwrap_or(true)
+    }
+
+    /// Iterate over the item mods, if any.
+    #[inline]
+    pub fn mods<'i>(&'i self) -> Box<Iterator<Item=&'i Mod> + 'i> {
+        self.details.as_ref().map(|d| d.mods()).unwrap_or_else(|| Box::new(iter::empty()))
     }
 }
 // TODO: implement Display that corresponds to the way items are copied to clipboard

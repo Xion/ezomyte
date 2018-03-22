@@ -33,6 +33,52 @@ pub enum ItemCategory {
     Currency,  // NOTE: Keep it as last variant.
 }
 
+impl ItemCategory {
+    /// Whether items of this category are normally used & consumed by players
+    /// rather than being worn.
+    ///
+    /// Vendor recipes do not count as "use" in this meaning.
+    pub fn is_consumable(&self) -> bool {
+        match *self {
+            ItemCategory::Map |
+            ItemCategory::DivinationCard |
+            ItemCategory::Currency => true, // TODO: prophecy
+            _ => false,
+        }
+    }
+
+    /// Whether items of this category can be worn on the character.
+    ///
+    /// Note that this also includes flasks, jewels, and gems,
+    /// as they are put into equipment slots either directly or indirectly.
+    pub fn is_equippable(&self) -> bool {
+        match *self {
+            ItemCategory::Accessory(..) |
+            ItemCategory::Armour(..) |
+            ItemCategory::Weapon(..) |
+            ItemCategory::Jewel(..) |
+            ItemCategory::Flask |
+            ItemCategory::Gem => true,
+            _ => false,
+        }
+    }
+
+    /// Whether items of this category can be modified using currency items.
+    pub fn is_modifiable(&self) -> bool {
+        match *self {
+            ItemCategory::Accessory(..) |
+            ItemCategory::Armour(..) |
+            ItemCategory::Weapon(..) |
+            ItemCategory::Jewel(..) |
+            ItemCategory::Flask |
+            ItemCategory::Map |
+            ItemCategory::Gem => true,
+            _ => false,
+        }
+    }
+}
+
+
 /// Type of an accessory item.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum AccessoryType {

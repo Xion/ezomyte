@@ -23,7 +23,6 @@
 use std::env;
 use std::process::exit;
 
-use ezomyte::ItemDetails;
 use futures::Stream;
 use tokio_core::reactor::Core;
 
@@ -47,23 +46,8 @@ fn main() {
     core.run(
         client.stashes().all().for_each(|stash| {
             for item in &stash.items {
-                let mods = match item.details {
-                    Some(ItemDetails::Map{ref mods, ..}) |
-                    Some(ItemDetails::Flask{ref mods, ..}) => mods.iter().collect(),
-                    Some(ItemDetails::Gear{
-                        ref implicit, ref enchants, ref explicit, ref crafted, ..
-                    }) => {
-                        implicit.iter()
-                            .chain(enchants.iter())
-                            .chain(explicit.iter())
-                            .chain(crafted.iter())
-                            .collect()
-                    }
-                    _ => vec![],
-                };
-
                 let mut matches = false;
-                for mod_ in mods {
+                for mod_ in item.mods() {
                     if !mod_.as_str().contains(query) {
                         continue;
                     }
