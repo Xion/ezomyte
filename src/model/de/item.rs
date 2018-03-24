@@ -9,7 +9,9 @@ use regex::Regex;
 use serde::de::{self, Deserialize, Visitor, Unexpected};
 use serde_json::Value as Json;
 
-use super::super::{Influence, Item, ItemCategory, ItemDetails, Mod, ModType, Properties, Rarity};
+use super::super::{
+    Influence, Item, ItemCategory, ItemDetails, Mod, ModType, Properties, Quality, Rarity,
+};
 use super::super::util::Quasi;
 use super::util::deserialize;
 
@@ -56,7 +58,10 @@ impl<'de> Visitor<'de> for ItemVisitor {
         let mut flavour_text = None;
         let mut extra = HashMap::new();
         // Data specific to a particular category of items.
-        let mut map_tier = None;
+        let (mut map_tier,
+             mut item_quantity,
+             mut item_rarity,
+             mut monster_pack_size) = (None, None, None, None);
         let (mut gem_level, mut gem_xp) = (None, None);
         let mut flask_mods = None;
         let (mut implicit_mods,
@@ -205,6 +210,8 @@ impl<'de> Visitor<'de> for ItemVisitor {
 
                     // Pluck out some of the properties that we are providing
                     // as separate fields on `Item`.
+
+                    // Common properties.
                     if let Some(q) = props.remove("Quality") {
                         let q = q.expect("item quality percentage");
                         if quality.is_some() {
@@ -212,6 +219,11 @@ impl<'de> Visitor<'de> for ItemVisitor {
                         }
                         quality = Some(deserialize(q)?);
                     }
+
+                    // Map properties.
+                    // TODO: introduce a Percentage data type and use it for the map bonuses
+                    // and item quality so that we don't have to do the hack where we
+                    // parse the map values as Quality
                     if let Some(tier) = props.remove("Map Tier") {
                         let tier = tier.expect("map tier");
                         if map_tier.is_some() {
@@ -221,6 +233,29 @@ impl<'de> Visitor<'de> for ItemVisitor {
                             de::Error::invalid_value(Unexpected::Str(&tier), &"number as string")
                         })?);
                     }
+                    if let Some(quantity) = props.remove("Item Quantity") {
+                        let quantity = quantity.expect("item quantity bonus value");
+                        if item_quantity.is_some() {
+                            return Err(de::Error::duplicate_field("Item Quantity"));
+                        }
+                        item_quantity = Some(deserialize(quantity).map(|Quality(q)| q as i32)?);
+                    }
+                    if let Some(rarity) = props.remove("Item Rarity") {
+                        let rarity = rarity.expect("item rarity bonus value");
+                        if item_rarity.is_some() {
+                            return Err(de::Error::duplicate_field("Item Rarity"));
+                        }
+                        item_rarity = Some(deserialize(rarity).map(|Quality(q)| q as i32)?);
+                    }
+                    if let Some(pack_size) = props.remove("Monster Pack Size") {
+                        let pack_size = pack_size.expect("monster pack size bonus value");
+                        if monster_pack_size.is_some() {
+                            return Err(de::Error::duplicate_field("Monster Pack Size"));
+                        }
+                        monster_pack_size = Some(deserialize(pack_size).map(|Quality(q)| q as i32)?);
+                    }
+
+                    // Gem properties.
                     if let Some(lvl) = props.remove("Level") {
                         let mut lvl = lvl.expect("gem level");
                         if gem_level.is_some() {
@@ -309,6 +344,9 @@ impl<'de> Visitor<'de> for ItemVisitor {
             } else if let Some(tier) = map_tier {
                 Some(ItemDetails::Map{
                     tier: tier,
+                    item_quantity: item_quantity.unwrap_or(0),
+                    item_rarity: item_rarity.unwrap_or(0),
+                    monster_pack_size: monster_pack_size.unwrap_or(0),
                     mods: explicit_mods.unwrap_or_default(),
                 })
             } else if let (Some(level), Some(xp)) = (gem_level, gem_xp) {

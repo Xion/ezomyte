@@ -9,19 +9,25 @@ use super::mods::Mod;
 /// Details of the particular items, if known.
 #[derive(Debug)]
 pub enum ItemDetails {
+    // TODO: consider extracting struct types for Map, Gem, Gear
+
     /// An unidentified item. No details available.
     Unidentified,
     /// Map item.
     Map {
         /// Map tier.
         tier: u32,
-        /// Mods this map item has.
+        /// Percentage bonus to the quantity of items dropped by this map.
+        item_quantity: i32,
+        /// Percentage bonus to the rarity of items dropped by this map.
+        item_rarity: i32,
+        /// Percentage bonus to the size of monster packs in this map.
+        monster_pack_size: i32,
+        /// Mods this map has.
         ///
         /// These are the mods which affect map difficulty
         /// as well as quantity and rarity of items dropped.
         mods: Vec<Mod>,
-        // TODO: store "Item Rarity", "Item Quantity" and "Monster Pack Size" properties
-        // as dedicated fields here (0 if not found, meaning no bonus)
     },
     /// Skill gem.
     Gem {

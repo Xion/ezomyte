@@ -58,6 +58,7 @@ lazy_static! {
         "splinter-esh" => &["splinter-of-esh"],
         "splinter-uul-netol" => &["splinter-of-uul-netol"],
         "splinter-chayula" => &["splinter-of-chayula"],
+        // TOOD: Bestiary league nets
     };
 }
 
@@ -155,7 +156,8 @@ fn generate_item_mods_mapping() -> io::Result<()> {
     Ok(())
 }
 
-/// Generate mapping of `ModId`s of given `ModType` to their `ModInfo`s.
+/// Generate mapping of `ModId`s of given `ModType` to their `ModInfo`s
+/// (i.e, a `HashMap<ModId, Arc<ModInfo>>`).
 fn generate_item_mods_mapping_for_type<W: io::Write>(
     ctx: &mut codegen::Context<W>, mod_type: &str
 ) -> io::Result<()> {
