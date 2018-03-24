@@ -201,11 +201,11 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 // Various other properties.
                 "flavourText" => {
                     check_duplicate!("flavourText" => flavour_text);
-                    let text: Vec<String> = map.next_value()?;
-                    // TODO: some items (like Belly) don't have the trailing \r or \n
-                    // at each string of flavour_text, so we should add them (or spaces)
-                    // if we're merging the text into a single string
-                    flavour_text = Some(Some(text.join("").replace('\r', "")));
+                    // Flavour text is usually given as an array of lines with a trailing '\r',
+                    // although some items (like Belly) miss the carriage return.
+                    let lines: Vec<String> = map.next_value()?;
+                    let text = lines.iter().map(|l| l.trim()).join(" ");
+                    flavour_text = Some(if text.is_empty() { None } else { Some(text) });
                 }
                 "properties" => {
                     check_duplicate!(properties);
