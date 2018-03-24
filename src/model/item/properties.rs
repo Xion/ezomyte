@@ -20,6 +20,7 @@ pub type Key = String;
 
 /// Type of a property value.
 pub type Value = String;
+// TODO: support multi-value properties (for damage ranges and for flask charges (per-use & max))
 // TODO: introduce an enum here that corresponds to the valueType enum from the API
 // (mostly to hold the types of elemental damage, and whether or not it was affected by an affix)
 

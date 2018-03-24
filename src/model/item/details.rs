@@ -1,6 +1,7 @@
 //! Item details which are specific to a particular kind of an item.
 
 use std::iter;
+use std::time::Duration;
 
 use super::experience::Experience;
 use super::mods::Mod;
@@ -42,10 +43,17 @@ pub enum ItemDetails {
     },
     /// Flask item.
     Flask {
+        /// Duration of the flask effect.
+        duration: Duration,
+        /// How many charges are consumed on use.
+        charges_per_use: u32,
+        // TODO: max_charges (which comes from "Consumes %0 of %0 Charges on use"
+        // and requires support for multi-value Properties)
+
         /// Utility mods of the flask.
         ///
         /// These are typically the on-use effect (like bleed/freeze/etc. removal),
-        /// mods affecting charges, etc..
+        /// mods affecting charges, etc.
         mods: Vec<Mod>,
     },
     /// Item that goes in a gear slot.
@@ -98,7 +106,7 @@ impl ItemDetails {
     pub fn mods<'m>(&'m self) -> Box<Iterator<Item=&'m Mod> + 'm> {
         match *self {
             ItemDetails::Map{ ref mods, .. } |
-            ItemDetails::Flask{ ref mods } => Box::new(mods.iter()),
+            ItemDetails::Flask{ ref mods, .. } => Box::new(mods.iter()),
             ItemDetails::Gear{
                 ref implicit, ref enchants, ref explicit, ref crafted,
             } => Box::new(

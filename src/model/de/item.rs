@@ -3,6 +3,7 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt;
+use std::time::Duration;
 
 use itertools::Itertools;
 use regex::Regex;
@@ -63,7 +64,9 @@ impl<'de> Visitor<'de> for ItemVisitor {
              mut item_rarity,
              mut monster_pack_size) = (None, None, None, None);
         let (mut gem_level, mut gem_xp) = (None, None);
-        let mut flask_mods = None;
+        let (mut duration,
+             mut charges_per_use,
+             mut flask_mods) = (None, None, None);
         let (mut implicit_mods,
              mut enchant_mods,
              mut explicit_mods,
@@ -270,6 +273,28 @@ impl<'de> Visitor<'de> for ItemVisitor {
                         })?);
                     }
 
+                    // Flask properties.
+                    if let Some(secs) = props.remove("Lasts %0 Seconds") {
+                        let secs = secs.expect("flask duration");
+                        if duration.is_some() {
+                            return Err(de::Error::duplicate_field("Lasts %0 Seconds"));
+                        }
+                        let secs: f64 = secs.parse().map_err(|_| {
+                            de::Error::invalid_value(Unexpected::Str(&secs), &"flask duration in seconds")
+                        })?;
+                        duration = Some(Duration::from_millis((secs * 1000.0) as u64));
+                    }
+                    if let Some(charges) = props.remove("Consumes %0 of %1 Charges on use") {
+                        // TODO: support the other value, i.e. max_charges
+                        let charges = charges.expect("number of flask charges per use");
+                        if charges_per_use.is_some() {
+                            return Err(de::Error::duplicate_field("Consumes %0 of %1 Charges on use"));
+                        }
+                        charges_per_use = Some(charges.parse().map_err(|_| {
+                            de::Error::invalid_value(Unexpected::Str(&charges), &"number as string")
+                        })?);
+                    }
+
                     properties = Some(props);
                 }
                 "additionalProperties" => {
@@ -354,8 +379,10 @@ impl<'de> Visitor<'de> for ItemVisitor {
                     level,
                     experience: xp,
                 })
-            } else if let Some(fm) = flask_mods {
-                Some(ItemDetails::Flask{mods: fm})
+            } else if let (Some(duration),
+                           Some(charges_per_use),
+                           Some(mods)) = (duration, charges_per_use, flask_mods) {
+                Some(ItemDetails::Flask{duration, charges_per_use, mods})
             } else if has_gear_mods
                       // Exclude currencies here because the API returns their on-use "mods"
                       // (like "Reforges a rare item with new random properties" for Chaos Orb)
