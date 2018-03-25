@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::fs;
-use std::io;
+use std::io::{self, BufReader};
 use std::path::Path;
 
 use ezomyte_build::codegen;
@@ -131,6 +131,8 @@ const ITEM_MODS_DATA_DIR: &str = "data/mods";
 const ITEM_MODS_TYPES: &[&str] = &["crafted", "enchant", "explicit", "implicit"];
 const ITEM_MODS_DATABASE_FILE: &str = "model/item/mods/database/by_type_and_id.inc.rs";
 
+const READ_BUFFER_SIZE: usize = 64 * 1024;  // To speed up parsing of item mods JSON.
+
 /// Generate code for the database of `ModInfo`s.
 fn generate_item_mod_code() -> Result<(), Box<Error>> {
     generate_item_mods_mapping()?;
@@ -163,7 +165,8 @@ fn generate_item_mods_mapping_for_type<W: io::Write>(
 ) -> io::Result<()> {
     let data_file = Path::new(".").join(ITEM_MODS_DATA_DIR).join(mod_type).with_extension("json");
     let file = fs::OpenOptions::new().read(true).open(data_file)?;
-    let mods: Vec<ItemModData> = serde_json::from_reader(file)?;
+    let reader = BufReader::with_capacity(READ_BUFFER_SIZE, file);
+    let mods: Vec<ItemModData> = serde_json::from_reader(reader)?;
 
     ctx.begin("{")?;
     ctx.emit("let mut hm = HashMap::new();")?;
