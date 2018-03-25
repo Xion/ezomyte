@@ -135,7 +135,7 @@ impl<'de> Visitor<'de> for ItemVisitor {
                             _ => {}
                         }
                     } else {
-                        rarity = deserialize(value)?;
+                        rarity = Some(deserialize(value)?);
                     }
                 }
                 "category" => {
