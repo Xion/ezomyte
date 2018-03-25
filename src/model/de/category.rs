@@ -91,6 +91,8 @@ impl<'de> Visitor<'de> for ItemCategoryVisitor {
                 // TODO: consider verifying that these keys map to empty arrays
                 // (because they should, right?)
                 "cards" => Ok(ItemCategory::DivinationCard),
+                // N.b.: "currency" can actually also indicate a sealed prophecy item.
+                // Fortunately, this can be disambiguated using the "frameType" JSON key.
                 "currency" => Ok(ItemCategory::Currency),
                 "flasks" => Ok(ItemCategory::Flask),
                 "gems" => Ok(ItemCategory::Gem),

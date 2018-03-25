@@ -118,19 +118,34 @@ impl<'de> Visitor<'de> for ItemVisitor {
                 }
 
                 // Item category / type.
-                "category" => {
-                    check_duplicate!(category);
-                    category = Some(map.next_value::<Quasi<ItemCategory>>()?);
-                }
                 "frameType" => {
                     check_duplicate!("frameType" => rarity);
+
+                    // This field is wonky, as it describes either an item rarity,
+                    // or a less common item category (like a sealed prophecy item or a divination card).
                     const MAX_RARITY: u64 = 3;  // corresponds to Rarity::Unique
                     let value: u64 = map.next_value()?;
-                    rarity = Some(
+                    if value > MAX_RARITY {
                         // If the frameType doesn't describe rarity but rather item type,
                         // default to normal rarity.
-                        if value > MAX_RARITY { Rarity::Normal } else { deserialize(value)? }
-                    );
+                        rarity = Some(Rarity::Normal);
+                        // Detect the uncommon item types.
+                        match value {
+                            8 => { category = Some(Quasi::from(ItemCategory::Prophecy)); }
+                            _ => {}
+                        }
+                    } else {
+                        rarity = deserialize(value)?;
+                    }
+                }
+                "category" => {
+                    if category.as_ref().and_then(|c| c.as_ref()) == Some(&ItemCategory::Prophecy) {
+                        // Sealed prophecies are detected using the "frameType" attribute,
+                        // because their JSON "category" is actually `{"currency": []}` (!).
+                        continue;
+                    }
+                    check_duplicate!(category);
+                    category = Some(map.next_value::<Quasi<ItemCategory>>()?);
                 }
 
                 // Item mods.

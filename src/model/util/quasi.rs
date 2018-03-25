@@ -29,7 +29,7 @@ use super::json::Json;
 pub enum Quasi<T, S = Json> {
     /// The usual, "true" value.
     True(T),
-    /// The subsititute, "fake", undeserialized value.
+    /// The substitute, "fake", undeserialized value.
     Substitute(S),
 }
 

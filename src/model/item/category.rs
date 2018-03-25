@@ -2,25 +2,43 @@
 
 
 /// Category of an item.
+///
 /// This roughly describes the item's purpose, such as the slot it can be worn on.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ItemCategory {
+    /// Accessory item (also referred to as jewelry).
     Accessory(AccessoryType),
+    /// Armour item.
     Armour(ArmourType),
+    /// Weapon item.
     Weapon(WeaponType),
+    /// Jewel item.
+    ///
+    /// This includes jewels socketed into the passive tree,
+    /// as well as abyss jewels that can additionally go into abyssal sockets.
     Jewel(JewelType),
+    /// A flask.
     Flask,
+    /// A map item.
     Map,
+    /// Skill gem.
     Gem,
+    /// Divination card.
     DivinationCard,
-    // TODO: prophecy
-    Currency,
+    /// Sealed prophecy item.
+    Prophecy,
+    /// Relic item.
+    Relic,
+    /// Currency item.
+    Currency,  // NOTE: Keep it as last variant.
 }
 
 /// Type of an accessory item.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum AccessoryType {
     /// Amulet (necklace).
+    ///
+    /// This also includes talismans from the Talisman league.
     Amulet,
     /// Belt.
     Belt,
@@ -80,10 +98,12 @@ pub enum WeaponType {
 /// Type of a jewel.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum JewelType {
-    /// Regular jewel
+    /// Regular jewel.
+    ///
     /// Those jewels  can only be placed in a passive tree slot.
     Regular,
     /// Abyss jewel.
+    ///
     /// These can be placed both in passive tree slots and abyss sockets in gear.
     Abyss
 }
