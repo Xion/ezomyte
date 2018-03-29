@@ -10,7 +10,7 @@ keywords = ["poe", "path-of-exile", "api", "hyper"]
 license = "MIT"
 categories = ["api-bindings", "web-programming::http-client"]
 readme = "README.md"
-build = "build.rs"
+build = "build/main.rs"
 
 [badges]
 travis-ci = { repository = "Xion/ezomyte" }
@@ -50,7 +50,6 @@ tokio-core = "0.1.10"
 env_logger = "0.5"
 
 [build-dependencies]
-ezomyte_build = { path = "build" }
 itertools = "0.7"
 lazy_static = "1.0"
 maplit = "1.0.1"

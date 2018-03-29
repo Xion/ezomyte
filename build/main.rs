@@ -3,13 +3,17 @@
 //! The script takes static data obtained from the API and generates some code
 //! for inclusion in the library source, including e.g. the `Currency` enum.
 
-#[macro_use] extern crate ezomyte_build;  // auxiliary crate in `build/`
              extern crate itertools;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate maplit;
              extern crate serde;
 #[macro_use] extern crate serde_derive;
              extern crate serde_json;
+
+
+#[macro_use] mod codegen;
+             mod files;
+             mod strings;
 
 
 use std::collections::HashMap;
@@ -19,10 +23,10 @@ use std::fs;
 use std::io::{self, BufReader};
 use std::path::Path;
 
-use ezomyte_build::codegen;
-use ezomyte_build::files::create_out_file;
-use ezomyte_build::strings::upper_camel_case;
 use itertools::Itertools;
+
+use self::files::create_out_file;
+use self::strings::upper_camel_case;
 
 
 fn main() {

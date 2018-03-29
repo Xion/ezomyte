@@ -120,7 +120,6 @@ impl<W: Write> Context<W> {
 }
 
 /// Emit a formatted line of code to given `Context`.
-#[macro_export]
 macro_rules! emit {
     ($ctx:expr, $fmt:expr, $($args:tt)*) => (
         $ctx.emit_fmt(format_args!($fmt, $($args)*))
