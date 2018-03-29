@@ -19,7 +19,7 @@ Add _ezomyte_ to your project's `[dependencies]` in _Cargo.toml_:
 
 ```toml
 [dependencies]
-ezomyte = "0.0.1"
+ezomyte = "0.0.2"
 ```
 
 ## Usage
