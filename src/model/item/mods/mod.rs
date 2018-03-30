@@ -101,3 +101,4 @@ pub type ModValue = f64;
 /// Currently, no mod seems to have more than two values associated with it,
 /// so this container holds zero, one, or two items.
 pub type ModValues = SmallVec<[ModValue; 4]>;
+// TODO: add constructors for one & two value variants
