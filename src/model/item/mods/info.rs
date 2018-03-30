@@ -90,7 +90,7 @@ impl ModInfo {
     /// If the text doesn't match this mod, `None` is returned.
     pub fn parse_text(&self, text: &str) -> Option<ModValues> {
         if self.param_count() == 0 {
-            return Some(ModValues::new());
+            return Some(ModValues::none());
         }
         self.regex.captures(text.trim()).map(|caps| {
             caps.iter().skip(1)
@@ -178,13 +178,13 @@ mod tests {
     #[should_panic(expected = "Invalid number of mod values")]
     fn format_text__no_values__but_some_given() {
         let mod_info = ModInfo::from_raw(MOD_ID, NO_VALUES_MOD_TEXT).unwrap();
-        mod_info.format_text(&ModValues::from_vec(vec![1.0, 2.0]));
+        mod_info.format_text(&ModValues::two(1, 2));
     }
 
     #[test]
     fn format_text__no_values() {
         let mod_info = ModInfo::from_raw(MOD_ID, NO_VALUES_MOD_TEXT).unwrap();
-        let text = mod_info.format_text(&ModValues::new());
+        let text = mod_info.format_text(&ModValues::none());
         assert_eq!(NO_VALUES_MOD_TEXT, text);
     }
 
@@ -192,13 +192,13 @@ mod tests {
     #[should_panic(expected = "Invalid number of mod values")]
     fn format_text__with_values__but_none_given() {
         let mod_info = ModInfo::from_raw(MOD_ID, MOD_TEXT_TEMPLATE).unwrap();
-        mod_info.format_text(&ModValues::new());
+        mod_info.format_text(&ModValues::none());
     }
 
     #[test]
     fn format_text__with_values() {
         let mod_info = ModInfo::from_raw(MOD_ID, MOD_TEXT_TEMPLATE).unwrap();
-        let text = mod_info.format_text(&ModValues::from_vec(vec![MOD_VALUE]));
+        let text = mod_info.format_text(&ModValues::one(MOD_VALUE));
         assert_eq!(MOD_TEXT, text);
     }
 }

@@ -4,15 +4,15 @@
                             mod info;
 #[cfg(feature = "mods_db")] mod database;
 #[cfg(test)]                mod tests;
+                            mod values;
 
 pub use self::id::{ModId, ModType};
 pub use self::info::ModInfo;
+pub use self::values::{ModValue, ModValues};
 
 
 use std::fmt;
 use std::sync::Arc;
-
-use smallvec::SmallVec;
 
 
 /// A single item mod occurrence.
@@ -90,15 +90,3 @@ impl fmt::Debug for Mod {
         ds.finish()
     }
 }
-
-
-/// Type of a mod parameter value
-/// -- that is, the number that varies between occurrences of a mod on items.
-pub type ModValue = f64;
-
-/// Type for parameter values of a single mod.
-///
-/// Currently, no mod seems to have more than two values associated with it,
-/// so this container holds zero, one, or two items.
-pub type ModValues = SmallVec<[ModValue; 4]>;
-// TODO: add constructors for one & two value variants

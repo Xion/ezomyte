@@ -12,6 +12,7 @@
                              extern crate chrono;
                              extern crate conv;
                 #[macro_use] extern crate derive_error;
+                #[macro_use] extern crate derive_more;
                 #[macro_use] extern crate enum_derive;
                              extern crate futures;
                              extern crate hyper;
