@@ -58,7 +58,7 @@ impl<'de> Visitor<'de> for LabelVisitor {
             _ => return Err(de::Error::custom(format!("malformed label: {}", v))),
         };
 
-        // XXX: some asshats think it's funny to name their stashes something like
+        // TODO: some asshats think it's funny to name their stashes something like
         // "~b/o offer", which of course breaks the price parsing below;
         // we probably need to introduce something like Label::Malformed to accommodate that
         if EXACT_PRICE_TAGS.contains(&tag) {
@@ -111,5 +111,11 @@ mod tests {
         assert_eq!(
             Label::Unknown("key".into(), "value".into()),
             from_value(json!("~key value")).unwrap());
+    }
+
+    #[test]
+    #[should_panic]  // TODO: remove when we're handling malformed labels
+    fn malformed() {
+        from_value::<Label>(json!("~b/o chaos")).unwrap();
     }
 }
