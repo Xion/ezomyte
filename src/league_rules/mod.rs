@@ -3,8 +3,7 @@
 use futures::{Future as StdFuture, stream, Stream as StdStream};
 use hyper::client::Connect;
 
-use ::Client;
-use super::Stream;
+use ::{Client, Stream};
 
 
 /// Interface for accessing league rules information.

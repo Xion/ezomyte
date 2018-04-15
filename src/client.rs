@@ -10,7 +10,8 @@ use serde::de::DeserializeOwned;
 use serde_json;
 use tokio_core::reactor::Handle;
 
-use super::api::{LeagueRules, Leagues, PvpMatches, Stashes};
+use super::api::{Leagues, PvpMatches, Stashes};
+use super::league_rules::LeagueRules;
 pub use super::error::{Error, Stream};
 
 
