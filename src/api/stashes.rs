@@ -5,8 +5,8 @@ use std::borrow::Cow;
 use futures::{future, Future as StdFuture, stream, Stream as StdStream};
 use hyper::client::Connect;
 
-use ::{Client, Stash};
-use super::{Batched, Stream};
+use ::{Client, Stash, Stream};
+use util::Batched;
 
 
 /// Interface for accessing the public stashes.
@@ -74,13 +74,11 @@ impl<C: Clone + Connect> Stashes<C> {
                         // to include the current & next change_id.
                         let curr_cid = change_id.clone();
                         let next_cid = resp.next_change_id.clone();
-                        resp.stashes.into_iter().map(move |entry| Batched{
-                            entry,
+                        resp.stashes.into_iter().map(move |entry| Batched::new(
                             // TODO: these clones are probably unnecessary
                             // if we returned Batched<Stash, &str>
-                            curr_token: curr_cid.clone(),
-                            next_token: next_cid.clone(),
-                        })
+                            curr_cid.clone(), entry, next_cid.clone()
+                        ))
                     };
                     let next_state = match resp.next_change_id {
                         Some(next_cid) => {

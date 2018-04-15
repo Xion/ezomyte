@@ -3,6 +3,7 @@
 use std::error;
 use std::fmt;
 
+use futures::Stream as StdStream;
 use hyper::{self, StatusCode};
 use serde_json;
 
@@ -60,3 +61,7 @@ impl fmt::Display for Error {
         }
     }
 }
+
+
+/// Stream type returned by various API methods.
+pub type Stream<T, E = Error> = Box<StdStream<Item = T, Error = E>>;

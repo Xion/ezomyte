@@ -11,7 +11,7 @@ use serde_json;
 use tokio_core::reactor::Handle;
 
 use super::api::{LeagueRules, Leagues, PvpMatches, Stashes};
-use super::error::Error;
+pub use super::error::{Error, Stream};
 
 
 /// Type of futures produced by the client.

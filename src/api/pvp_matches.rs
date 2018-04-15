@@ -7,8 +7,7 @@ use futures::{Future as StdFuture, stream, Stream as StdStream};
 use hyper::client::Connect;
 use serde::de::{self, Deserialize, Deserializer};
 
-use ::Client;
-use super::Stream;
+use ::{Client, Stream};
 
 
 /// Interface for accessing PvP matches information.

@@ -10,8 +10,7 @@ use hyper::client::Connect;
 use regex::Regex;
 use serde::de::{self, Deserialize, Deserializer};
 
-use ::{Client, League, ParseLeagueError};
-use super::Stream;
+use ::{Client, League, ParseLeagueError, Stream};
 
 
 /// Interface for accessing league information.
