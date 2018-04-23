@@ -38,6 +38,7 @@ mod error;
 mod league_rules;
 mod leagues;
 mod model;
+mod pvp_matches;
 mod util;
 
 pub use self::api::*;
