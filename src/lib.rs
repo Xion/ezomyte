@@ -36,6 +36,7 @@ mod api;
 mod client;
 mod error;
 mod league_rules;
+mod leagues;
 mod model;
 mod util;
 
