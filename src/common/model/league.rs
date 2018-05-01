@@ -288,6 +288,14 @@ mod tests {
     }
 
     #[test]
+    fn bestiary_leagues() {
+        assert_eq!(League::temporary(), League::from_str("Bestiary").unwrap());
+        assert_eq!(League::temp_hc(), League::from_str("Hardcore Bestiary").unwrap());
+        assert_eq!(League::temp_ssf(), League::from_str("SSF Bestiary").unwrap());
+        assert_eq!(League::temp_hc_ssf(), League::from_str("SSF Bestiary HC").unwrap());
+    }
+
+    #[test]
     fn harbinger_leagues() {
         assert_eq!(League::temporary(), League::from_str("Harbinger").unwrap());
         assert_eq!(League::temp_hc(), League::from_str("Hardcore Harbinger").unwrap());
