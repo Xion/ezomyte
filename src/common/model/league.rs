@@ -246,6 +246,7 @@ impl FromStr for League {
             "SSF Standard" => League::ssf(),
             "SSF Hardcore" => League::hardcore_ssf(),
             s => {
+                // TODO: the checks below should look for words, not any substring
                 let hardcore = s.contains("Hardcore") || s.contains("HC");
                 let ssf = s.contains("SSF");
                 match (hardcore, ssf) {
@@ -268,7 +269,7 @@ impl FromStr for League {
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
-    use model::League;
+    use super::League;
 
     #[test]
     fn permanent_leagues() {

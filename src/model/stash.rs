@@ -3,9 +3,9 @@
 use std::fmt;
 use std::ops::Deref;
 
+use ::common::League;
 use super::item::Item;
 use super::label::Label;
-use super::league::League;
 use super::price::Price;
 
 

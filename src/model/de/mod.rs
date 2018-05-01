@@ -8,7 +8,6 @@ mod currency;
 mod experience;
 mod item;
 mod label;
-mod league;
 mod price;
 mod properties;
 mod quality;
