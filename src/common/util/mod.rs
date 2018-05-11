@@ -1,4 +1,4 @@
-//! Utilities used by model definitions.
+//! Utility code shared between APIs.
 
 mod debug;
 mod json;

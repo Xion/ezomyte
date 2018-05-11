@@ -10,10 +10,10 @@ use regex::Regex;
 use serde::de::{self, Deserialize, Visitor, Unexpected};
 use serde_json::Value as Json;
 
+use ::common::util::Quasi;
 use super::super::{
     Influence, Item, ItemCategory, ItemDetails, Mod, ModType, Properties, Quality, Rarity,
 };
-use super::super::util::Quasi;
 use super::util::deserialize;
 
 

@@ -4,8 +4,8 @@ use std::fmt;
 
 use serde::de::{self, Deserialize, Visitor, Unexpected};
 
+use ::common::util::Quasi;
 use super::super::{Currency, Price};
-use super::super::util::Quasi;
 use super::util::deserialize;
 use util::parse_number;
 

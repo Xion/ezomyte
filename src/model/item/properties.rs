@@ -10,7 +10,7 @@ use std::fmt;
 use std::hash::Hash;
 use std::iter::FromIterator;
 
-use super::super::util::ExplicitDebug;
+use ::common::util::ExplicitDebug;
 
 
 /// Type of a property key.

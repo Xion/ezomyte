@@ -5,8 +5,8 @@ use std::fmt;
 
 use serde::de::{self, Deserialize, Visitor};
 
+use ::common::util::Json;
 use super::super::StashedItem;
-use super::super::util::Json;
 use super::util::deserialize;
 
 

@@ -2,5 +2,6 @@
 
 mod de;
 mod model;
+pub mod util;
 
 pub use self::model::*;

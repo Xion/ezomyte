@@ -6,8 +6,8 @@ use std::cmp::Ordering;
 use num::ToPrimitive;
 use serde_json::{to_value as to_json, Value as Json};
 
+use ::common::util::Quasi;
 use super::currency::Currency;
-use super::util::Quasi;
 
 
 /// Price of an item in a particular `Currency`.
@@ -82,7 +82,8 @@ impl fmt::Display for Price {
 
 #[cfg(test)]
 mod tests {
-    use model::{Currency, Quasi};
+    use common::util::Quasi;
+    use model::Currency;
     use super::Price;
 
     #[test]
