@@ -80,20 +80,20 @@ pub enum StashType {
 #[derive(Debug)]
 pub struct StashedItem {
     /// The item in question.
-    pub(super) item: Item,
+    pub(crate) item: Item,
     /// Item label.
     ///
     /// This is usually its price,
     /// especially if different from the stash-wide price.
-    pub(super) label: Option<Label>,
+    pub(crate) label: Option<Label>,
     /// Horizontal position in the stash tab.
-    pub(super) x: u64,
+    pub(crate) x: u64,
     /// Vertical position in the stash tab.
-    pub(super) y: u64,
+    pub(crate) y: u64,
     /// Width of the item in stash tab tiles.
-    pub(super) width: u64,
+    pub(crate) width: u64,
     /// Height of the item in stash tab tiles.
-    pub(super) height: u64,
+    pub(crate) height: u64,
 }
 
 impl Deref for StashedItem {

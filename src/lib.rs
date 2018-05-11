@@ -32,17 +32,21 @@
                              extern crate tokio_core;
 
 
-mod api;
+mod league_rules;
+mod leagues;
+mod pvp_matches;
+mod stashes;
+
 mod client;
 mod common;
 mod error;
-mod league_rules;
-mod leagues;
-mod model;
-mod pvp_matches;
 mod util;
 
-pub use self::api::*;
+
+pub use self::league_rules::*;
+pub use self::leagues::*;
+pub use self::pvp_matches::*;
+pub use self::stashes::*;
+
 pub use self::client::*;
 pub use self::error::*;
-pub use self::model::*;

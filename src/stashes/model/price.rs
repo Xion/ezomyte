@@ -83,7 +83,7 @@ impl fmt::Display for Price {
 #[cfg(test)]
 mod tests {
     use common::util::Quasi;
-    use model::Currency;
+    use ::stashes::currency::Currency;
     use super::Price;
 
     #[test]

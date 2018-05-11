@@ -43,7 +43,7 @@ impl<'de> Visitor<'de> for RequirementVisitor {
 #[cfg(test)]
 mod tests {
     use serde_json::from_value;
-    use model::Requirement;
+    use ::stashes::Requirement;
     use super::VARIANTS;
 
     #[test]

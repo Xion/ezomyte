@@ -89,7 +89,7 @@ impl<'de> Visitor<'de> for StashedItemVisitor {
 #[cfg(test)]
 mod tests {
     use serde_json::from_value;
-    use model::StashedItem;
+    use ::stashes::StashedItem;
 
     #[test]
     fn minimal() {

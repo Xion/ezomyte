@@ -75,7 +75,7 @@ impl<'de> Visitor<'de> for LabelVisitor {
 #[cfg(test)]
 mod tests {
     use serde_json::from_value;
-    use model::{Currency, Label, Price};
+    use ::stashes::{Currency, Label, Price};
 
     #[test]
     fn cosmetic() {

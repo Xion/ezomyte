@@ -126,7 +126,7 @@ impl<'de> Visitor<'de> for ItemCategoryVisitor {
 #[cfg(test)]
 mod tests {
     use serde_json::from_value;
-    use model::{AccessoryType, ArmourType, ItemCategory, JewelType, WeaponType};
+    use ::stashes::{AccessoryType, ArmourType, ItemCategory, JewelType, WeaponType};
 
     #[test]
     fn accessories() {

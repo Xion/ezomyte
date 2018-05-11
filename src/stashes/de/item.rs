@@ -478,7 +478,7 @@ fn remove_angle_bracket_tags(s: &str) -> Cow<str> {
 #[cfg(test)]
 mod tests {
     use serde_json::from_value;
-    use model::Item;
+    use ::stashes::Item;
 
     #[test]
     fn minimal() {

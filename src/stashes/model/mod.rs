@@ -6,9 +6,6 @@ mod label;
 mod price;
 mod stash;
 
-mod de;
-
-
 pub use self::currency::Currency;
 pub use self::item::*;
 pub use self::label::Label;

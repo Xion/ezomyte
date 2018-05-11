@@ -5,8 +5,9 @@ use std::borrow::Cow;
 use futures::{future, Future as StdFuture, stream, Stream as StdStream};
 use hyper::client::Connect;
 
-use ::{Client, Stash, Stream};
+use ::{Client, Stream};
 use util::Batched;
+use super::model::Stash;
 
 
 /// Interface for accessing the public stashes.
