@@ -59,10 +59,10 @@ fn main() {
 
 fn get_latest_change_id<C: Connect>(
     http: &hyper::Client<C>
-) -> Box<Future<Item=String, Error=Box<Error>>> {
+) -> impl Future<Item=String, Error=Box<Error>> {
     let mut request = Request::new(Method::Get, POE_NINJA_STATS_URL.parse().unwrap());
     request.headers_mut().set(UserAgent::new(USER_AGENT));
-    Box::new(http.request(request).from_err().and_then(move |resp| {
+    http.request(request).from_err().and_then(move |resp| {
         let status = resp.status();
         resp.body().concat2().from_err().and_then(move |body| {
             if status.is_success() {
@@ -74,5 +74,5 @@ fn get_latest_change_id<C: Connect>(
                 Err(format!("Error talking to poe.ninja: {:?}", status).into())
             }
         })
-    }))
+    })
 }

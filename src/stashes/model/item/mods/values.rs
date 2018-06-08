@@ -59,8 +59,8 @@ impl ModValues {
 
     /// Returns an iterator over mod values in this set.
     #[inline]
-    pub fn iter<'v>(&'v self) -> Box<Iterator<Item=ModValue> + 'v> {
-        Box::new(self.0.iter().map(|v| *v))
+    pub fn iter<'v>(&'v self) -> impl Iterator<Item=ModValue> + 'v {
+        self.0.iter().map(|v| *v)
     }
 }
 
@@ -77,7 +77,7 @@ impl<'v> IntoIterator for &'v ModValues {
     type IntoIter = Box<Iterator<Item=ModValue> + 'v>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.iter()
+        Box::new(self.iter())
     }
 }
 

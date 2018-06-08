@@ -75,10 +75,8 @@ impl Database {
 impl Database {
     /// Returns an iterator over all mods.
     #[inline]
-    pub fn iter<'d>(&'d self) -> Box<Iterator<Item=&'d ModInfo> + 'd> {
-        Box::new(
-            self.matchers_by_type.values().flat_map(|rm| rm.items().map(|mi| &**mi))
-        )
+    pub fn iter<'d>(&'d self) -> impl Iterator<Item=&'d ModInfo> + 'd {
+        self.matchers_by_type.values().flat_map(|rm| rm.items().map(|mi| &**mi))
     }
 
     /// Total number of mods in the database.
@@ -163,7 +161,7 @@ impl<T> RegexMatcher<T> {
         })
     }
 
-    /// Create a `RegexMatcher` that matches regular to some other arbitrary types.
+    /// Create a `RegexMatcher` that matches regular expressions to some other arbitrary types.
     ///
     /// The regular expressions are sharded into subsets based on their given prefixes
     /// in order to speed up matching over a large sequence of regexes.
@@ -263,7 +261,7 @@ impl<T> RegexMatcher<T> {
 
     /// Return an iterator over all possible items.
     #[inline]
-    pub fn items<'r>(&'r self) -> Box<Iterator<Item=&'r T> + 'r> {
+    pub fn items<'r>(&'r self) -> impl Iterator<Item=&'r T> + 'r {
         Box::new(
             self.shards.iter()
                 .flat_map(|shards| { shards.items().flat_map(|sh| sh.items()) })
@@ -361,7 +359,7 @@ impl<T> RegexMatcherShard<T> {
 
     /// Return an iterator over the possible items.
     #[inline]
-    pub fn items<'r>(&'r self) -> Box<Iterator<Item=&'r T> + 'r> {
+    pub fn items<'r>(&'r self) -> impl Iterator<Item=&'r T> + 'r {
         Box::new(self.items.iter())
     }
 

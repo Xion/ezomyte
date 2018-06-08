@@ -59,17 +59,13 @@ impl ItemSockets {
 
     /// Colors of all regular sockets (in an unspecified order).
     #[inline]
-    pub fn colors<'s>(&'s self) -> Box<Iterator<Item=Color> + 's> {
-        Box::new(self.regular_groups.iter().flat_map(|g| g.colors.iter().cloned()))
+    pub fn colors<'s>(&'s self) -> impl Iterator<Item=Color> + 's {
+        self.regular_groups.iter().flat_map(|g| g.colors.iter().cloned())
     }
 
     /// Linked groups of regular sockets.
-    pub fn links<'s>(&'s self) -> Box<Iterator<Item=Box<Iterator<Item=Color> + 's>> + 's> {
-        Box::new(
-            self.regular_groups.iter().map(|g| {
-                Box::new(g.colors.iter().cloned()) as Box<Iterator<Item=Color>>
-            })
-        )
+    pub fn links<'s>(&'s self) -> impl Iterator<Item=impl Iterator<Item=Color> + 's> + 's {
+        self.regular_groups.iter().map(|g| g.colors.iter().cloned())
     }
 
     /// Maximum number of linked sockets on the item.

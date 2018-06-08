@@ -121,7 +121,7 @@ impl Item {
 
     /// Iterate over the item mods, if any.
     #[inline]
-    pub fn mods<'i>(&'i self) -> Box<Iterator<Item=&'i Mod> + 'i> {
+    pub fn mods<'i>(&'i self) -> impl Iterator<Item=&'i Mod> {
         self.details.as_ref().map(|d| d.mods()).unwrap_or_else(|| Box::new(iter::empty()))
     }
 }

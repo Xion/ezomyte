@@ -74,16 +74,15 @@ impl Properties {
 
     /// Return an iterator over property keys & optional values as pairs.
     #[inline]
-    pub fn iter<'p>(&'p self) -> Box<Iterator<Item=(&'p Key, Option<&'p Value>)> + 'p> {
-        IntoIterator::into_iter(self)
+    pub fn iter<'p>(&'p self) -> impl Iterator<Item=(&'p Key, Option<&'p Value>)> + 'p {
+        self.set.iter().map(|p| (p, None))
+            .chain(self.map.iter().map(|(k, v)| (k, Some(v))))
     }
 
     /// Return an iterator over property keys (names).
     #[inline]
-    pub fn keys<'p>(&'p self) -> Box<Iterator<Item=&'p Key> + 'p> {
-        Box::new(
-            self.set.iter().chain(self.map.keys())
-        )
+    pub fn keys<'p>(&'p self) -> impl Iterator<Item=&'p Key> + 'p {
+        self.set.iter().chain(self.map.keys())
     }
     // TODO: iterator methods for both value-full and value-less properties
 
@@ -123,10 +122,9 @@ impl Properties {
     /// The type of iterator element is `(&Key, Option<&mut Value>)`.
     /// Notice that this doesn't allow to add/remove values associated with properties,
     /// but only modify the value if they already have one.
-    pub fn iter_mut<'p>(&'p mut self) -> Box<Iterator<Item=(&'p Key, Option<&'p mut Value>)> + 'p> {
-        Box::new(
-            self.set.iter().map(|k| (k, None))
-                .chain(self.map.iter_mut().map(|(k, v)| (k, Some(v))))
+    pub fn iter_mut<'p>(&'p mut self) -> impl Iterator<Item=(&'p Key, Option<&'p mut Value>)> + 'p {
+        self.set.iter().map(|k| (k, None))
+                .chain(self.map.iter_mut().map(|(k, v)| (k, Some(v)))
         )
     }
     // TODO: an Entry-like API to insert properties and add/remove their values
@@ -214,10 +212,7 @@ impl<'p> IntoIterator for &'p Properties {
     type Item = (&'p Key, Option<&'p Value>);
     type IntoIter = Box<Iterator<Item=Self::Item> + 'p>;
     fn into_iter(self) -> Self::IntoIter {
-        Box::new(
-            self.set.iter().map(|p| (p, None))
-                .chain(self.map.iter().map(|(k, v)| (k, Some(v))))
-        )
+        Box::new(self.iter())
     }
 }
 
